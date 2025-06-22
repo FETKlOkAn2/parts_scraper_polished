@@ -3,73 +3,63 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import stem.process, stem.control
 import pandas as pd
 import time
 
+"""
+ROTELLA T5 10W30 CK4 550045130
+AIR BRAKE TUBING, NYLON, BD10863FT 
+TORQUE ROD BUSHING ATRTS38000 
+TERM- BOWMA SEAL 3/8 STUD BD238232 
+"""
+
 class Parser:
-    def __init__(self, url):
-        self.url = url
-        self.pages = 0
+    def __init__(self):
+        self.base_url = 'https://duckduckgo.com/'
+        self.search = 'hello+world' # must have + for spaces
+        self.tag = f"?q={self.search}&iar=images"
+        self.test_url = 'https://check.torproject.org'
+        self.check_ip_url = 'https://checkip.amazonaws.com'
+        self.driver = None
 
-
-        self.run_driver()
         for i in range(5):
-            self.extract_part_info()
-            self.paginate()
-                
-        self.driver.quit()
+            self.initiate_driver()
+            self.run_driver()
+            self.renew_tor()
+            self.driver.quit()
 
-    def run_driver(self):
-        opts = Options()
-        opts.add_argument("--no-sandbox")
-        opts.add_argument("--disable-dev-shm-usage")
+
+    def initiate_driver(self):
+        # opts = Options()
+        # opts.add_argument("--no-sandbox")
+        # opts.add_argument("--disable-dev-shm-usage")
+        opts = uc.ChromeOptions()
+        opts.add_argument("--proxy-server=socks5://127.0.0.1:9050")
+        opts.add_argument('--host-resolver-rules="MAP * `NOTFOUND, EXCLUDE 127.0.0.1"')
+        opts.add_argument("--dns-prefetch-disable")
         self.driver = uc.Chrome(options=opts)
         self.driver.set_page_load_timeout(60)
-        self.driver.implicitly_wait(2)
+        self.driver.implicitly_wait(3)
+    
+    def run_driver(self):
 
-        self.driver.get(self.url)
-        time.sleep(1)
-        try:
-            no_thanks_btn = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "button.needsclick")))
-            
-                # scroll it into view (in case it's off-screen or covered)
-            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", no_thanks_btn)
-
-            # pause briefly so any CSS transition can finish
-            time.sleep(0.5)
-
-            # click via JS (bypasses “not clickable at point” errors)
-            self.driver.execute_script("arguments[0].click();", no_thanks_btn)
-        
-            no_thanks_btn.click()
-            print("-----dismissed pop up ------")
-        except Exception:
-            print('----pop did not appear-------')
+        self.driver.get(self.check_ip_url)
+        time.sleep(3)
+        body = self.driver.find_element(By.TAG_NAME, "body")
+        print(body.text)
 
 
-
-    def extract_part_info(self):
-        time.sleep(1)
-        self.pages += 1
-        print(f"----------------------  PAGE: {self.pages}  ----------------------")
-
-        items = self.driver.find_elements(By.CSS_SELECTOR, '.tile-body.align-items-start')
-        print(len(items))
-        # for i, item in enumerate(items):
-        #     splits = item.text.split()
-        #     print(f"name: {' '.join(splits[:-2])}")
-        #     print(f"part number: {splits[-2]}")
-        #     print(f"price: {splits[-1]}\n")
-
-
-
-    def paginate(self):
-        time.sleep(2)
-        next_page = self.driver.find_element(By.CSS_SELECTOR, "button.more")
-        next_page.click()
+    def renew_tor(self):
+        with stem.control.Controller.from_port(port=9051) as controller:
+            controller.authenticate()
+            controller.signal(stem.Signal.NEWNYM)
         time.sleep(10)
-        pass
+        # self.driver.execute_cdp_cmd("Network.enable", {})
+        # self.driver.execute_cdp_cmd("Network.clearBrowserCache", {})
+        # self.driver.execute_cdp_cmd("Network.clearBrowserCookies", {})
+        # self.driver.execute_cdp_cmd("Network.clearNetworkQueues", {})  # Chrome 90+
+
 
 if __name__ == "__main__":
-    scraper = Parser("https://www.truckpartsdirect.com/allproducts.html")
+    scraper = Parser()

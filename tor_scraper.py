@@ -104,7 +104,7 @@ class Soup:
     
     def renew_tor(self):
         with stem.control.Controller.from_port(port=9051) as controller:
-            controller.authenticate(password="your_tor_control_password")
+            controller.authenticate()
             controller.signal(stem.Signal.NEWNYM)
 
 if __name__ == "__main__":
