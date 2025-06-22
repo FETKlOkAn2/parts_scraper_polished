@@ -22,15 +22,29 @@ class Parser:
         self.test_url = 'https://check.torproject.org'
         self.check_ip_url = 'https://checkip.amazonaws.com'
         self.driver = None
+        self.tor_proc = None
 
         for i in range(5):
             self.initiate_driver()
             self.run_driver()
             self.renew_tor()
             self.driver.quit()
+            self.tor_proc.kill()
 
 
     def initiate_driver(self):
+        self.tor_proc = stem.process.launch_tor_with_config(
+            tor_cmd = r"C:\Users\dazet\OneDrive\Desktop\Tor Browser\Tor Expert\tor\tor.exe",
+            config = {
+                'SocksPort': '9050',
+                'ControlPort': '9051',
+                'CookieAuthentication': '1',
+                'MaxCircuitDirtiness': '0'
+            },
+            take_ownership=True
+        )
+        time.sleep(1)
+
         # opts = Options()
         # opts.add_argument("--no-sandbox")
         # opts.add_argument("--disable-dev-shm-usage")
