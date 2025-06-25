@@ -38,8 +38,6 @@ class Parser:
         #     iterations=len(self.search_list))
 
 
-
-
     def run_driver(self, function, iterations:int=0):
         for i in range(iterations):
             self.initiate_driver()
@@ -49,8 +47,7 @@ class Parser:
             self.download_images()
 
             self.driver.quit()
-            self.tor_proc.kill()
-
+            #self.tor_proc.kill()
 
     def launch_tor_with_retries(self,max_backoff=60):
         tor_cmd = os.getenv("TOR_PATH")
@@ -58,7 +55,7 @@ class Parser:
         attempt = 0
         while True:
             try:
-                proc = stem.process.launch_tor_with_config(
+                self.tor_proc = stem.process.launch_tor_with_config(
                     tor_cmd=tor_cmd,
                     config={
                         'SocksPort': '9050',
@@ -80,12 +77,11 @@ class Parser:
 
     def initiate_driver(self):
         """initiates the Undetected Chrome Browser"""
-
         opts = uc.ChromeOptions()
         opts.add_argument("--proxy-server=socks5://127.0.0.1:9050")
         opts.add_argument('--host-resolver-rules="MAP * `NOTFOUND, EXCLUDE 127.0.0.1"')
         opts.add_argument("--dns-prefetch-disable")
-        self.driver = uc.Chrome(options=opts)
+        self.driver = uc.Chrome(options=opts, version_main=137)
         self.driver.set_page_load_timeout(60)
         self.driver.implicitly_wait(3)
 
@@ -95,14 +91,12 @@ class Parser:
             controller.signal(stem.Signal.NEWNYM)
         time.sleep(1)
 
-
     def check_ip(self):
         """process for checking ip address switching"""
         self.driver.get(self.check_ip_url)
         time.sleep(1)
         body = self.driver.find_element(By.TAG_NAME, "body")
         print(body.text)
-
 
     def duck_image_search(self, search_string:str, total_images):
         ''' Process for searching duckduckgo images'''
@@ -146,7 +140,6 @@ class Parser:
                 print(f'Error on tile #{i} grabbing the file: {e}')
         self.download_images()
 
-
     def download_images(self):
         # self.launch_tor_with_retries()
         session = requests.Session()
@@ -160,6 +153,8 @@ class Parser:
             print("Your IP via Tor is:", resp.json()['origin'])
         except Exception as e:
             print("Request failed:", e)
+
+
 
 if __name__ == "__main__":
     scraper = Parser()
