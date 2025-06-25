@@ -20,6 +20,7 @@ TERM- BOWMA SEAL 3/8 STUD BD238232
 
 class Parser:
     def __init__(self):
+        self.image_path = "C:/Users/dazet/OneDrive/Projects/parts_scraper/images"
         self.duckduckgo_url = 'https://duckduckgo.com/?q='
         self.duck_tag = '&t=h_&iar=images'
 
@@ -31,23 +32,23 @@ class Parser:
         self.links = []
 
 
+        #self.run_driver(function=self.check_ip, iterations= 10)
 
-        self.run_driver(function=self.check_ip, iterations= 10)
-        # self.run_driver(
-        #     function=self.duck_image_search,
-        #     iterations=len(self.search_list))
-
+        self.run_driver(
+            function=self.duck_image_search,
+            iterations=len(self.search_list))
 
     def run_driver(self, function, iterations:int=0):
         for i in range(iterations):
             self.initiate_driver()
 
-            #function(self.search_list[i-1], 10)
-            function()
-            self.download_images()
+            function(self.search_list[i], 5)
+            #function()
+            self.download_images(iterator = i)
 
             self.driver.quit()
-            #self.tor_proc.kill()
+            self.links = []
+
 
     def launch_tor_with_retries(self,max_backoff=60):
         tor_cmd = os.getenv("TOR_PATH")
@@ -110,6 +111,7 @@ class Parser:
 
         # tiles = self.driver.find_elements(By.CLASS_NAME, 'SZ76bwIlqO8BBoqOLqYV')
         for i in range(0,total_images):
+            single_html_list = []
             try:
                 # re-find the tile each iteration to avoid stale-element errors
                 tile = WebDriverWait(self.driver, 10).until(
@@ -138,22 +140,63 @@ class Parser:
 
             except Exception as e:
                 print(f'Error on tile #{i} grabbing the file: {e}')
-        self.download_images()
 
-    def download_images(self):
+            #self.links.append(single_html_list)
+
+
+    def download_images(self, iterator):
         # self.launch_tor_with_retries()
         session = requests.Session()
         session.proxies = {
             'http':  'socks5h://127.0.0.1:9050',
             'https': 'socks5h://127.0.0.1:9050'
         }
+        # try:
+        #     resp = session.get('https://httpbin.org/ip', timeout=10)
+        #     resp.raise_for_status()
+        #     print("Your IP via Tor is:", resp.json()['origin'])
+        # except Exception as e:
+        #     print("Request failed:", e)
+        
         try:
-            resp = session.get('https://httpbin.org/ip', timeout=10)
-            resp.raise_for_status()
-            print("Your IP via Tor is:", resp.json()['origin'])
-        except Exception as e:
-            print("Request failed:", e)
+            info = self.search_list[iterator]
+            print(info)
+            j = 0
+            while self.links:
+                url = self.links.pop()
+                print(url)
+                #tag = url.split('.')[-1]
+                file_name = info.replace(" ", "_") + "_" + str(j) + ".png"
+                path = f"{self.image_path}/{file_name}"
 
+                session.headers.update({
+                    "User-Agent": (
+                        "Mozilla/5.0 (Windows Nt 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/114.0.0.0 Safari/537.36"
+                    ),
+                    "Referer": f'https://www.google.com/search?tbm=isch&q={info.replace(" ","+")}'
+                })
+                try:
+                    with session.get(url, stream=True, timeout=10) as resp:
+                        if resp.status_code == 403:
+                            continue
+                        resp.raise_for_status()
+
+                        with open(path, 'wb') as f:
+                            for chunk in resp.iter_content(chunk_size=8192):
+                                if chunk:
+                                    f.write(chunk)
+                
+                except Exception as e:
+                    print('ERROR', e)
+                j += 1
+
+                        # resp = session.get(url, timeout=10)
+                        # resp.raise_for_status()
+
+        except Exception as e:
+            print("Request failed", e)
 
 
 if __name__ == "__main__":
