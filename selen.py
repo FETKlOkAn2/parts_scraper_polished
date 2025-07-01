@@ -42,11 +42,11 @@ class Parser:
         for i in range(iterations):
             self.initiate_driver()
 
-            function(self.search_list[i], 5)
+            function(self.search_list[i], 10)
             #function()
+            self.driver.quit()
             self.download_images(iterator = i)
 
-            self.driver.quit()
             self.links = []
 
 
