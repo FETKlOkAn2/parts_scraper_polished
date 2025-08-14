@@ -28,7 +28,7 @@ class Parser:
 
         self.search_list = ['TORQUE ROD BUSHING ATRTS38000','ROTELLA T5 10W30 CK4 550045130'] # must have + for spaces
         self.driver = None
-        self.tor_proc = self.launch_tor_with_retries()
+        #self.tor_proc = self.launch_tor_with_retries()
         self.links = []
 
 
