@@ -9,18 +9,13 @@ from skimage import img_as_float
 from skimage.color import rgb2gray
 
 class Img_Proc:
-    def __init__(self):
+    def __init__(self, testing=False):
+        self.testing = testing
         self.folder = "images"
         self.images = [f for f in os.listdir(self.folder) if os.path.isfile(os.path.join(self.folder, f))]
         self.grouped = defaultdict(list)
 
         self.group_images()
-        #self.perform_ssim(testing=True)  # set False to disable debug plots
-        self.run_hashing(
-            method= 'phash',
-            hash_size= 8,
-            distance_thresh= 12,
-            testing=False)
 
     def group_images(self):
         for name in self.images:
@@ -183,6 +178,7 @@ class Img_Proc:
         and print similar pairs (Hamming distance <= threshold).
         """
         entries = []  # (name, hash_int)
+        tracker = 0
         for fn in files:
             path = os.path.join(self.folder, fn)
             try:
@@ -190,12 +186,24 @@ class Img_Proc:
                 small = self.resize_image(gray, shape=(16, 16))
                 oriented, desc, _ = self.orient_top_left(small)
 
-                if testing:
-                    self.show_images_side_by_side(small, oriented,
-                        title1=f"{fn} (16×16)", title2=f"{fn} ({desc})", cmap='gray')
-
                 h = self.compute_hash(oriented, method=method, hash_size=hash_size)
                 entries.append((fn, h))
+
+                if testing and tracker == 0:
+                    # self.show_images_side_by_side(small, oriented,
+                    #     title1=f"{fn} (16×16)", title2=f"{fn} ({desc})", cmap='gray')
+                    self.show_pipeline_with_hash(
+                        orig = imread(path),
+                        gray=gray,
+                        small16=oriented,
+                        hash_int=h,
+                        method=method,
+                        hash_size=hash_size,
+                        title=os.path.basename(path)
+                    )
+                    tracker += 1
+
+
             except Exception as e:
                 print(f"  [skip] {fn}: {e}")
 
@@ -209,7 +217,7 @@ class Img_Proc:
                 if d <= distance_thresh:
                     print(f"  similar: {name1} ↔ {name2} | {method} dist={d}")
 
-    def run_hashing(self, method="phash", hash_size=8, distance_thresh=10, testing=False):
+    def run_hashing(self, method="phash", hash_size=8, distance_thresh=10):
         """
         Iterate your grouped files, hash within each group, and print similar pairs.
         """
@@ -218,47 +226,131 @@ class Img_Proc:
                 continue
             print(f"\n=== Hashing group: {group_name} ({method}) ===")
             self.hash_and_compare_group(files, method=method, hash_size=hash_size,
-                                        distance_thresh=distance_thresh, testing=testing)
-
-
-
+                                        distance_thresh=distance_thresh, testing=self.testing)
 
 
     # ---------- ssim  ----------
-    def perform_ssim(self, testing=False):
-        for group_name, files in self.grouped.items():
-            if len(files) < 2:
-                continue
-            print(f"\n=== Comparing group: {group_name} ===")
+    # def perform_ssim(self, testing=False):
+    #     for group_name, files in self.grouped.items():
+    #         if len(files) < 2:
+    #             continue
+    #         print(f"\n=== Comparing group: {group_name} ===")
 
-            imgs = []
-            for fn in files:
-                path = os.path.join(self.folder, fn)
-                try:
-                    gray = self.load_and_grayscale(path, where=fn)
-                    small = self.resize_image(gray, shape=(16, 16))
-                    oriented, desc, score = self.orient_top_left(small, weights_kind="gaussian")
+    #         imgs = []
+    #         for fn in files:
+    #             path = os.path.join(self.folder, fn)
+    #             try:
+    #                 gray = self.load_and_grayscale(path, where=fn)
+    #                 small = self.resize_image(gray, shape=(16, 16))
+    #                 oriented, desc, score = self.orient_top_left(small, weights_kind="gaussian")
 
-                    if testing:
-                        # Show 16x16 before vs oriented 16x16
-                        self.show_images_side_by_side(
-                            small, oriented,
-                            title1=f"{fn} (16×16)",
-                            title2=f"{fn} ({desc})",
-                            cmap='gray'
-                        )
-                    imgs.append((fn, oriented, desc))
-                except Exception as e:
-                    print(f"  [skip] {fn}: {e}")
+    #                 if testing:
+    #                     # Show 16x16 before vs oriented 16x16
+    #                     self.show_images_side_by_side(
+    #                         small, oriented,
+    #                         title1=f"{fn} (16×16)",
+    #                         title2=f"{fn} ({desc})",
+    #                         cmap='gray'
+    #                     )
+    #                 imgs.append((fn, oriented, desc))
+    #             except Exception as e:
+    #                 print(f"  [skip] {fn}: {e}")
 
-            # pairwise comparisons using oriented 16×16
-            for i in range(len(imgs)):
-                for j in range(i + 1, len(imgs)):
-                    name1, im1, d1 = imgs[i]
-                    name2, im2, d2 = imgs[j]
-                    score = ssim(im1, im2, data_range=1.0)
-                    print(f"{name1.split('_')[-1]} vs {name2.split('_')[-1]} → SSIM: {score:.4f}")
+    #         # pairwise comparisons using oriented 16×16
+    #         for i in range(len(imgs)):
+    #             for j in range(i + 1, len(imgs)):
+    #                 name1, im1, d1 = imgs[i]
+    #                 name2, im2, d2 = imgs[j]
+    #                 score = ssim(im1, im2, data_range=1.0)
+    #                 print(f"{name1.split('_')[-1]} vs {name2.split('_')[-1]} → SSIM: {score:.4f}")
+
+
+
+ # --------------- used with testing to show how images are processed -----------------
+
+    def _int_to_bits(self, value: int, h: int, w: int) -> np.ndarray:
+        """Inverse of _bits_to_int: unpack to (h, w) row-major boolean array."""
+        nbits = h * w
+        s = bin(value)[2:].zfill(nbits)  # MSB on the left
+        arr = np.frombuffer(s.encode('ascii'), dtype='S1').astype(np.uint8) - ord('0')
+        return arr.reshape(h, w).astype(bool)
+
+    def show_pipeline_with_hash(
+        self,
+        orig: np.ndarray,
+        gray: np.ndarray,
+        small16: np.ndarray,
+        hash_int: int,
+        method: str = "phash",
+        hash_size: int = 8,
+        title: str | None = None,
+        savepath: str | None = None,
+    ):
+        """
+        Display original, grayscale, 16x16, and a visual bit-grid of the hash.
+        Hash (hex) is printed on the figure as well.
+        """
+        # Prepare the hash grid (phash/ahash/dhash all use hash_size x hash_size bits here)
+        hbits = self._int_to_bits(hash_int, hash_size, hash_size).astype(np.float32)
+        # Make sure arrays are valid for imshow
+        def _to_float01(img):
+            if img.dtype == np.uint8:
+                return img / 255.0
+            return np.clip(img.astype(np.float32), 0.0, 1.0)
+
+        orig_v = _to_float01(orig)
+        gray_v = _to_float01(gray)
+        small_v = _to_float01(small16)
+
+        fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+
+        # Original (RGB or gray)
+        if orig_v.ndim == 3:
+            axes[0, 0].imshow(orig_v)
+        else:
+            axes[0, 0].imshow(orig_v, cmap='gray')
+        axes[0, 0].set_title("Original")
+        axes[0, 0].axis('off')
+
+        # Grayscale
+        axes[0, 1].imshow(gray_v, cmap='gray')
+        axes[0, 1].set_title("Grayscale")
+        axes[0, 1].axis('off')
+
+        # 16x16 (pixelated so you can see cells)
+        axes[1, 0].imshow(small_v, cmap='gray', interpolation='nearest')
+        axes[1, 0].set_title("Resized 16×16")
+        axes[1, 0].axis('off')
+
+        # Hash bit grid: white=1, black=0
+        axes[1, 1].imshow(hbits, cmap='gray', interpolation='nearest')
+        axes[1, 1].set_title(f"{method} bit grid ({hash_size}×{hash_size})")
+        axes[1, 1].axis('off')
+
+        # Compose hex string (pad to full length)
+        hex_len = (hash_size * hash_size + 3) // 4
+        hex_str = f"0x{hash_int:0{hex_len}X}"
+
+        # Put hash on the layout: suptitle + annotation on the hash cell
+        if title:
+            fig.suptitle(title, fontsize=12)
+        fig.text(0.5, 0.02, f"{method} = {hex_str}", ha='center', va='bottom', fontsize=11)
+
+        # Also overlay a small label inside the hash cell
+        axes[1, 1].text(
+            0.5, -0.08, hex_str,
+            ha='center', va='top', transform=axes[1, 1].transAxes, fontsize=9
+        )
+
+        plt.tight_layout(rect=[0, 0.04, 1, 0.96])
+        if savepath:
+            plt.savefig(savepath, dpi=150, bbox_inches='tight')
+        plt.show()
 
 
 if __name__ == "__main__":
-    Img_Proc()
+    img_proc = Img_Proc(testing = True)
+    img_proc.run_hashing(
+            method= 'phash',
+            hash_size= 8,
+            distance_thresh= 12)
