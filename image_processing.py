@@ -224,7 +224,7 @@ class Img_Proc:
 
 
 
-    # ---------- Main ----------
+    # ---------- ssim  ----------
     def perform_ssim(self, testing=False):
         for group_name, files in self.grouped.items():
             if len(files) < 2:
