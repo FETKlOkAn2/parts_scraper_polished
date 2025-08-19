@@ -25,7 +25,7 @@ TERM- BOWMA SEAL 3/8 STUD BD238232
 
 class Parser:
     def __init__(self):
-        self.version = os.getenv("CHROME_VERSION")
+
         self.image_path = "C:/Users/dazet/OneDrive/Projects/parts_scraper/images"
         self.duckduckgo_url = 'https://duckduckgo.com/?q='
         self.duck_tag = '&t=h_&iar=images'
@@ -65,35 +65,15 @@ class Parser:
 
         time.sleep(1)
         """initiates the Undetected Chrome Browser"""
-        for attempt in range(3):
-            try:
-                opts = uc.ChromeOptions()
-                opts.add_argument("--proxy-server=socks5://127.0.0.1:9050")
-                opts.add_argument('--host-resolver-rules="MAP * `NOTFOUND, EXCLUDE 127.0.0.1"')
-                opts.add_argument("--dns-prefetch-disable")
-                self.driver = uc.Chrome(options=opts, version_main=self.version)
-                break
-            except SessionNotCreatedException as e:
-                print(f"Session not created with version_main={self.version}")
-                msg = str(e)
-                match = re.search(r"Current browser version is (\d+)",msg)
-                if match:
-                    new_version = int(match.group(1))
-                    print(new_version)
-                    print(f" updating version_main to {new_version} and retrying...")
-                    self.version  = new_version
-                    subprocess.run(['setx', 'CHROME_VERSION', new_version],shell=True)
-                else:
-                    print('Cant parse newest version')
 
+        opts = uc.ChromeOptions()
+        opts.add_argument("--proxy-server=socks5://127.0.0.1:9050")
+        opts.add_argument('--host-resolver-rules="MAP * `NOTFOUND, EXCLUDE 127.0.0.1"')
+        opts.add_argument("--dns-prefetch-disable")
+        self.driver = uc.Chrome(options=opts)
         self.driver.set_page_load_timeout(60)
         self.driver.implicitly_wait(3)
 
-    def renew_tor(self):
-        with stem.control.Controller.from_port(port=9051) as controller:
-            controller.authenticate()
-            controller.signal(stem.Signal.NEWNYM)
-        time.sleep(1)
 
     def check_ip(self):
         """process for checking ip address switching"""
