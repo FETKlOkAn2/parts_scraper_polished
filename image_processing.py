@@ -43,15 +43,27 @@ class Img_Proc:
         plt.show()
 
     # ---------- Image IO / preprocessing ----------
-    def load_and_grayscale(self, path, where="(unknown)"):
-        img = imread(path)
-        img = img_as_float(img)             # [0,1]
+
+    def load_and_resize(self, path, where="(unknown)", size=(600, 600)):
+        """Load image from path and resize to target size (default 600x600)."""
+        img = imread(f"images/{path}")
+        img = img_as_float(img)  # scale to [0,1]
         img = np.squeeze(img)
 
+        if img.ndim != 2 and img.ndim != 3:
+            raise ValueError(f"{where}: expected 2-D or 3-D, got {img.shape}")
+
+        # resize to fixed dimensions
+        img = resize(img, size, anti_aliasing=True)
+
+        return img
+
+    def to_grayscale(self,img, where="(unknown)"):
+        """Convert an image to grayscale float32 2D array."""
         if img.ndim == 3:
-            if img.shape[2] == 4:           # drop alpha
+            if img.shape[2] == 4:  # drop alpha if present
                 img = img[:, :, :3]
-            img = rgb2gray(img)             # -> HxW float
+            img = rgb2gray(img)  # -> HxW float
 
         if img.ndim != 2:
             raise ValueError(f"{where}: expected 2-D, got {img.shape}")
@@ -60,7 +72,9 @@ class Img_Proc:
             img = np.array(img, dtype=np.float32)
         else:
             img = np.ascontiguousarray(img, dtype=np.float32)
+
         return img
+
 
     def resize_image(self, img, shape=(16, 16)):
         out = resize(img, shape, anti_aliasing=True)
@@ -182,7 +196,9 @@ class Img_Proc:
         for fn in files:
             path = os.path.join(self.folder, fn)
             try:
-                gray = self.load_and_grayscale(path, where=fn)
+                #gray = self.load_and_grayscale(path, where=fn)
+                img = self.load_and_resize(fn)
+                gray = self.to_grayscale(img)
                 small = self.resize_image(gray, shape=(16, 16))
                 oriented, desc, _ = self.orient_top_left(small)
 
