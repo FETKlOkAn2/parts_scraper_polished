@@ -58,33 +58,6 @@ class Parser:
             self.tor.terminate()
 
 
-
-    def launch_tor_with_retries(self,max_backoff=60):
-        tor_cmd = os.getenv("TOR_PATH")
-        """Keep trying to launch Tor until success, with exponential back-off."""
-        attempt = 0
-        while True:
-            try:
-                self.tor_proc = stem.process.launch_tor_with_config(
-                    tor_cmd=tor_cmd,
-                    config={
-                        'SocksPort': '9050',
-                        'ControlPort': '9051',
-                        'CookieAuthentication': '1',
-                        'MaxCircuitDirtiness': '1'
-                    },
-                    take_ownership=True
-                )
-
-                time.sleep(1)
-                return
-
-            except OSError as e:
-                attempt += 1
-                backoff = min(max_backoff, 2 ** attempt)
-                print(f"⚠️  Launch attempt #{attempt} failed: {e!r}. retrying in {backoff}s…")
-                time.sleep(backoff)
-
     def initiate_driver(self):
 
         exe_path = os.getenv("TOR_PATH")
