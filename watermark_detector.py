@@ -7,6 +7,13 @@ from skimage.transform import resize
 from skimage.metrics import structural_similarity as ssim
 from skimage import img_as_float
 import numpy as np
+import cv2
+import pytesseract
+import pytesseract
+from wm_remover import WatermarkRemover
+
+pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
+
 
 
 class WaterMark:
@@ -52,8 +59,10 @@ class WaterMark:
     def water_mark_detector(self, files):
         """where the programming actually goes"""
         for fn in files:
-            img = self.load_and_resize(fn)
-            self.show_image(img)
+            print(f"Processing file: {fn}")
+            remover = WatermarkRemover(pytesseract.pytesseract.tesseract_cmd)
+            remover.remove_watermark(f"{self.folder}/{fn}", f"{self.folder}/cleaned/{fn}", f"{self.folder}/mask/{fn}_mask.png")
+
             
     def show_image(self, img, title="Image", cmap=None):
         plt.figure()
