@@ -1,0 +1,4 @@
+on cloud:
+only have 1 ip address able to reach the database
+needs access control to read and write to only the database
+and read and write to the blob storage/s3 buckets

@@ -10,7 +10,7 @@ class Database:
         self.password = os.getenv("DB_PASSWORD")
         self.host = os.getenv("DB_HOST")
         self.port = os.getenv("DB_PORT", "1433")
-        self.db = 'Parts'
+        self.db = 'parts_db'
         self.driver = "ODBC+Driver+18+for+SQL+Server"
         self.engine = self.get_engine() # Initialize engine in the constructor
         self.lock = Lock() # Thread lock for database access

@@ -37,11 +37,10 @@ class Soup:
         """
         splits = tile.text.split()
 
-        name = ' '.join(splits[:-2])
-        part =  splits[-2]
-        price = splits[-1]
+        description = ' '.join(splits[:-2])
+        number =  splits[-2]
 
-        return {"name": name, "part": part, "price": price}
+        return {"description": description, "number": number}
 
 
     def scrape_all(self):
@@ -51,7 +50,7 @@ class Soup:
 
         # 1) Load everything that’s already in parts_list
         try:
-            existing_df = self.db.read_sql("SELECT name, part, price FROM parts_list")
+            existing_df = self.db.read_sql("SELECT number, description FROM parts")
             existing = set(map(tuple, existing_df.values))
             first_write = False
             print(f"Loaded {len(existing)} existing rows")
@@ -71,19 +70,19 @@ class Soup:
 
             # 3) Filter out rows we’ve already saved
             new_rows = [r for r in batch
-                        if (r["name"], r["part"], r["price"]) not in existing]
+                        if (r["number"], r["description"]) not in existing]
             if not new_rows:
                 print(f"Batch at start={start}: 0 new rows, skipping DB write")
             else:
-                df_new = pd.DataFrame(new_rows, columns=["name","part","price"])
+                df_new = pd.DataFrame(new_rows, columns=["number","description"])
 
                 # 4) On the very first write, create the table if needed
                 if first_write:
-                    self.db.create_table_if_not_exists("parts_list", df_new)
+                    self.db.create_table_if_not_exists("parts", df_new)
                     first_write = False
 
                 # 5) Append only the new rows
-                self.db.to_sql(df_new, "parts_list", if_exists="append")
+                self.db.to_sql(df_new, "parts", if_exists="append")
                 print(f"Batch at start={start}: inserted {len(df_new)} new rows")
 
                 # 6) Remember them so we don’t re-insert if we rerun
