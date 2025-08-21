@@ -4,13 +4,16 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException, SessionNotCreatedException
+from database import Database
 import stem.process, stem.control
 import time
 import os
 import re
+import sys
 import requests
 import subprocess
 from dotenv import load_dotenv
+from contextlib import suppress
 load_dotenv()
 
 
@@ -25,32 +28,34 @@ TERM- BOWMA SEAL 3/8 STUD BD238232
 
 class Parser:
     def __init__(self):
-
+        
+        self.db = Database()
         self.image_path = "C:/Users/dazet/OneDrive/Projects/parts_scraper/images"
         self.duckduckgo_url = 'https://duckduckgo.com/?q='
         self.duck_tag = '&t=h_&iar=images'
 
         self.check_ip_url = 'https://checkip.amazonaws.com'
 
-        self.search_list = ['TORQUE ROD BUSHING ATRTS38000','ROTELLA T5 10W30 CK4 550045130'] # must have + for spaces
+        #self.search_list = ['TORQUE ROD BUSHING ATRTS38000','ROTELLA T5 10W30 CK4 550045130'] # must have + for spaces
+        self.df = self.db.read_sql_query("SELECT number, description FROM parts")
         self.driver = None
         #self.tor_proc = self.launch_tor_with_retries()
         self.links = []
         self.tor = None
 
 
-        self.run_driver(function=self.check_ip, iterations= 10)
+        #self.run_driver(function=self.check_ip, iterations= 10)
 
-        # self.run_driver(
-        #     function=self.duck_image_search,
-        #     iterations=len(self.search_list))
+        self.run_driver(
+            function=self.duck_image_search,
+            iterations=10)# can do len(self.df)
 
     def run_driver(self, function, iterations:int=0):
         for i in range(iterations):
             self.initiate_driver()
 
-            #function(self.search_list[i], 10)
-            function()
+            function(' '.join(list(self.df.iloc[i])), 5)
+            #function()
             self.driver.quit()
             #self.download_images(iterator = i)
 
@@ -86,46 +91,48 @@ class Parser:
         ''' Process for searching duckduckgo images'''
         # tile_class = "SZ76bwIlqO8BBoqOLqYV"
         # image_after_click = "Gr22SUHQb8xKdEwTxIxe ffON2NH02oMAcqyoh2UU vcOFkrrvuSYp7xsAur2Y q7VhSk71XgyB1xYfeChb ACez7bVvgYxZ9w0qR8ne"
+        try:
+            self.driver.get(self.duckduckgo_url + search_string.replace(' ', '+') + self.duck_tag)
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "SZ76bwIlqO8BBoqOLqYV"))
+            )
 
-        self.driver.get(self.duckduckgo_url + search_string.replace(' ', '+') + self.duck_tag)
-        WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "SZ76bwIlqO8BBoqOLqYV"))
-        )
+            # tiles = self.driver.find_elements(By.CLASS_NAME, 'SZ76bwIlqO8BBoqOLqYV')
+            for i in range(0,total_images):
+                single_html_list = []
+                try:
+                    # re-find the tile each iteration to avoid stale-element errors
+                    tile = WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_all_elements_located((By.CLASS_NAME, 'SZ76bwIlqO8BBoqOLqYV'))
+                    )[i]
 
-        # tiles = self.driver.find_elements(By.CLASS_NAME, 'SZ76bwIlqO8BBoqOLqYV')
-        for i in range(0,total_images):
-            single_html_list = []
-            try:
-                # re-find the tile each iteration to avoid stale-element errors
-                tile = WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_all_elements_located((By.CLASS_NAME, 'SZ76bwIlqO8BBoqOLqYV'))
-                )[i]
+                    # scroll it into view (helps if it’s off-screen)
+                    self.driver.execute_script("arguments[0].scrollIntoView(true);", tile)
 
-                # scroll it into view (helps if it’s off-screen)
-                self.driver.execute_script("arguments[0].scrollIntoView(true);", tile)
+                    # wait until it’s actually clickable, then click
+                    WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.CLASS_NAME, 'SZ76bwIlqO8BBoqOLqYV'))
+                    )
+                    tile.click()
 
-                # wait until it’s actually clickable, then click
-                WebDriverWait(self.driver, 10).until(
-                    EC.element_to_be_clickable((By.CLASS_NAME, 'SZ76bwIlqO8BBoqOLqYV'))
-                )
-                tile.click()
+                except (StaleElementReferenceException, TimeoutException):
+                    print(f"⚠️  Tile #{i} failed to click or load — skipping.")
+                    continue
+                try:
+                    WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, 'a.ACez7bVvgYxZ9w0qR8ne'))
+                    )
+                    file = self.driver.find_element(By.CSS_SELECTOR, 'a.ACez7bVvgYxZ9w0qR8ne')
 
-            except (StaleElementReferenceException, TimeoutException):
-                print(f"⚠️  Tile #{i} failed to click or load — skipping.")
-                continue
-            try:
-                WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, 'a.ACez7bVvgYxZ9w0qR8ne'))
-                )
-                file = self.driver.find_element(By.CSS_SELECTOR, 'a.ACez7bVvgYxZ9w0qR8ne')
+                    self.links.append(file.get_attribute("href"))
 
-                self.links.append(file.get_attribute("href"))
+                except Exception as e:
+                    print(f'Error on tile #{i} grabbing the file: {e}')
 
-            except Exception as e:
-                print(f'Error on tile #{i} grabbing the file: {e}')
-
-            #self.links.append(single_html_list)
-
+                #self.links.append(single_html_list)
+        finally:
+            with suppress(Exception):
+                self.driver.quit()  # ensures UC doesn't try during teardown
 
     def download_images(self, iterator):
         # self.launch_tor_with_retries()

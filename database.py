@@ -22,6 +22,9 @@ class Database:
         )
         return create_engine(url, pool_pre_ping=True, fast_executemany=True)
     
+    def change_db(self, new_db):
+        self.db = new_db
+
     def execute_sql(self, sql_text):
         with self.lock, self.engine.begin() as conn:
             return conn.execute(text(sql_text))
@@ -75,6 +78,8 @@ class Database:
                 print(f"Table {table_name} already exists.")
         except Exception as e:
             print(f"Error occurred while creating table {table_name}: {e}")
+
+
 
 if __name__ == "__main__":
     db = Database()

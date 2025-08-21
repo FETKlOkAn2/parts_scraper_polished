@@ -56,6 +56,7 @@ class Soup:
         Fall back to to_sql if your Database wrapper doesn’t support raw executes.
         """
         # Try a raw executemany upsert for performance
+        
         try:
             rows = list(df_new.itertuples(index=False, name=None))  # (number, description)
             # SQLite

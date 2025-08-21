@@ -16,8 +16,8 @@ lazy_loader==0.4
 matplotlib==3.10.3
 networkx==3.4.2
 numpy==2.2.6
-outcome==1.3.0.post0
-opencv-python==4.12.0
+outcome
+opencv-python
 packaging==25.0
 pandas==2.3.0
 pillow==11.2.1
