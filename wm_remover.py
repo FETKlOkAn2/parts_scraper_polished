@@ -36,6 +36,14 @@ class AdvancedWatermarkRemover:
         self.enable_dilation = True             # Enable mask dilation
         self.dilation_iterations = 1            # Number of dilation iterations
     
+        self.watermark_images = []  # List to store detected watermark images
+
+    def save_watermark_images(self, output_folder):
+        """Save detected watermark images to the specified folder."""
+        for i, img in enumerate(self.watermark_images):
+            cv2.imwrite(f"{output_folder}/watermark_{i}.png", img)
+        print(f"Saved {len(self.watermark_images)} watermark images to {output_folder}")
+
     def detect_text_regions_tesseract(self, image):
         """Detect text regions using Tesseract OCR"""
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if len(image.shape) == 3 else image
@@ -132,6 +140,7 @@ class AdvancedWatermarkRemover:
                 # Check if it looks like text
                 if (self.text_aspect_ratio_min < aspect_ratio < self.text_aspect_ratio_max 
                     and h > 8):  # Minimum height for text
+                    self.watermark_images.append(image[y:y+h, x:x+w])
                     cv2.rectangle(mask, (x-2, y-2), (x+w+2, y+h+2), 255, -1)
         
         return mask
@@ -161,6 +170,7 @@ class AdvancedWatermarkRemover:
                 
                 # If we find multiple matches, it might be a repeated watermark
                 if len(locations[0]) > 2:
+                    self.watermark_images.append(template)
                     for pt_y, pt_x in zip(locations[0], locations[1]):
                         cv2.rectangle(mask, (pt_x, pt_y), (pt_x + sample_size, pt_y + sample_size), 255, -1)
         

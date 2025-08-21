@@ -10,8 +10,7 @@ import numpy as np
 import cv2
 import pytesseract
 import pytesseract
-from wm_remover import WatermarkRemover
-
+from wm_remover import AdvancedWatermarkRemover
 pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
 
@@ -22,6 +21,8 @@ class WaterMark:
         self.folder = "images"
         self.images = [f for f in os.listdir(self.folder) if os.path.isfile(os.path.join(self.folder, f))]
         self.grouped = defaultdict(list)
+
+        self.remove_watermark = False  # Set to True to enable watermark removal
 
         self.group_images()
 
@@ -60,8 +61,12 @@ class WaterMark:
         """where the programming actually goes"""
         for fn in files:
             print(f"Processing file: {fn}")
-            remover = WatermarkRemover(pytesseract.pytesseract.tesseract_cmd)
-            remover.remove_watermark(f"{self.folder}/{fn}", f"{self.folder}/cleaned/{fn}", f"{self.folder}/mask/{fn}_mask.png")
+            remover = AdvancedWatermarkRemover(pytesseract.pytesseract.tesseract_cmd)
+            remover.detect_watermark_patterns(f"{self.folder}/{fn}")
+            remover.save_watermark_images(f"{self.folder}/watermarks")
+            
+            if self.remove_watermark:
+                remover.remove_watermark(f"{self.folder}/{fn}", f"{self.folder}/cleaned/{fn}", f"{self.folder}/mask/{fn}_mask.png")
 
             
     def show_image(self, img, title="Image", cmap=None):
