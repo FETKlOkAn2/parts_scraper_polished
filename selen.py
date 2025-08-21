@@ -16,16 +16,6 @@ from dotenv import load_dotenv
 from contextlib import suppress
 load_dotenv()
 
-
-
-
-"""
-ROTELLA T5 10W30 CK4 550045130
-AIR BRAKE TUBING, NYLON, BD10863FT 
-TORQUE ROD BUSHING ATRTS38000 
-TERM- BOWMA SEAL 3/8 STUD BD238232 
-"""
-
 class Parser:
     def __init__(self):
         
@@ -39,7 +29,7 @@ class Parser:
         #self.search_list = ['TORQUE ROD BUSHING ATRTS38000','ROTELLA T5 10W30 CK4 550045130'] # must have + for spaces
         self.df = self.db.read_sql_query("SELECT number, description FROM parts")
         self.driver = None
-        #self.tor_proc = self.launch_tor_with_retries()
+
         self.links = []
         self.tor = None
 
@@ -53,11 +43,10 @@ class Parser:
     def run_driver(self, function, iterations:int=0):
         for i in range(iterations):
             self.initiate_driver()
-
+            
             function(' '.join(list(self.df.iloc[i])), 5)
             #function()
-            self.driver.quit()
-            #self.download_images(iterator = i)
+            self.download_images(iterator = i)
 
             self.links = []
             self.tor.terminate()
@@ -75,7 +64,7 @@ class Parser:
         opts.add_argument("--proxy-server=socks5://127.0.0.1:9050")
         opts.add_argument('--host-resolver-rules="MAP * `NOTFOUND, EXCLUDE 127.0.0.1"')
         opts.add_argument("--dns-prefetch-disable")
-        self.driver = uc.Chrome(options=opts)
+        self.driver = uc.Chrome(options=opts, headless=False)
         self.driver.set_page_load_timeout(60)
         self.driver.implicitly_wait(3)
 
@@ -141,22 +130,18 @@ class Parser:
             'http':  'socks5h://127.0.0.1:9050',
             'https': 'socks5h://127.0.0.1:9050'
         }
-        # try:
-        #     resp = session.get('https://httpbin.org/ip', timeout=10)
-        #     resp.raise_for_status()
-        #     print("Your IP via Tor is:", resp.json()['origin'])
-        # except Exception as e:
-        #     print("Request failed:", e)
         
         try:
-            info = self.search_list[iterator]
+            info = ' '.join(list(self.df.iloc[iterator]))
             print(info)
-            j = 0
+
             while self.links:
                 url = self.links.pop()
                 print(url)
                 #tag = url.split('.')[-1]
                 file_name = info.replace(" ", "_") + "_" + str(j) + ".png"
+                file_name = file_name.replace('/',"_")
+                file_name = file_name.replace(',','')
                 path = f"{self.image_path}/{file_name}"
 
                 session.headers.update({
@@ -180,10 +165,6 @@ class Parser:
                 
                 except Exception as e:
                     print('ERROR', e)
-                j += 1
-
-                        # resp = session.get(url, timeout=10)
-                        # resp.raise_for_status()
 
         except Exception as e:
             print("Request failed", e)
