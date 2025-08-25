@@ -406,8 +406,8 @@ if __name__ == "__main__":
     print("Previewing detection on a sample image...")
     # remover.preview_detection("sample_image.jpg")
     
-    # Process your 64,000 images
-    input_folder = "images"  # Your folder with 64k images
+  
+    input_folder = "images" 
     output_folder = "cleaned_images"  # Output folder
     
     print(f"Starting batch processing of {input_folder}")
