@@ -62,8 +62,12 @@ class WaterMark:
         for fn in files:
             print(f"Processing file: {fn}")
             remover = AdvancedWatermarkRemover(pytesseract.pytesseract.tesseract_cmd)
-            remover.detect_watermark_patterns(f"{self.folder}/{fn}")
-            remover.save_watermark_images(f"{self.folder}/watermarks")
+            image_path = os.path.join(self.folder, fn)
+            img = cv2.imread(image_path)
+            if img is None:
+                raise ValueError(f"Could not load image from {image_path}")
+            remover.detect_watermark_patterns(img)
+            remover.save_watermark_images(f"{self.folder}/watermarks/{fn}")
             
             if self.remove_watermark:
                 remover.remove_watermark(f"{self.folder}/{fn}", f"{self.folder}/cleaned/{fn}", f"{self.folder}/mask/{fn}_mask.png")

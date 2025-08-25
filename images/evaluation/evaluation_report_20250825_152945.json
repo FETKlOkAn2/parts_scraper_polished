@@ -1,0 +1,1408 @@
+{
+  "total_images": 46,
+  "images_with_watermarks": 42,
+  "detection_methods": {
+    "tesseract": {
+      "detected": 38,
+      "pixel_count": "2015461"
+    },
+    "easyocr": {
+      "detected": 13,
+      "pixel_count": "917642"
+    },
+    "pattern": {
+      "detected": 36,
+      "pixel_count": "3800578"
+    },
+    "corner": {
+      "detected": 5,
+      "pixel_count": "218409"
+    },
+    "combined": {
+      "detected": 42,
+      "pixel_count": "5682362"
+    }
+  },
+  "detailed_results": [
+    {
+      "filename": "20SRTSB10303_SYN_BLEND_10W-30_GALLON_0.png",
+      "pixel_counts": {
+        "tesseract": "66814",
+        "easyocr": "112041",
+        "pattern": "207901",
+        "corner": "0",
+        "combined": "269013"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "True",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 21,
+      "image_size": [
+        1280,
+        1280
+      ],
+      "detection_percentage": {
+        "tesseract": 4.0780029296875,
+        "easyocr": 6.838439941406251,
+        "pattern": 12.689270019531252,
+        "corner": 0.0,
+        "combined": 16.41925048828125
+      }
+    },
+    {
+      "filename": "20SRTSB10303_SYN_BLEND_10W-30_GALLON_1.png",
+      "pixel_counts": {
+        "tesseract": "266477",
+        "easyocr": "265413",
+        "pattern": "0",
+        "corner": "0",
+        "combined": "319596"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "True",
+        "pattern": "False",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 0,
+      "image_size": [
+        1280,
+        1280
+      ],
+      "detection_percentage": {
+        "tesseract": 16.26446533203125,
+        "easyocr": 16.19952392578125,
+        "pattern": 0.0,
+        "corner": 0.0,
+        "combined": 19.506591796875
+      }
+    },
+    {
+      "filename": "20SRTSB10303_SYN_BLEND_10W-30_GALLON_2.png",
+      "pixel_counts": {
+        "tesseract": "144916",
+        "easyocr": "162678",
+        "pattern": "179372",
+        "corner": "0",
+        "combined": "297042"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "True",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 15,
+      "image_size": [
+        1200,
+        1200
+      ],
+      "detection_percentage": {
+        "tesseract": 10.063611111111111,
+        "easyocr": 11.297083333333333,
+        "pattern": 12.456388888888888,
+        "corner": 0.0,
+        "combined": 20.627916666666668
+      }
+    },
+    {
+      "filename": "20SRTSB10303_SYN_BLEND_10W-30_GALLON_3.png",
+      "pixel_counts": {
+        "tesseract": "144916",
+        "easyocr": "162678",
+        "pattern": "179372",
+        "corner": "0",
+        "combined": "297042"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "True",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 15,
+      "image_size": [
+        1200,
+        1200
+      ],
+      "detection_percentage": {
+        "tesseract": 10.063611111111111,
+        "easyocr": 11.297083333333333,
+        "pattern": 12.456388888888888,
+        "corner": 0.0,
+        "combined": 20.627916666666668
+      }
+    },
+    {
+      "filename": "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_0.png",
+      "pixel_counts": {
+        "tesseract": "0",
+        "easyocr": "0",
+        "pattern": "3750",
+        "corner": "14911",
+        "combined": "17681"
+      },
+      "detections": {
+        "tesseract": "False",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "True",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 2,
+      "image_size": [
+        600,
+        350
+      ],
+      "detection_percentage": {
+        "tesseract": 0.0,
+        "easyocr": 0.0,
+        "pattern": 1.7857142857142856,
+        "corner": 7.10047619047619,
+        "combined": 8.41952380952381
+      }
+    },
+    {
+      "filename": "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_1.png",
+      "pixel_counts": {
+        "tesseract": "0",
+        "easyocr": "0",
+        "pattern": "76280",
+        "corner": "0",
+        "combined": "76280"
+      },
+      "detections": {
+        "tesseract": "False",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 15,
+      "image_size": [
+        1024,
+        1024
+      ],
+      "detection_percentage": {
+        "tesseract": 0.0,
+        "easyocr": 0.0,
+        "pattern": 7.274627685546875,
+        "corner": 0.0,
+        "combined": 7.274627685546875
+      }
+    },
+    {
+      "filename": "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_2.png",
+      "pixel_counts": {
+        "tesseract": "19888",
+        "easyocr": "0",
+        "pattern": "16035",
+        "corner": "0",
+        "combined": "32428"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 7,
+      "image_size": [
+        671,
+        671
+      ],
+      "detection_percentage": {
+        "tesseract": 4.417189904962009,
+        "easyocr": 0.0,
+        "pattern": 3.561425991857694,
+        "corner": 0.0,
+        "combined": 7.202364955657082
+      }
+    },
+    {
+      "filename": "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_3.png",
+      "pixel_counts": {
+        "tesseract": "41615",
+        "easyocr": "38376",
+        "pattern": "0",
+        "corner": "0",
+        "combined": "50991"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "True",
+        "pattern": "False",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 0,
+      "image_size": [
+        600,
+        600
+      ],
+      "detection_percentage": {
+        "tesseract": 11.559722222222222,
+        "easyocr": 10.66,
+        "pattern": 0.0,
+        "corner": 0.0,
+        "combined": 14.164166666666667
+      }
+    },
+    {
+      "filename": "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_4.png",
+      "pixel_counts": {
+        "tesseract": "41615",
+        "easyocr": "38376",
+        "pattern": "0",
+        "corner": "0",
+        "combined": "50991"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "True",
+        "pattern": "False",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 0,
+      "image_size": [
+        600,
+        600
+      ],
+      "detection_percentage": {
+        "tesseract": 11.559722222222222,
+        "easyocr": 10.66,
+        "pattern": 0.0,
+        "corner": 0.0,
+        "combined": 14.164166666666667
+      }
+    },
+    {
+      "filename": "ATRMA37000_LOAD_PAD_(UPPER)_0.png",
+      "pixel_counts": {
+        "tesseract": "0",
+        "easyocr": "0",
+        "pattern": "0",
+        "corner": "0",
+        "combined": "0"
+      },
+      "detections": {
+        "tesseract": "False",
+        "easyocr": "False",
+        "pattern": "False",
+        "corner": "False",
+        "combined": "False"
+      },
+      "overall_detection": "False",
+      "watermark_regions_found": 0,
+      "image_size": [
+        265,
+        265
+      ],
+      "detection_percentage": {
+        "tesseract": 0.0,
+        "easyocr": 0.0,
+        "pattern": 0.0,
+        "corner": 0.0,
+        "combined": 0.0
+      }
+    },
+    {
+      "filename": "ATRMA37000_LOAD_PAD_(UPPER)_1.png",
+      "pixel_counts": {
+        "tesseract": "97995",
+        "easyocr": "12597",
+        "pattern": "0",
+        "corner": "0",
+        "combined": "98437"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "True",
+        "pattern": "False",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 0,
+      "image_size": [
+        800,
+        800
+      ],
+      "detection_percentage": {
+        "tesseract": 15.31171875,
+        "easyocr": 1.96828125,
+        "pattern": 0.0,
+        "corner": 0.0,
+        "combined": 15.38078125
+      }
+    },
+    {
+      "filename": "ATRMA37000_LOAD_PAD_(UPPER)_2.png",
+      "pixel_counts": {
+        "tesseract": "11200",
+        "easyocr": "16893",
+        "pattern": "0",
+        "corner": "0",
+        "combined": "25433"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "True",
+        "pattern": "False",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 0,
+      "image_size": [
+        600,
+        600
+      ],
+      "detection_percentage": {
+        "tesseract": 3.111111111111111,
+        "easyocr": 4.6925,
+        "pattern": 0.0,
+        "corner": 0.0,
+        "combined": 7.064722222222223
+      }
+    },
+    {
+      "filename": "ATRMA37000_LOAD_PAD_(UPPER)_3.png",
+      "pixel_counts": {
+        "tesseract": "0",
+        "easyocr": "0",
+        "pattern": "0",
+        "corner": "0",
+        "combined": "0"
+      },
+      "detections": {
+        "tesseract": "False",
+        "easyocr": "False",
+        "pattern": "False",
+        "corner": "False",
+        "combined": "False"
+      },
+      "overall_detection": "False",
+      "watermark_regions_found": 0,
+      "image_size": [
+        600,
+        600
+      ],
+      "detection_percentage": {
+        "tesseract": 0.0,
+        "easyocr": 0.0,
+        "pattern": 0.0,
+        "corner": 0.0,
+        "combined": 0.0
+      }
+    },
+    {
+      "filename": "ATRMA37000_LOAD_PAD_(UPPER)_4.png",
+      "pixel_counts": {
+        "tesseract": "0",
+        "easyocr": "0",
+        "pattern": "0",
+        "corner": "0",
+        "combined": "0"
+      },
+      "detections": {
+        "tesseract": "False",
+        "easyocr": "False",
+        "pattern": "False",
+        "corner": "False",
+        "combined": "False"
+      },
+      "overall_detection": "False",
+      "watermark_regions_found": 0,
+      "image_size": [
+        600,
+        600
+      ],
+      "detection_percentage": {
+        "tesseract": 0.0,
+        "easyocr": 0.0,
+        "pattern": 0.0,
+        "corner": 0.0,
+        "combined": 0.0
+      }
+    },
+    {
+      "filename": "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_0.png",
+      "pixel_counts": {
+        "tesseract": "0",
+        "easyocr": "0",
+        "pattern": "36046",
+        "corner": "0",
+        "combined": "36046"
+      },
+      "detections": {
+        "tesseract": "False",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 11,
+      "image_size": [
+        600,
+        600
+      ],
+      "detection_percentage": {
+        "tesseract": 0.0,
+        "easyocr": 0.0,
+        "pattern": 10.012777777777778,
+        "corner": 0.0,
+        "combined": 10.012777777777778
+      }
+    },
+    {
+      "filename": "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_1.png",
+      "pixel_counts": {
+        "tesseract": "145292",
+        "easyocr": "0",
+        "pattern": "30829",
+        "corner": "0",
+        "combined": "145761"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 2,
+      "image_size": [
+        600,
+        600
+      ],
+      "detection_percentage": {
+        "tesseract": 40.35888888888889,
+        "easyocr": 0.0,
+        "pattern": 8.563611111111111,
+        "corner": 0.0,
+        "combined": 40.48916666666666
+      }
+    },
+    {
+      "filename": "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_2.png",
+      "pixel_counts": {
+        "tesseract": "44485",
+        "easyocr": "0",
+        "pattern": "525",
+        "corner": "0",
+        "combined": "44485"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 1,
+      "image_size": [
+        500,
+        500
+      ],
+      "detection_percentage": {
+        "tesseract": 17.793999999999997,
+        "easyocr": 0.0,
+        "pattern": 0.21,
+        "corner": 0.0,
+        "combined": 17.793999999999997
+      }
+    },
+    {
+      "filename": "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_3.png",
+      "pixel_counts": {
+        "tesseract": "58901",
+        "easyocr": "0",
+        "pattern": "35760",
+        "corner": "0",
+        "combined": "66406"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 2,
+      "image_size": [
+        600,
+        600
+      ],
+      "detection_percentage": {
+        "tesseract": 16.36138888888889,
+        "easyocr": 0.0,
+        "pattern": 9.933333333333334,
+        "corner": 0.0,
+        "combined": 18.44611111111111
+      }
+    },
+    {
+      "filename": "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_4.png",
+      "pixel_counts": {
+        "tesseract": "58901",
+        "easyocr": "0",
+        "pattern": "35760",
+        "corner": "0",
+        "combined": "66406"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 2,
+      "image_size": [
+        600,
+        600
+      ],
+      "detection_percentage": {
+        "tesseract": 16.36138888888889,
+        "easyocr": 0.0,
+        "pattern": 9.933333333333334,
+        "corner": 0.0,
+        "combined": 18.44611111111111
+      }
+    },
+    {
+      "filename": "ATRMM9662657HT_ENGINE_MOUNT_HT_0.png",
+      "pixel_counts": {
+        "tesseract": "104623",
+        "easyocr": "40432",
+        "pattern": "285695",
+        "corner": "0",
+        "combined": "357653"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "True",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 25,
+      "image_size": [
+        1200,
+        1200
+      ],
+      "detection_percentage": {
+        "tesseract": 7.265486111111111,
+        "easyocr": 2.807777777777778,
+        "pattern": 19.839930555555554,
+        "corner": 0.0,
+        "combined": 24.83701388888889
+      }
+    },
+    {
+      "filename": "ATRMM9662657HT_ENGINE_MOUNT_HT_1.png",
+      "pixel_counts": {
+        "tesseract": "17864",
+        "easyocr": "34639",
+        "pattern": "319500",
+        "corner": "0",
+        "combined": "328155"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "True",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 5,
+      "image_size": [
+        700,
+        933
+      ],
+      "detection_percentage": {
+        "tesseract": 2.735262593783494,
+        "easyocr": 5.3037819629459495,
+        "pattern": 48.92053284336242,
+        "corner": 0.0,
+        "combined": 50.24575103353238
+      }
+    },
+    {
+      "filename": "ATRMM9662657HT_ENGINE_MOUNT_HT_2.png",
+      "pixel_counts": {
+        "tesseract": "40379",
+        "easyocr": "0",
+        "pattern": "105501",
+        "corner": "0",
+        "combined": "144155"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 9,
+      "image_size": [
+        1096,
+        1031
+      ],
+      "detection_percentage": {
+        "tesseract": 3.5734387279021855,
+        "easyocr": 0.0,
+        "pattern": 9.336569980247369,
+        "corner": 0.0,
+        "combined": 12.757350598596783
+      }
+    },
+    {
+      "filename": "ATRMM9662657HT_ENGINE_MOUNT_HT_3.png",
+      "pixel_counts": {
+        "tesseract": "5363",
+        "easyocr": "0",
+        "pattern": "23971",
+        "corner": "0",
+        "combined": "26600"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 5,
+      "image_size": [
+        292,
+        390
+      ],
+      "detection_percentage": {
+        "tesseract": 4.709343168247278,
+        "easyocr": 0.0,
+        "pattern": 21.04935019318581,
+        "corner": 0.0,
+        "combined": 23.35792061819459
+      }
+    },
+    {
+      "filename": "ATRMM9662657HT_ENGINE_MOUNT_HT_4.png",
+      "pixel_counts": {
+        "tesseract": "5363",
+        "easyocr": "0",
+        "pattern": "23971",
+        "corner": "0",
+        "combined": "26600"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 5,
+      "image_size": [
+        292,
+        390
+      ],
+      "detection_percentage": {
+        "tesseract": 4.709343168247278,
+        "easyocr": 0.0,
+        "pattern": 21.04935019318581,
+        "corner": 0.0,
+        "combined": 23.35792061819459
+      }
+    },
+    {
+      "filename": "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_0.png",
+      "pixel_counts": {
+        "tesseract": "0",
+        "easyocr": "0",
+        "pattern": "2897",
+        "corner": "0",
+        "combined": "2897"
+      },
+      "detections": {
+        "tesseract": "False",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 2,
+      "image_size": [
+        400,
+        400
+      ],
+      "detection_percentage": {
+        "tesseract": 0.0,
+        "easyocr": 0.0,
+        "pattern": 1.8106250000000002,
+        "corner": 0.0,
+        "combined": 1.8106250000000002
+      }
+    },
+    {
+      "filename": "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_1.png",
+      "pixel_counts": {
+        "tesseract": "23762",
+        "easyocr": "2091",
+        "pattern": "146207",
+        "corner": "0",
+        "combined": "158842"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "True",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 7,
+      "image_size": [
+        1000,
+        1000
+      ],
+      "detection_percentage": {
+        "tesseract": 2.3762,
+        "easyocr": 0.2091,
+        "pattern": 14.620700000000001,
+        "corner": 0.0,
+        "combined": 15.884200000000002
+      }
+    },
+    {
+      "filename": "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_2.png",
+      "pixel_counts": {
+        "tesseract": "0",
+        "easyocr": "0",
+        "pattern": "0",
+        "corner": "0",
+        "combined": "0"
+      },
+      "detections": {
+        "tesseract": "False",
+        "easyocr": "False",
+        "pattern": "False",
+        "corner": "False",
+        "combined": "False"
+      },
+      "overall_detection": "False",
+      "watermark_regions_found": 0,
+      "image_size": [
+        600,
+        600
+      ],
+      "detection_percentage": {
+        "tesseract": 0.0,
+        "easyocr": 0.0,
+        "pattern": 0.0,
+        "corner": 0.0,
+        "combined": 0.0
+      }
+    },
+    {
+      "filename": "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_3.png",
+      "pixel_counts": {
+        "tesseract": "24719",
+        "easyocr": "15714",
+        "pattern": "19408",
+        "corner": "11449",
+        "combined": "44816"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "True",
+        "pattern": "True",
+        "corner": "True",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 11,
+      "image_size": [
+        265,
+        265
+      ],
+      "detection_percentage": {
+        "tesseract": 35.1997152011392,
+        "easyocr": 22.376646493414025,
+        "pattern": 27.63688145247419,
+        "corner": 16.303310786756853,
+        "combined": 63.81772872908509
+      }
+    },
+    {
+      "filename": "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_4.png",
+      "pixel_counts": {
+        "tesseract": "24719",
+        "easyocr": "15714",
+        "pattern": "19408",
+        "corner": "11449",
+        "combined": "44816"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "True",
+        "pattern": "True",
+        "corner": "True",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 11,
+      "image_size": [
+        265,
+        265
+      ],
+      "detection_percentage": {
+        "tesseract": 35.1997152011392,
+        "easyocr": 22.376646493414025,
+        "pattern": 27.63688145247419,
+        "corner": 16.303310786756853,
+        "combined": 63.81772872908509
+      }
+    },
+    {
+      "filename": "BD110274_ELB_MALE_90DEG_45DEG_SA_0.png",
+      "pixel_counts": {
+        "tesseract": "36287",
+        "easyocr": "0",
+        "pattern": "840",
+        "corner": "0",
+        "combined": "37127"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 1,
+      "image_size": [
+        2000,
+        2000
+      ],
+      "detection_percentage": {
+        "tesseract": 0.907175,
+        "easyocr": 0.0,
+        "pattern": 0.021,
+        "corner": 0.0,
+        "combined": 0.928175
+      }
+    },
+    {
+      "filename": "BD110274_ELB_MALE_90DEG_45DEG_SA_1.png",
+      "pixel_counts": {
+        "tesseract": "62855",
+        "easyocr": "0",
+        "pattern": "165597",
+        "corner": "0",
+        "combined": "228452"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 2,
+      "image_size": [
+        2000,
+        2000
+      ],
+      "detection_percentage": {
+        "tesseract": 1.5713749999999997,
+        "easyocr": 0.0,
+        "pattern": 4.139925,
+        "corner": 0.0,
+        "combined": 5.7113
+      }
+    },
+    {
+      "filename": "BD110274_ELB_MALE_90DEG_45DEG_SA_2.png",
+      "pixel_counts": {
+        "tesseract": "57950",
+        "easyocr": "0",
+        "pattern": "52349",
+        "corner": "0",
+        "combined": "96339"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 12,
+      "image_size": [
+        2000,
+        2000
+      ],
+      "detection_percentage": {
+        "tesseract": 1.44875,
+        "easyocr": 0.0,
+        "pattern": 1.308725,
+        "corner": 0.0,
+        "combined": 2.4084749999999997
+      }
+    },
+    {
+      "filename": "BD111011_ELBOW_45DEG_STREET_BRAS_0.png",
+      "pixel_counts": {
+        "tesseract": "22747",
+        "easyocr": "0",
+        "pattern": "46084",
+        "corner": "0",
+        "combined": "67097"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 30,
+      "image_size": [
+        1280,
+        1280
+      ],
+      "detection_percentage": {
+        "tesseract": 1.38836669921875,
+        "easyocr": 0.0,
+        "pattern": 2.812744140625,
+        "corner": 0.0,
+        "combined": 4.09527587890625
+      }
+    },
+    {
+      "filename": "BD111011_ELBOW_45DEG_STREET_BRAS_1.png",
+      "pixel_counts": {
+        "tesseract": "30530",
+        "easyocr": "0",
+        "pattern": "12998",
+        "corner": "0",
+        "combined": "43028"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 8,
+      "image_size": [
+        700,
+        700
+      ],
+      "detection_percentage": {
+        "tesseract": 6.2306122448979595,
+        "easyocr": 0.0,
+        "pattern": 2.65265306122449,
+        "corner": 0.0,
+        "combined": 8.781224489795918
+      }
+    },
+    {
+      "filename": "BD111011_ELBOW_45DEG_STREET_BRAS_2.png",
+      "pixel_counts": {
+        "tesseract": "9934",
+        "easyocr": "0",
+        "pattern": "8651",
+        "corner": "0",
+        "combined": "18585"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 3,
+      "image_size": [
+        1000,
+        1000
+      ],
+      "detection_percentage": {
+        "tesseract": 0.9934000000000001,
+        "easyocr": 0.0,
+        "pattern": 0.8651000000000001,
+        "corner": 0.0,
+        "combined": 1.8585
+      }
+    },
+    {
+      "filename": "BD111011_ELBOW_45DEG_STREET_BRAS_3.png",
+      "pixel_counts": {
+        "tesseract": "9934",
+        "easyocr": "0",
+        "pattern": "8651",
+        "corner": "0",
+        "combined": "18585"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 3,
+      "image_size": [
+        1000,
+        1000
+      ],
+      "detection_percentage": {
+        "tesseract": 0.9934000000000001,
+        "easyocr": 0.0,
+        "pattern": 0.8651000000000001,
+        "corner": 0.0,
+        "combined": 1.8585
+      }
+    },
+    {
+      "filename": "BD11101_ELBOW_90DEG_STREET_BRAS_0.png",
+      "pixel_counts": {
+        "tesseract": "55065",
+        "easyocr": "0",
+        "pattern": "22481",
+        "corner": "0",
+        "combined": "76954"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 2,
+      "image_size": [
+        1000,
+        1000
+      ],
+      "detection_percentage": {
+        "tesseract": 5.5065,
+        "easyocr": 0.0,
+        "pattern": 2.2481,
+        "corner": 0.0,
+        "combined": 7.695399999999999
+      }
+    },
+    {
+      "filename": "BD11101_ELBOW_90DEG_STREET_BRAS_1.png",
+      "pixel_counts": {
+        "tesseract": "9934",
+        "easyocr": "0",
+        "pattern": "8651",
+        "corner": "0",
+        "combined": "18585"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 3,
+      "image_size": [
+        1000,
+        1000
+      ],
+      "detection_percentage": {
+        "tesseract": 0.9934000000000001,
+        "easyocr": 0.0,
+        "pattern": 0.8651000000000001,
+        "corner": 0.0,
+        "combined": 1.8585
+      }
+    },
+    {
+      "filename": "BD11101_ELBOW_90DEG_STREET_BRAS_2.png",
+      "pixel_counts": {
+        "tesseract": "32600",
+        "easyocr": "0",
+        "pattern": "0",
+        "corner": "0",
+        "combined": "32600"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "False",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 0,
+      "image_size": [
+        1252,
+        1252
+      ],
+      "detection_percentage": {
+        "tesseract": 2.079739509436658,
+        "easyocr": 0.0,
+        "pattern": 0.0,
+        "corner": 0.0,
+        "combined": 2.079739509436658
+      }
+    },
+    {
+      "filename": "BD11101_ELBOW_90DEG_STREET_BRAS_3.png",
+      "pixel_counts": {
+        "tesseract": "13428",
+        "easyocr": "0",
+        "pattern": "7171",
+        "corner": "0",
+        "combined": "20599"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 1,
+      "image_size": [
+        1000,
+        1000
+      ],
+      "detection_percentage": {
+        "tesseract": 1.3428,
+        "easyocr": 0.0,
+        "pattern": 0.7171000000000001,
+        "corner": 0.0,
+        "combined": 2.0599
+      }
+    },
+    {
+      "filename": "BD11101_ELBOW_90DEG_STREET_BRAS_4.png",
+      "pixel_counts": {
+        "tesseract": "13428",
+        "easyocr": "0",
+        "pattern": "7171",
+        "corner": "0",
+        "combined": "20599"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 1,
+      "image_size": [
+        1000,
+        1000
+      ],
+      "detection_percentage": {
+        "tesseract": 1.3428,
+        "easyocr": 0.0,
+        "pattern": 0.7171000000000001,
+        "corner": 0.0,
+        "combined": 2.0599
+      }
+    },
+    {
+      "filename": "BD24171_SS_CLAMP_HOSE_TUBING_CO_0.png",
+      "pixel_counts": {
+        "tesseract": "48851",
+        "easyocr": "0",
+        "pattern": "245892",
+        "corner": "0",
+        "combined": "283779"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 70,
+      "image_size": [
+        1385,
+        1500
+      ],
+      "detection_percentage": {
+        "tesseract": 2.351432009626955,
+        "easyocr": 0.0,
+        "pattern": 11.835956678700361,
+        "corner": 0.0,
+        "combined": 13.659638989169675
+      }
+    },
+    {
+      "filename": "BD24171_SS_CLAMP_HOSE_TUBING_CO_1.png",
+      "pixel_counts": {
+        "tesseract": "16247",
+        "easyocr": "0",
+        "pattern": "31962",
+        "corner": "0",
+        "combined": "48209"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 10,
+      "image_size": [
+        800,
+        800
+      ],
+      "detection_percentage": {
+        "tesseract": 2.53859375,
+        "easyocr": 0.0,
+        "pattern": 4.9940625,
+        "corner": 0.0,
+        "combined": 7.53265625
+      }
+    },
+    {
+      "filename": "BD24171_SS_CLAMP_HOSE_TUBING_CO_2.png",
+      "pixel_counts": {
+        "tesseract": "3942",
+        "easyocr": "0",
+        "pattern": "89218",
+        "corner": "0",
+        "combined": "89334"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "False",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 13,
+      "image_size": [
+        500,
+        500
+      ],
+      "detection_percentage": {
+        "tesseract": 1.5768,
+        "easyocr": 0.0,
+        "pattern": 35.687200000000004,
+        "corner": 0.0,
+        "combined": 35.733599999999996
+      }
+    },
+    {
+      "filename": "BD24171_SS_CLAMP_HOSE_TUBING_CO_3.png",
+      "pixel_counts": {
+        "tesseract": "100961",
+        "easyocr": "0",
+        "pattern": "672337",
+        "corner": "90300",
+        "combined": "776959"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "True",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 62,
+      "image_size": [
+        1500,
+        1500
+      ],
+      "detection_percentage": {
+        "tesseract": 4.487155555555555,
+        "easyocr": 0.0,
+        "pattern": 29.881644444444444,
+        "corner": 4.013333333333334,
+        "combined": 34.531511111111115
+      }
+    },
+    {
+      "filename": "BD24171_SS_CLAMP_HOSE_TUBING_CO_4.png",
+      "pixel_counts": {
+        "tesseract": "100961",
+        "easyocr": "0",
+        "pattern": "672337",
+        "corner": "90300",
+        "combined": "776959"
+      },
+      "detections": {
+        "tesseract": "True",
+        "easyocr": "False",
+        "pattern": "True",
+        "corner": "True",
+        "combined": "True"
+      },
+      "overall_detection": "True",
+      "watermark_regions_found": 62,
+      "image_size": [
+        1500,
+        1500
+      ],
+      "detection_percentage": {
+        "tesseract": 4.487155555555555,
+        "easyocr": 0.0,
+        "pattern": 29.881644444444444,
+        "corner": 4.013333333333334,
+        "combined": 34.531511111111115
+      }
+    }
+  ]
+}
