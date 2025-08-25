@@ -45,7 +45,7 @@ def _port_open(host: str, port: int, timeout_s: float = 1.0) -> bool:
 class Parser:
     def __init__(self):
         # --- configurable bits ---
-        self.image_path = "C:/Users/dazet/OneDrive/Projects/parts_scraper/images"
+        self.image_path = "C:/Users/dazet/OneDrive/Projects/parts_scraper/images/images"
         self.duckduckgo_url = "https://duckduckgo.com/?q="
         self.duck_tag = "&t=h_&iar=images"
         # Use HTTP here (simpler over proxies)

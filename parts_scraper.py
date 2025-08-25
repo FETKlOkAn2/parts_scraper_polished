@@ -148,7 +148,7 @@ class Soup:
             # (Optional) rotate Tor/IP here if you want:
             time.sleep(.8)
 
-        print("✅ scrape_all complete")
+        print("scrape_all complete")
 
     def print_exit_ip(self, session, label=None):
         try:

@@ -329,7 +329,7 @@ def main():
     # Process image
     try:
         result = remover.remove_watermark(
-            image_path='images\TORQUE_ROD_BUSHING_ATRTS38000_8.png',
+            image_path='images\images\TORQUE_ROD_BUSHING_ATRTS38000_8.png',
             output_path='output_cleaned.jpg',
             mask_path='detection_mask.jpg',
             debug=True
