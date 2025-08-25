@@ -1,4 +1,6 @@
 import os
+import boto3
+from botocore.exceptions import NoCredentialsError
 from sqlalchemy import create_engine, text
 import pandas as pd
 from threading import Lock
@@ -14,6 +16,7 @@ class Database:
         self.driver = "ODBC+Driver+18+for+SQL+Server"
         self.engine = self.get_engine() # Initialize engine in the constructor
         self.lock = Lock() # Thread lock for database access
+        self.s3 = boto3.client("s3")
 
     def get_engine(self):
         url = (
@@ -79,7 +82,24 @@ class Database:
         except Exception as e:
             print(f"Error occurred while creating table {table_name}: {e}")
 
+    def upload_to_folder(self,bucket_name:str, folder_name: str,local_file_path:str, s3_file_name: str=None, delete_after:bool=True):
+        key = f"{folder_name}/s3_file_name"
+
+        try:
+            self.s3.upload_file(local_file_path, bucket_name, key)
+            print(f"uploaded {local_file_path}")
+            
+            if delete_after:
+                os.remove(local_file_path)
+                print(f"Deleted local file: {local_file_path}")
+        
+
+        except NoCredentialsError:
+            print(" AWS credentials not found. Did you run 'aws configure'?\n")
+        except Exception as e:
+            print(f"Upload failed {e}")
 
 
 if __name__ == "__main__":
     db = Database()
+    db.s3_interaction()

@@ -1,7 +1,9 @@
 import os
+import sys
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import numpy as np
+import boto3
 from skimage.io import imread
 from skimage.transform import resize
 from skimage.metrics import structural_similarity as ssim
@@ -11,13 +13,14 @@ from skimage.color import rgb2gray
 class Img_Proc:
     def __init__(self, testing=False):
         self.testing = testing
-        self.folder = "images"
-        self.images = [f for f in os.listdir(self.folder) if os.path.isfile(os.path.join(self.folder, f))]
-        self.grouped = defaultdict(list)
+        self.folder = "images/images"
+        self.s3 = boto3.client('S3')
 
         self.group_images()
 
     def group_images(self):
+        self.images = [f for f in os.listdir(self.folder) if os.path.isfile(os.path.join(self.folder, f))]
+        self.grouped = defaultdict(list)
         for name in self.images:
             base_name = '_'.join(name.split('_')[:-1])  # strip the numeric suffix
             self.grouped[base_name].append(name)
