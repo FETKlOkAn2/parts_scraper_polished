@@ -40,9 +40,9 @@ class Parser:
 
         #self.run_driver(function=self.check_ip, iterations= 10)
 
-        self.run_driver(
-            function=self.duck_image_search,
-            iterations=4)# can do len(self.df)
+        # self.run_driver(
+        #     function=self.duck_image_search,
+        #     iterations=4)# can do len(self.df)
 
     def run_driver(self, function, iterations:int=0):
         for i in range(iterations):
@@ -131,7 +131,7 @@ class Parser:
             with suppress(Exception):
                 self.driver.quit()  # ensures UC doesn't try during teardown
 
-    def download_images(self, iterator):
+    def download_images(self, iterator, keep_bytes=True):
         """ Downloads from requests resizes to 600x600 and saves them to s3 buckets"""
         session = requests.Session()
         session.proxies = {

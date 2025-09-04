@@ -1,9 +1,12 @@
-import os
+import os, shutil, stat
 import boto3
+import re
 from botocore.exceptions import NoCredentialsError
 from sqlalchemy import create_engine, text
 import pandas as pd
 from threading import Lock
+from typing import Dict, Iterable, List, Iterator, Tuple
+from image_processing import Img_Proc
 
 
 class Database:
@@ -17,6 +20,7 @@ class Database:
         self.engine = self.get_engine() # Initialize engine in the constructor
         self.lock = Lock() # Thread lock for database access
         self.s3 = boto3.client("s3")
+        #self.suffix_re = re.compile()
 
     def get_engine(self):
         url = (
@@ -99,7 +103,80 @@ class Database:
         except Exception as e:
             print(f"Upload failed {e}")
 
+    def download_group(self,bucket: str, group_list:list):
+        for key in group_list:
+            self.s3.download_file(bucket, f'images/{key}', f'images/images/{key}')
+
+
+
+    def empty_dir(self, folder: str) -> None:
+
+        def _on_rm_error(func, path, exc_info):
+            # Handle read-only files on Windows
+            os.chmod(path, stat.S_IWRITE)
+            func(path)
+
+        if not (os.path.isdir(folder) and folder not in ("", "/", "\\")):
+            raise ValueError(f"Refusing to operate on suspicious folder: {folder}")
+        for entry in os.scandir(folder):
+            p = entry.path
+            try:
+                if entry.is_file() or entry.is_symlink():
+                    os.unlink(p)
+                else:
+                    shutil.rmtree(p, onerror=_on_rm_error)
+            except FileNotFoundError:
+                pass  # already gone
+
+    def save_data_for_deletion(self, all_data, keep):
+        delete = []
+        for name in all_data:
+            if name not in keep:
+                delete.append(name)
+        
+
+
+
+    def retrieve_from_s3(self, bucket:str, prefix:str='', run_img_proc=False) -> Iterator[str]:
+        """will have to test after we have 1000 plus and iterates over new page"""
+
+        paginator = self.s3.get_paginator("list_objects_v2")
+        previous_control = None
+        grouped_strings = []
+
+        for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+            print('-------------------------------')
+            for obj in page.get("Contents", []):
+                control_number = obj['Key'].split('_')[-1][0]
+                file_name = obj['Key'].split('/')[1]
+
+                if control_number == 'i':
+                    continue
+                elif previous_control is None:
+                    previous_control = control_number
+                elif control_number < previous_control:
+                    print('\n\t--New Group--')
+                    self.download_group(bucket, grouped_strings)
+
+                    if run_img_proc:
+                        #hash and compare group - image_processing
+                        img_proc = Img_Proc()
+                        keep = img_proc.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
+                                distance_thresh=10, testing=True)
+                        self.empty_dir('images/images')
+                        self.save_data_for_deletion(all_data, keep)
+
+                        print(delete)
+                        print(keep)
+
+                    previous_control = None
+                    grouped_strings = []
+
+                grouped_strings.append(file_name)
+                previous_control = control_number
+
+
 
 if __name__ == "__main__":
     db = Database()
-    db.s3_interaction()
+    db.retrieve_from_s3("partsbucket0000","images", True)

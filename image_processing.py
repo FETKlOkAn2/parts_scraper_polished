@@ -14,9 +14,9 @@ class Img_Proc:
     def __init__(self, testing=False):
         self.testing = testing
         self.folder = "images/images"
-        self.s3 = boto3.client('S3')
+        #self.s3 = boto3.client('S3')
 
-        self.group_images()
+        #self.group_images()
 
     def group_images(self):
         self.images = [f for f in os.listdir(self.folder) if os.path.isfile(os.path.join(self.folder, f))]
@@ -49,7 +49,7 @@ class Img_Proc:
 
     def load_and_resize(self, path, where="(unknown)", size=(600, 600)):
         """Load image from path and resize to target size (default 600x600)."""
-        img = imread(f"images/{path}")
+        img = imread(path)
         img = img_as_float(img)  # scale to [0,1]
         img = np.squeeze(img)
 
@@ -197,10 +197,11 @@ class Img_Proc:
         entries = []  # (name, hash_int)
         tracker = 0
         for fn in files:
-            path = os.path.join(self.folder, fn)
+            #path = os.path.join(self.folder, fn)
+            path =  f"{self.folder}/{fn}"
             try:
                 #gray = self.load_and_grayscale(path, where=fn)
-                img = self.load_and_resize(fn)
+                img = self.load_and_resize(path)
                 gray = self.to_grayscale(img)
                 small = self.resize_image(gray, shape=(16, 16))
                 oriented, desc, _ = self.orient_top_left(small)
@@ -227,6 +228,7 @@ class Img_Proc:
                 print(f"  [skip] {fn}: {e}")
 
         # Compare all pairs
+        final_set = set()
         n = len(entries)
         for i in range(n):
             for j in range(i + 1, n):
@@ -234,7 +236,10 @@ class Img_Proc:
                 name2, h2 = entries[j]
                 d = self._hamming(h1, h2)
                 if d <= distance_thresh:
-                    print(f"  similar: {name1} ↔ {name2} | {method} dist={d}")
+                    #print(f"  similar: {name1} ↔ {name2} | {method} dist={d}")
+                    final_set.update((name1, name2))
+
+        return sorted(final_set)
 
     def run_hashing(self, method="phash", hash_size=8, distance_thresh=10):
         """
