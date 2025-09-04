@@ -133,6 +133,8 @@ class Database:
         for name in all_data:
             if name not in keep:
                 delete.append(name)
+        print(delete)
+        print(keep)
         
 
 
@@ -164,10 +166,8 @@ class Database:
                         keep = img_proc.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
                                 distance_thresh=10, testing=True)
                         self.empty_dir('images/images')
-                        self.save_data_for_deletion(all_data, keep)
+                        self.save_data_for_deletion(grouped_strings, keep)
 
-                        print(delete)
-                        print(keep)
 
                     previous_control = None
                     grouped_strings = []
