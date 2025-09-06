@@ -1,4 +1,6 @@
 on cloud:
 only have 1 ip address able to reach the database
-needs access control to read and write to only the database
-and read and write to the blob storage/s3 buckets
+
+images in s3 is allowing to view but final downloads need to fix
+getting errors in chrome after driver is done
+some reason got tkinter error during start.py

@@ -69,7 +69,7 @@ class Parser:
         opts.add_argument('--host-resolver-rules="MAP * `NOTFOUND, EXCLUDE 127.0.0.1"')
         opts.add_argument("--dns-prefetch-disable")
         
-        self.driver = uc.Chrome(options=opts, headless=False)
+        self.driver = uc.Chrome(options=opts,version_main=139, headless=False)
         self.driver.set_page_load_timeout(60)
         self.driver.implicitly_wait(3)
 
@@ -129,7 +129,8 @@ class Parser:
                 #self.links.append(single_html_list)
         finally:
             with suppress(Exception):
-                self.driver.quit()  # ensures UC doesn't try during teardown
+                self.driver.quit()
+                self.driver = None  # ensures UC doesn't try during teardown
 
     def download_images(self, iterator, keep_bytes=True):
         """ Downloads from requests resizes to 600x600 and saves them to s3 buckets"""

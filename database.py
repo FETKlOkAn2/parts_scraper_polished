@@ -21,6 +21,7 @@ class Database:
         self.lock = Lock() # Thread lock for database access
         self.s3 = boto3.client("s3")
         #self.suffix_re = re.compile()
+        self.delete_keys = []
 
     def get_engine(self):
         url = (
@@ -87,10 +88,10 @@ class Database:
             print(f"Error occurred while creating table {table_name}: {e}")
 
     def upload_to_folder(self,bucket_name:str, folder_name: str,local_file_path:str, s3_file_name: str=None, delete_after:bool=True):
-        key = f"{folder_name}/s3_file_name"
-
+        s3_file_name = f"{folder_name}/{local_file_path}"
+        local_file_path = f"images/images/{local_file_path}"
         try:
-            self.s3.upload_file(local_file_path, bucket_name, key)
+            self.s3.upload_file(local_file_path, bucket_name, s3_file_name)
             print(f"uploaded {local_file_path}")
             
             if delete_after:
@@ -133,11 +134,16 @@ class Database:
         for name in all_data:
             if name not in keep:
                 delete.append(name)
-        print(delete)
-        print(keep)
+        for key in delete:
+            self.delete_keys.append({'Key': f'images/{key}'})
         
-
-
+    def send_delete_request(self):
+        deletion_request = {'Objects': self.delete_keys,
+                            'Quiet': True}
+        self.s3.delete_objects(
+            Bucket = 'partsbucket0000',
+            Delete= deletion_request
+        )
 
     def retrieve_from_s3(self, bucket:str, prefix:str='', run_img_proc=False) -> Iterator[str]:
         """will have to test after we have 1000 plus and iterates over new page"""
@@ -165,9 +171,13 @@ class Database:
                         img_proc = Img_Proc()
                         keep = img_proc.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
                                 distance_thresh=10, testing=True)
-                        self.empty_dir('images/images')
-                        self.save_data_for_deletion(grouped_strings, keep)
+                        if not keep:
+                            keep = img_proc.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
+                                    distance_thresh=14, testing=True)
 
+                        self.save_data_for_deletion(grouped_strings, keep)
+                        self.upload_to_folder('partsbucket0000', 'final', keep[0])
+                        self.empty_dir('images/images')
 
                     previous_control = None
                     grouped_strings = []
@@ -180,3 +190,4 @@ class Database:
 if __name__ == "__main__":
     db = Database()
     db.retrieve_from_s3("partsbucket0000","images", True)
+    db.send_delete_request()
