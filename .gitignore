@@ -4,3 +4,7 @@ __pycache__
 testbed.py
 data
 fresh_env
+images/images
+output
+images.csv
+images_to_csv.py
