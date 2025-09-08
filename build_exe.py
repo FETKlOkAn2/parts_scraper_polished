@@ -1,484 +1,280 @@
 """
-Enhanced build script with PyInstaller error fixes and multiple fallback strategies
+Build script for the real PartsScraperGUI - adapted for your actual code
 """
-import os
-import sys
 import subprocess
+import sys
+import os
 import shutil
-import platform
 
-def check_dependencies():
-    """Check if required tools are available"""
-    print("Checking dependencies...")
+def emergency_uninstall():
+    """Remove problematic packages that cause dis.py errors"""
+    print("=== Removing problematic packages ===")
     
-    # Check Python version
-    python_version = sys.version_info
-    print(f"Python version: {python_version.major}.{python_version.minor}.{python_version.micro}")
+    packages_to_remove = [
+        "tensorboard", "tensorboard-data-server", "tensorboard-plugin-wit",
+        "tensorflow", "tensorflow-estimator", "tensorflow-io-gcs-filesystem",
+        "torch", "torchvision", "torchaudio",
+        "transformers", "tokenizers", "huggingface-hub",
+        "easyocr", "paddlepaddle", "paddleocr",
+        "scipy", "scikit-image", "scikit-learn",
+        "matplotlib", "seaborn", "plotly",
+        "networkx", "igraph",
+        "grpcio", "grpcio-status", "grpcio-tools",
+        "protobuf", "google-auth", "google-auth-oauthlib",
+        "absl-py", "google-pasta", "astunparse",
+        "h5py", "keras", "opt-einsum",
+        "wrapt", "gast", "flatbuffers",
+        "markdown", "werkzeug"
+    ]
     
-    if python_version < (3, 8):
-        print("⚠️  Warning: Python 3.8+ recommended for PyInstaller")
+    removed_count = 0
+    for package in packages_to_remove:
+        try:
+            result = subprocess.run([
+                sys.executable, "-m", "pip", "uninstall", "-y", package
+            ], capture_output=True, text=True, timeout=30)
+            
+            if result.returncode == 0:
+                print(f"  ✓ Removed {package}")
+                removed_count += 1
+            else:
+                print(f"  - {package} not installed")
+                
+        except subprocess.TimeoutExpired:
+            print(f"  ! Timeout removing {package}")
+        except Exception as e:
+            print(f"  ! Error removing {package}: {e}")
     
-    # Check PyInstaller
+    # Clear pip cache
     try:
-        result = subprocess.run(["pyinstaller", "--version"], capture_output=True, text=True)
-        print(f"PyInstaller version: {result.stdout.strip()}")
-    except FileNotFoundError:
-        print("❌ PyInstaller not found. Install with: pip install pyinstaller")
-        return False
+        subprocess.run([sys.executable, "-m", "pip", "cache", "purge"], 
+                      capture_output=True, timeout=30)
+        print(f"  ✓ Cleared pip cache (removed {removed_count} packages)")
+    except:
+        print("  ! Could not clear pip cache")
+
+def install_required_packages():
+    """Install packages needed for your PartsScraperGUI"""
+    print("\n=== Installing required packages ===")
+    
+    # Your GUI needs these specific packages
+    required_packages = [
+        "pyinstaller==5.13.2",
+        "opencv-python-headless==4.8.1.78",  # Headless version is more stable
+        "pytesseract==0.3.10", 
+        "numpy==1.24.3",
+        "pandas==2.0.3",
+        "pillow==10.0.0",
+        "pathlib2"  # For Path compatibility
+    ]
+    
+    for package in required_packages:
+        print(f"Installing {package}...")
+        try:
+            subprocess.run([
+                sys.executable, "-m", "pip", "install", 
+                "--no-deps", "--force-reinstall", package
+            ], check=True, timeout=120)
+            print(f"  ✓ Installed {package}")
+        except subprocess.TimeoutExpired:
+            print(f"  ! Timeout installing {package}")
+        except subprocess.CalledProcessError as e:
+            print(f"  ✗ Failed to install {package}: {e}")
+            return False
     
     return True
 
-def upgrade_pyinstaller():
-    """Upgrade PyInstaller to latest version"""
-    print("\n=== Upgrading PyInstaller ===")
-    try:
-        subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "pyinstaller"], check=True)
-        print("✓ PyInstaller upgraded successfully")
-        return True
-    except subprocess.CalledProcessError:
-        print("✗ Failed to upgrade PyInstaller")
-        return False
-
-def create_minimal_spec_file():
-    """Create a minimal .spec file to avoid dis.py issues"""
-    spec_content = '''# -*- mode: python ; coding: utf-8 -*-
-
-block_cipher = None
-
-a = Analysis(
-    ['parts_scraper_gui.py'],
-    pathex=[],
-    binaries=[],
-    datas=[('wm_remover.py', '.')],
-    hiddenimports=[
-        'cv2',
-        'pytesseract',
-        'numpy',
-        'pandas',
-        'scipy',
-        'skimage',
-        'matplotlib.pyplot',
-        'PIL.Image',
-        'PIL.ImageTk',
-        'tkinter',
-        'tkinter.ttk',
-        'tkinter.filedialog',
-        'tkinter.messagebox',
-        'tkinter.scrolledtext',
-        'pathlib',
-        'threading',
-        'queue',
-        'json',
-        'logging'
-    ],
-    hookspath=[],
-    hooksconfig={},
-    runtime_hooks=[],
-    excludes=[
-        'matplotlib.tests',
-        'numpy.tests',
-        'scipy.tests',
-        'test',
-        'tests',
-        'unittest',
-        'pytest',
-        'IPython',
-        'jupyter',
-        'notebook'
-    ],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
-    noarchive=False,
-)
-
-# Remove problematic modules that cause dis.py issues
-a.pure = [x for x in a.pure if not any(exclude in x[0] for exclude in [
-    'IPython', 'jupyter', 'notebook', 'qtconsole', 'spyder'
-])]
-
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
-
-exe = EXE(
-    pyz,
-    a.scripts,
-    [],
-    exclude_binaries=True,
-    name='PartsScraperApp',
-    debug=False,
-    bootloader_ignore_signals=False,
-    strip=False,
-    upx=True,
-    console=False,
-    disable_windowed_traceback=False,
-    argv_emulation=False,
-    target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
-)
-
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='PartsScraperApp',
-)
-'''
+def verify_your_files():
+    """Check that your actual files exist"""
+    required_files = ['parts_scraper_gui.py', 'wm_remover.py']
     
-    with open('PartsScraperApp_minimal.spec', 'w') as f:
-        f.write(spec_content)
+    for file in required_files:
+        if not os.path.exists(file):
+            print(f"ERROR: Required file missing: {file}")
+            return False
     
-    print("✓ Created minimal .spec file")
+    print("✓ All required files found")
+    return True
 
-def create_ultra_simple_version():
-    """Create version with absolute minimum dependencies"""
-    print("Creating ultra-simple version...")
+def build_your_real_gui():
+    """Build your actual PartsScraperGUI"""
+    print("\n=== Building Your Real GUI ===")
     
-    # Read original file
-    with open('parts_scraper_gui.py', 'r') as f:
-        content = f.read()
+    # Clean any existing build artifacts
+    for folder in ['build', 'dist', '__pycache__']:
+        if os.path.exists(folder):
+            shutil.rmtree(folder)
+            print(f"  ✓ Cleaned {folder}")
     
-    # Create minimal version
-    minimal_content = '''#!/usr/bin/env python3
-"""
-Minimal Parts Scraper GUI - Emergency Build Version
-"""
-import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
-import cv2
-import numpy as np
-import pytesseract
-from pathlib import Path
-import threading
-import os
-
-class MinimalPartsScraperApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Parts Scraper - Minimal Version")
-        self.root.geometry("600x400")
-        
-        # Create simple UI
-        self.create_widgets()
+    # Remove any .spec files
+    import glob
+    for spec_file in glob.glob("*.spec"):
+        os.remove(spec_file)
+        print(f"  ✓ Removed {spec_file}")
     
-    def create_widgets(self):
-        # Main frame
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
-        # File selection
-        ttk.Label(main_frame, text="Select Image:").grid(row=0, column=0, sticky=tk.W)
-        
-        file_frame = ttk.Frame(main_frame)
-        file_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
-        
-        self.file_var = tk.StringVar()
-        self.file_entry = ttk.Entry(file_frame, textvariable=self.file_var, width=50)
-        self.file_entry.grid(row=0, column=0, sticky=(tk.W, tk.E))
-        
-        ttk.Button(file_frame, text="Browse", command=self.browse_file).grid(row=0, column=1, padx=(5, 0))
-        
-        # Process button
-        ttk.Button(main_frame, text="Remove Watermark", command=self.process_image).grid(row=2, column=0, pady=10)
-        
-        # Status
-        self.status_var = tk.StringVar(value="Ready")
-        ttk.Label(main_frame, textvariable=self.status_var).grid(row=3, column=0, sticky=tk.W)
-        
-        # Configure grid weights
-        self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(0, weight=1)
-        main_frame.columnconfigure(0, weight=1)
-        file_frame.columnconfigure(0, weight=1)
-    
-    def browse_file(self):
-        file_path = filedialog.askopenfilename(
-            title="Select Image",
-            filetypes=[("Image files", "*.jpg *.jpeg *.png *.bmp *.tiff")]
-        )
-        if file_path:
-            self.file_var.set(file_path)
-    
-    def simple_watermark_removal(self, image_path):
-        """Very basic watermark removal using OpenCV"""
-        # Load image
-        img = cv2.imread(image_path)
-        if img is None:
-            raise ValueError("Could not load image")
-        
-        # Convert to grayscale for text detection
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        
-        # Simple text detection using Tesseract
-        try:
-            data = pytesseract.image_to_data(gray, output_type=pytesseract.Output.DICT)
-            
-            # Create mask for detected text
-            mask = np.zeros(gray.shape, dtype=np.uint8)
-            
-            for i, text in enumerate(data["text"]):
-                if text.strip() != "" and len(text.strip()) > 2:
-                    confidence = int(data["conf"][i]) if data["conf"][i] != '-1' else 0
-                    if confidence > 30:
-                        x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
-                        cv2.rectangle(mask, (x-2, y-2), (x+w+2, y+h+2), 255, -1)
-            
-            # Inpaint to remove text
-            if mask.any():
-                result = cv2.inpaint(img, mask, 3, cv2.INPAINT_TELEA)
-            else:
-                result = img.copy()
-                
-            return result
-            
-        except Exception as e:
-            print(f"Tesseract error: {e}")
-            # Fallback: simple blur on bright regions
-            _, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
-            kernel = np.ones((5,5), np.uint8)
-            mask = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-            result = cv2.inpaint(img, mask, 3, cv2.INPAINT_TELEA)
-            return result
-    
-    def process_image(self):
-        file_path = self.file_var.get()
-        if not file_path or not os.path.exists(file_path):
-            messagebox.showerror("Error", "Please select a valid image file")
-            return
-        
-        def process_thread():
-            try:
-                self.status_var.set("Processing...")
-                self.root.update()
-                
-                # Process image
-                result = self.simple_watermark_removal(file_path)
-                
-                # Save result
-                path = Path(file_path)
-                output_path = path.parent / f"{path.stem}_cleaned{path.suffix}"
-                cv2.imwrite(str(output_path), result)
-                
-                self.status_var.set(f"Saved: {output_path}")
-                messagebox.showinfo("Success", f"Cleaned image saved as:\\n{output_path}")
-                
-            except Exception as e:
-                self.status_var.set("Error occurred")
-                messagebox.showerror("Error", f"Processing failed:\\n{str(e)}")
-        
-        # Run in thread to prevent GUI freezing
-        threading.Thread(target=process_thread, daemon=True).start()
-
-def main():
-    root = tk.Tk()
-    app = MinimalPartsScraperApp(root)
-    root.mainloop()
-
-if __name__ == "__main__":
-    main()
-'''
-    
-    with open('parts_scraper_minimal.py', 'w') as f:
-        f.write(minimal_content)
-    
-    print("✓ Created ultra-simple version")
-
-def build_method_1_minimal():
-    """Build minimal version with basic dependencies only"""
-    print("\n=== Method 1: Minimal Build (Essential dependencies only) ===")
-    
-    create_ultra_simple_version()
-    
+    # Build command for your actual GUI
     cmd = [
-        "pyinstaller",
-        "--name=PartsScraperApp_Minimal",
+        sys.executable, "-m", "PyInstaller",
         "--onefile",
-        "--windowed",
+        "--windowed", 
+        "--name=PartsScraperApp",
+        
+        # Add your wm_remover.py file
+        "--add-data=wm_remover.py;." if os.name == 'nt' else "--add-data=wm_remover.py:.",
+        
+        # Hidden imports for your GUI's dependencies
+        "--hidden-import=tkinter",
+        "--hidden-import=tkinter.ttk",
+        "--hidden-import=tkinter.filedialog",
+        "--hidden-import=tkinter.messagebox",
+        "--hidden-import=tkinter.scrolledtext",
         "--hidden-import=cv2",
         "--hidden-import=pytesseract",
         "--hidden-import=numpy",
+        "--hidden-import=pandas",
         "--hidden-import=PIL",
+        "--hidden-import=PIL.Image",
+        "--hidden-import=PIL.ImageTk",
+        "--hidden-import=pathlib",
+        "--hidden-import=threading",
+        "--hidden-import=os",
+        "--hidden-import=sys",
+        
+        # Exclude the problematic modules we removed
         "--exclude-module=matplotlib",
-        "--exclude-module=scipy",
-        "--exclude-module=skimage", 
-        "--exclude-module=pandas",
-        "--exclude-module=easyocr",
+        "--exclude-module=scipy", 
+        "--exclude-module=skimage",
+        "--exclude-module=tensorflow",
         "--exclude-module=torch",
-        "--exclude-module=IPython",
-        "--exclude-module=jupyter",
-        "--exclude-module=notebook",
+        "--exclude-module=tensorboard",
+        "--exclude-module=easyocr",  # Your GUI mentions this but we're excluding it
+        "--exclude-module=transformers",
+        
         "--clean",
-        "parts_scraper_minimal.py"
+        "--noconfirm",
+        "parts_scraper_gui.py"  # Your actual GUI file
     ]
     
+    print("Running PyInstaller on your real GUI...")
+    print(f"Command: {' '.join(cmd[:5])}... (truncated)")
+    
     try:
-        subprocess.run(cmd, check=True)
-        print("✓ Minimal build completed successfully!")
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=600)
+        print("\n✅ BUILD SUCCESSFUL!")
+        print("Your PartsScraperApp.exe has been created in the 'dist' folder")
+        
+        # Show build results
+        if os.path.exists("dist"):
+            print("\nBuild results:")
+            for item in os.listdir("dist"):
+                item_path = os.path.join("dist", item)
+                if os.path.isfile(item_path):
+                    size_mb = os.path.getsize(item_path) / (1024*1024)
+                    print(f"  - {item} ({size_mb:.1f} MB)")
+        
         return True
+        
+    except subprocess.TimeoutExpired:
+        print("\n❌ Build timed out (took more than 10 minutes)")
+        return False
     except subprocess.CalledProcessError as e:
-        print(f"✗ Minimal build failed: {e}")
+        print(f"\n❌ Build failed with error: {e}")
+        print("STDOUT:", e.stdout if e.stdout else "None")
+        print("STDERR:", e.stderr if e.stderr else "None")
         return False
 
-def build_method_2_folder_safe():
-    """Build folder version with safe parameters"""
-    print("\n=== Method 2: Safe Folder Build ===")
+def create_folder_version():
+    """Create folder version as backup"""
+    print("\n=== Creating Folder Version (Backup) ===")
     
     cmd = [
-        "pyinstaller",
+        sys.executable, "-m", "PyInstaller",
+        "--onedir",  # Create folder instead of single file
+        "--windowed", 
         "--name=PartsScraperApp_Folder",
-        "--onedir",
-        "--windowed",
-        "--add-data=wm_remover.py;." if platform.system() == "Windows" else "--add-data=wm_remover.py:.",
+        
+        # Add your wm_remover.py file
+        "--add-data=wm_remover.py;." if os.name == 'nt' else "--add-data=wm_remover.py:.",
+        
+        # Essential hidden imports only
+        "--hidden-import=tkinter",
+        "--hidden-import=tkinter.ttk", 
+        "--hidden-import=tkinter.filedialog",
+        "--hidden-import=tkinter.messagebox",
+        "--hidden-import=tkinter.scrolledtext",
         "--hidden-import=cv2",
         "--hidden-import=pytesseract",
-        "--exclude-module=IPython",
-        "--exclude-module=jupyter", 
-        "--exclude-module=notebook",
-        "--exclude-module=qtconsole",
-        "--exclude-module=spyder",
+        "--hidden-import=numpy",
+        "--hidden-import=pandas",
+        "--hidden-import=PIL",
+        
+        # Exclude problematic modules
+        "--exclude-module=tensorflow",
+        "--exclude-module=torch",
+        "--exclude-module=tensorboard",
+        "--exclude-module=matplotlib",
+        "--exclude-module=scipy",
+        
         "--clean",
+        "--noconfirm",
         "parts_scraper_gui.py"
     ]
     
     try:
-        subprocess.run(cmd, check=True)
-        print("✓ Safe folder build completed successfully!")
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=600)
+        print("✅ Folder version also created successfully!")
         return True
-    except subprocess.CalledProcessError as e:
-        print(f"✗ Safe folder build failed: {e}")
+    except Exception as e:
+        print(f"❌ Folder version failed: {e}")
         return False
-
-def build_method_3_spec_minimal():
-    """Build using minimal spec file"""
-    print("\n=== Method 3: Minimal Spec Build ===")
-    
-    create_minimal_spec_file()
-    
-    try:
-        subprocess.run(["pyinstaller", "--clean", "PartsScraperApp_minimal.spec"], check=True)
-        print("✓ Minimal spec build completed successfully!")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"✗ Minimal spec build failed: {e}")
-        return False
-
-def build_method_4_cx_freeze():
-    """Alternative: cx_Freeze setup"""
-    print("\n=== Method 4: cx_Freeze Setup (Alternative) ===")
-    
-    cx_setup = '''from cx_Freeze import setup, Executable
-import sys
-
-build_exe_options = {
-    "packages": ["cv2", "pytesseract", "numpy", "tkinter", "PIL"],
-    "excludes": ["matplotlib", "scipy", "pandas", "IPython", "jupyter"],
-    "include_files": ["wm_remover.py"]
-}
-
-base = None
-if sys.platform == "win32":
-    base = "Win32GUI"
-
-setup(
-    name="PartsScraperApp",
-    version="1.0",
-    description="Parts Scraper Application",
-    options={"build_exe": build_exe_options},
-    executables=[Executable("parts_scraper_gui.py", base=base, target_name="PartsScraperApp.exe")]
-)
-'''
-    
-    with open('setup_cx.py', 'w') as f:
-        f.write(cx_setup)
-    
-    print("✓ Created cx_Freeze setup file")
-    print("To use cx_Freeze:")
-    print("1. pip install cx_Freeze")
-    print("2. python setup_cx.py build")
-    
-    return False  # Don't auto-run, just provide the option
-
-def clean_build_artifacts():
-    """Clean up build artifacts"""
-    print("\nCleaning build artifacts...")
-    
-    folders_to_clean = ['build', '__pycache__']
-    files_to_clean = ['*.spec']
-    
-    for folder in folders_to_clean:
-        if os.path.exists(folder):
-            shutil.rmtree(folder)
-            print(f"✓ Removed {folder}")
-    
-    import glob
-    for pattern in files_to_clean:
-        for file in glob.glob(pattern):
-            os.remove(file)
-            print(f"✓ Removed {file}")
 
 def main():
-    """Enhanced build process with error handling"""
-    print("=== Enhanced Parts Scraper App Build Script ===\n")
+    """Main build process for your real GUI"""
+    print("=== Building Your Real PartsScraperGUI ===")
+    print("This will build your actual GUI with all its features")
     
-    if not check_dependencies():
+    # Check files exist
+    if not verify_your_files():
         return
     
-    # Try to upgrade PyInstaller first
-    print("Attempting to fix PyInstaller issues...")
-    upgrade_pyinstaller()
+    print(f"\nPython version: {sys.version}")
+    print(f"Working directory: {os.getcwd()}")
     
-    # Clean previous builds
-    clean_build_artifacts()
+    # Step 1: Remove problematic packages
+    emergency_uninstall()
     
-    methods = [
-        ("Minimal Build (Recommended for errors)", build_method_1_minimal),
-        ("Safe Folder Build", build_method_2_folder_safe), 
-        ("Minimal Spec Build", build_method_3_spec_minimal),
-        ("cx_Freeze Setup (Manual)", build_method_4_cx_freeze)
-    ]
+    # Step 2: Install required packages
+    if not install_required_packages():
+        print("\n❌ FAILED: Could not install required packages")
+        return
     
-    success = False
+    # Step 3: Build your real GUI
+    success = build_your_real_gui()
     
-    for method_name, method_func in methods:
-        print(f"\nTrying {method_name}...")
-        try:
-            if method_func():
-                success = True
-                print(f"\n✓ SUCCESS: {method_name} worked!")
-                break
-            else:
-                print(f"✗ {method_name} failed or skipped, trying next method...")
-        except Exception as e:
-            print(f"✗ {method_name} encountered error: {e}")
-            continue
+    # Step 4: Create folder version as backup
+    if success:
+        create_folder_version()
     
     if success:
-        print("\n=== Build Complete ===")
-        print("Check the 'dist' folder for your executable.")
+        print("\n🎉 SUCCESS! Your real PartsScraperGUI has been built.")
+        print("\n📋 USAGE INSTRUCTIONS:")
+        print("1. Go to the 'dist' folder")
+        print("2. Run 'PartsScraperApp.exe'")
+        print("3. Your GUI should work with all its original features")
+        print("\n⚠️  IMPORTANT NOTES:")
+        print("- Make sure Tesseract OCR is installed on target machines")
+        print("- The app will look for Tesseract in common locations")
+        print("- If OCR doesn't work, users need to install Tesseract from:")
+        print("  https://github.com/UB-Mannheim/tesseract/wiki")
+        print("- Your CSV files should have an 'image_path' column as expected")
         
-        if os.path.exists("dist"):
-            print("\nFiles created:")
-            for item in os.listdir("dist"):
-                path = os.path.join("dist", item)
-                if os.path.isfile(path):
-                    size = os.path.getsize(path) / (1024*1024)
-                    print(f"- dist/{item} ({size:.1f} MB)")
-                else:
-                    print(f"- dist/{item}/ (folder)")
     else:
-        print("\n=== All PyInstaller methods failed ===")
-        print("\nTroubleshooting recommendations:")
-        print("1. Try the cx_Freeze method (setup_cx.py was created)")
-        print("2. Use a fresh virtual environment:")
-        print("   python -m venv fresh_env")
-        print("   fresh_env\\Scripts\\activate")
-        print("   pip install opencv-python pytesseract numpy pillow pyinstaller")
-        print("3. Consider using auto-py-to-exe GUI tool")
-        print("4. Check for conflicting packages in your environment")
+        print("\n❌ BUILD FAILED")
+        print("\n🔧 TROUBLESHOOTING:")
+        print("1. Check if wm_remover.py has any problematic imports")
+        print("2. Try with Python 3.9 instead of 3.10")
+        print("3. Make sure your GUI code doesn't import the removed packages")
+        print("4. Check the error messages above for specific issues")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,10 @@
+pyinstaller>=6.0
+opencv-python
+pytesseract
+numpy
+pandas
+scipy
+scikit-image
+matplotlib
+pillow
+requests

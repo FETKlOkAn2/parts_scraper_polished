@@ -1,137 +1,165 @@
 #!/usr/bin/env python3
 """
-Minimal Parts Scraper GUI - Emergency Build Version
+Ultra-minimal Parts Scraper GUI to avoid PyInstaller issues
 """
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-import cv2
-import numpy as np
-import pytesseract
-from pathlib import Path
-import threading
 import os
+import sys
 
-class MinimalPartsScraperApp:
+class MinimalPartsScraperGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Parts Scraper - Minimal Version")
+        self.root.title("Parts Scraper GUI - Minimal Build")
         self.root.geometry("600x400")
         
-        # Create simple UI
+        # Create basic interface
         self.create_widgets()
     
     def create_widgets(self):
-        # Main frame
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
-        # File selection
-        ttk.Label(main_frame, text="Select Image:").grid(row=0, column=0, sticky=tk.W)
-        
-        file_frame = ttk.Frame(main_frame)
-        file_frame.grid(row=1, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
-        
-        self.file_var = tk.StringVar()
-        self.file_entry = ttk.Entry(file_frame, textvariable=self.file_var, width=50)
-        self.file_entry.grid(row=0, column=0, sticky=(tk.W, tk.E))
-        
-        ttk.Button(file_frame, text="Browse", command=self.browse_file).grid(row=0, column=1, padx=(5, 0))
-        
-        # Process button
-        ttk.Button(main_frame, text="Remove Watermark", command=self.process_image).grid(row=2, column=0, pady=10)
+        """Create minimal GUI widgets"""
+        # Title
+        title_label = tk.Label(self.root, 
+                              text="Parts Scraper GUI", 
+                              font=("Arial", 16, "bold"))
+        title_label.pack(pady=20)
         
         # Status
-        self.status_var = tk.StringVar(value="Ready")
-        ttk.Label(main_frame, textvariable=self.status_var).grid(row=3, column=0, sticky=tk.W)
+        status_label = tk.Label(self.root, 
+                               text="Minimal build version - basic functionality only")
+        status_label.pack(pady=10)
         
-        # Configure grid weights
-        self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(0, weight=1)
-        main_frame.columnconfigure(0, weight=1)
-        file_frame.columnconfigure(0, weight=1)
+        # File selection
+        file_frame = tk.Frame(self.root)
+        file_frame.pack(pady=20)
+        
+        tk.Label(file_frame, text="Select image file:").pack(side=tk.LEFT)
+        
+        self.file_path_var = tk.StringVar()
+        file_entry = tk.Entry(file_frame, textvariable=self.file_path_var, width=40)
+        file_entry.pack(side=tk.LEFT, padx=5)
+        
+        browse_button = tk.Button(file_frame, text="Browse", command=self.browse_file)
+        browse_button.pack(side=tk.LEFT)
+        
+        # Process button
+        process_button = tk.Button(self.root, 
+                                 text="Process Image", 
+                                 command=self.process_image,
+                                 bg="lightblue")
+        process_button.pack(pady=20)
+        
+        # Results area
+        results_label = tk.Label(self.root, text="Results:")
+        results_label.pack(anchor=tk.W, padx=20)
+        
+        self.results_text = tk.Text(self.root, height=10, width=70)
+        self.results_text.pack(padx=20, pady=10)
+        
+        scrollbar = tk.Scrollbar(self.results_text)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.results_text.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=self.results_text.yview)
+        
+        # Status bar
+        self.status_var = tk.StringVar()
+        self.status_var.set("Ready")
+        status_bar = tk.Label(self.root, 
+                            textvariable=self.status_var, 
+                            relief=tk.SUNKEN, 
+                            anchor=tk.W)
+        status_bar.pack(side=tk.BOTTOM, fill=tk.X)
     
     def browse_file(self):
-        file_path = filedialog.askopenfilename(
-            title="Select Image",
-            filetypes=[("Image files", "*.jpg *.jpeg *.png *.bmp *.tiff")]
+        """Browse for image file"""
+        filename = filedialog.askopenfilename(
+            title="Select image file",
+            filetypes=[
+                ("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.tiff"),
+                ("All files", "*.*")
+            ]
         )
-        if file_path:
-            self.file_var.set(file_path)
-    
-    def simple_watermark_removal(self, image_path):
-        """Very basic watermark removal using OpenCV"""
-        # Load image
-        img = cv2.imread(image_path)
-        if img is None:
-            raise ValueError("Could not load image")
-        
-        # Convert to grayscale for text detection
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        
-        # Simple text detection using Tesseract
-        try:
-            data = pytesseract.image_to_data(gray, output_type=pytesseract.Output.DICT)
-            
-            # Create mask for detected text
-            mask = np.zeros(gray.shape, dtype=np.uint8)
-            
-            for i, text in enumerate(data["text"]):
-                if text.strip() != "" and len(text.strip()) > 2:
-                    confidence = int(data["conf"][i]) if data["conf"][i] != '-1' else 0
-                    if confidence > 30:
-                        x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
-                        cv2.rectangle(mask, (x-2, y-2), (x+w+2, y+h+2), 255, -1)
-            
-            # Inpaint to remove text
-            if mask.any():
-                result = cv2.inpaint(img, mask, 3, cv2.INPAINT_TELEA)
-            else:
-                result = img.copy()
-                
-            return result
-            
-        except Exception as e:
-            print(f"Tesseract error: {e}")
-            # Fallback: simple blur on bright regions
-            _, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
-            kernel = np.ones((5,5), np.uint8)
-            mask = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-            result = cv2.inpaint(img, mask, 3, cv2.INPAINT_TELEA)
-            return result
+        if filename:
+            self.file_path_var.set(filename)
     
     def process_image(self):
-        file_path = self.file_var.get()
-        if not file_path or not os.path.exists(file_path):
-            messagebox.showerror("Error", "Please select a valid image file")
+        """Process the selected image"""
+        file_path = self.file_path_var.get()
+        
+        if not file_path:
+            messagebox.showerror("Error", "Please select an image file first")
             return
         
-        def process_thread():
-            try:
-                self.status_var.set("Processing...")
-                self.root.update()
-                
-                # Process image
-                result = self.simple_watermark_removal(file_path)
-                
-                # Save result
-                path = Path(file_path)
-                output_path = path.parent / f"{path.stem}_cleaned{path.suffix}"
-                cv2.imwrite(str(output_path), result)
-                
-                self.status_var.set(f"Saved: {output_path}")
-                messagebox.showinfo("Success", f"Cleaned image saved as:\n{output_path}")
-                
-            except Exception as e:
-                self.status_var.set("Error occurred")
-                messagebox.showerror("Error", f"Processing failed:\n{str(e)}")
+        if not os.path.exists(file_path):
+            messagebox.showerror("Error", "Selected file does not exist")
+            return
         
-        # Run in thread to prevent GUI freezing
-        threading.Thread(target=process_thread, daemon=True).start()
+        self.status_var.set("Processing...")
+        self.root.update()
+        
+        try:
+            # Basic file info
+            file_size = os.path.getsize(file_path)
+            file_name = os.path.basename(file_path)
+            
+            results = f"File: {file_name}\n"
+            results += f"Size: {file_size:,} bytes\n"
+            results += f"Path: {file_path}\n\n"
+            
+            # Try basic image processing if opencv is available
+            try:
+                import cv2
+                import numpy as np
+                
+                img = cv2.imread(file_path)
+                if img is not None:
+                    height, width = img.shape[:2]
+                    results += f"Image dimensions: {width} x {height}\n"
+                    results += f"Channels: {img.shape[2] if len(img.shape) == 3 else 1}\n"
+                    
+                    # Try OCR if pytesseract is available
+                    try:
+                        import pytesseract
+                        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                        text = pytesseract.image_to_string(gray)
+                        
+                        if text.strip():
+                            results += f"\nExtracted text:\n{text}\n"
+                        else:
+                            results += "\nNo text detected in image\n"
+                            
+                    except Exception as ocr_e:
+                        results += f"\nOCR Error: {ocr_e}\n"
+                        results += "Make sure Tesseract OCR is installed\n"
+                
+                else:
+                    results += "Could not load image\n"
+                    
+            except Exception as cv_e:
+                results += f"Image processing error: {cv_e}\n"
+            
+            # Display results
+            self.results_text.delete(1.0, tk.END)
+            self.results_text.insert(tk.END, results)
+            self.status_var.set("Processing complete")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Processing failed: {e}")
+            self.status_var.set("Error occurred")
 
 def main():
+    """Main function"""
     root = tk.Tk()
-    app = MinimalPartsScraperApp(root)
-    root.mainloop()
+    app = MinimalPartsScraperGUI(root)
+    
+    try:
+        root.mainloop()
+    except KeyboardInterrupt:
+        print("\nApplication interrupted by user")
+    except Exception as e:
+        print(f"Application error: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
     main()

@@ -3,3 +3,4 @@ venv
 __pycache__
 testbed.py
 data
+fresh_env
