@@ -13,7 +13,7 @@ class Start:
         # function gets images and saves them to s3 buckets
         self.parse.run_driver(
             function=self.parse.duck_image_search,
-            iterations=2)# can do len(self.df) for the entire database
+            iterations=5)# can do len(self.df) for the entire database
         
         #downloads from s3, processes images, saves to final s3 bucket
         self.db.retrieve_from_s3("partsbucket0000","images", run_img_proc=True)

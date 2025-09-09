@@ -91,7 +91,14 @@ class Database:
         s3_file_name = f"{folder_name}/{local_file_path}"
         local_file_path = f"images/images/{local_file_path}"
         try:
-            self.s3.upload_file(local_file_path, bucket_name, s3_file_name)
+            self.s3.upload_file(local_file_path, bucket_name, s3_file_name, ExtraArgs = {'ContentType': "image/png"})
+
+            # self.s3.put_object(
+            #     Bucket=bucket_name,
+            #     Key=s3_file_name,
+            #     Body=local_file_path,
+            #     ContentType='image/png'
+            # )
             print(f"uploaded {local_file_path}")
             
             if delete_after:

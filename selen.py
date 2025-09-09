@@ -11,6 +11,7 @@ import time
 import boto3
 import io
 import os
+import gc
 import re
 import sys
 import requests
@@ -31,7 +32,7 @@ class Parser:
         self.check_ip_url = 'https://checkip.amazonaws.com'
 
         #self.search_list = ['TORQUE ROD BUSHING ATRTS38000','ROTELLA T5 10W30 CK4 550045130'] # must have + for spaces
-        self.df = self.db.read_sql_query("SELECT number, description FROM parts")
+        self.df = self.db.read_sql_query("SELECT number, description FROM parts WHERE final_tag IS NULL")
         self.driver = None
 
         self.links = []
@@ -54,6 +55,7 @@ class Parser:
 
             self.links = []
             self.tor.terminate()
+        time.sleep(1)
 
 
     def initiate_driver(self):
@@ -130,7 +132,11 @@ class Parser:
         finally:
             with suppress(Exception):
                 self.driver.quit()
+                self.driver.service.stop()
+                del self.driver
                 self.driver = None  # ensures UC doesn't try during teardown
+                gc.collet()
+
 
     def download_images(self, iterator, keep_bytes=True):
         """ Downloads from requests resizes to 600x600 and saves them to s3 buckets"""
