@@ -63,6 +63,44 @@ class AdvancedWatermarkRemover:
         has_enough_percentage = percentage >= min_percentage
         
         return has_enough_pixels and has_enough_percentage
+    
+    def detect_watermark_mask_only(self, image_path):
+        """
+        Detect watermarks and return only the mask without doing expensive inpainting.
+        This is used to check if watermark removal is needed before doing the full process.
+        """
+        if isinstance(image_path, str):
+            img = cv2.imread(image_path)
+            if img is None:
+                raise ValueError(f"Could not load image from {image_path}")
+        else:
+            img = image_path
+        
+        # Create combined mask from all detection methods (same as remove_watermark)
+        text_mask_tesseract = self.detect_text_regions_tesseract(img)
+        text_mask_easyocr = self.detect_text_regions_easyocr(img)
+        pattern_mask = self.detect_watermark_patterns(img)
+        corner_mask = self.detect_corner_watermarks(img)
+        
+        # Combine all masks based on parameters
+        masks_to_combine = [text_mask_tesseract, text_mask_easyocr]
+        
+        if self.enable_pattern_detection:
+            masks_to_combine.append(pattern_mask)
+            
+        masks_to_combine.append(corner_mask)
+        
+        combined_mask = np.maximum.reduce(masks_to_combine)
+        
+        # Morphological operations based on parameters
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, 
+                                        (self.morph_kernel_size, self.morph_kernel_size))
+        combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_CLOSE, kernel)
+        
+        if self.enable_dilation:
+            combined_mask = cv2.dilate(combined_mask, kernel, iterations=self.dilation_iterations)
+        
+        return combined_mask
 
     def save_watermark_images(self, output_folder):
         """Save detected watermark images to the specified folder."""

@@ -189,52 +189,47 @@ class Database:
                         for fn in grouped_strings:
                             path = f"images/images/{fn}"
                             
-                            # CORRECTED: Process image properly for hashing
                             img_original = img_proc.load_and_resize_cv(path)
-                            
-                            # Convert to proper format for hash function
                             gray_uint8 = img_proc.to_gray2d_uint8(img_original)
                             gray_float = img_proc.to_grayscale(gray_uint8.astype(np.float32) / 255.0)
                             small = img_proc.resize_image(gray_float, shape=(16, 16))
                             oriented, desc, _ = img_proc.orient_top_left(small)
                             
-                            # Now compute hash properly
                             original_int = img_proc.compute_hash(oriented)
                             hex_len = (8 * 8 + 3) // 4
                             hex_str_original = f"0x{original_int:0{hex_len}X}"
                             print(hex_str_original)
 
-                            # Run watermark removal
-                            wm_removed_img = remover.remove_watermark(
-                                image_path=path,
-                                output_path=f'images/cleaned/{fn}',
-                                mask_path=f'images/mask/{fn}')
-
-                            try:
-                                mask = cv2.imread(f'images/mask/{fn}', cv2.IMREAD_GRAYSCALE)
-                                has_watermark = remover.has_meaningful_watermark(mask)
+                            # FIRST: Check if watermark exists without expensive processing
+                            print(f"Checking for watermarks in {fn}...")
+                            mask = remover.detect_watermark_mask_only(path)
+                            has_watermark = remover.has_meaningful_watermark(mask)
+                            
+                            if has_watermark:
+                                print(f"WATERMARK DETECTED in {fn}")
+                                # Only NOW do the expensive watermark removal
+                                wm_removed_img = remover.remove_watermark(
+                                    image_path=path,
+                                    output_path=f'images/cleaned/{fn}',
+                                    mask_path=f'images/mask/{fn}')
                                 
-                                if has_watermark:
-                                    # Process cleaned image the same way
-                                    cleaned_gray_uint8 = img_proc.to_gray2d_uint8(wm_removed_img)
-                                    cleaned_gray_float = img_proc.to_grayscale(cleaned_gray_uint8.astype(np.float32) / 255.0)
-                                    cleaned_small = img_proc.resize_image(cleaned_gray_float, shape=(16, 16))
-                                    cleaned_oriented, _, _ = img_proc.orient_top_left(cleaned_small)
-                                    wm_int = img_proc.compute_hash(cleaned_oriented)
-                                    print(f"WATERMARK DETECTED in {fn}")
-                                else:
-                                    # No meaningful watermark - use original hash
-                                    wm_int = original_int
-                                    print(f"NO WATERMARK in {fn}")
-                                    
-                            except Exception as e:
-                                print(f"Error checking mask for {fn}: {e}")
+                                cleaned_gray_uint8 = img_proc.to_gray2d_uint8(wm_removed_img)
+                                cleaned_gray_float = img_proc.to_grayscale(cleaned_gray_uint8.astype(np.float32) / 255.0)
+                                cleaned_small = img_proc.resize_image(cleaned_gray_float, shape=(16, 16))
+                                cleaned_oriented, _, _ = img_proc.orient_top_left(cleaned_small)
+                                wm_int = img_proc.compute_hash(cleaned_oriented)
+                                
+                            else:
+                                print(f"NO WATERMARK in {fn}")
                                 wm_int = original_int
+                                cv2.imwrite(f'images/mask/{fn}', mask)
+                                # Copy original to cleaned folder for consistency
+                                import shutil
+                                shutil.copy2(path, f'images/cleaned/{fn}')
                             
                             hex_str_wm = f"0x{wm_int:0{hex_len}X}"
                             print(hex_str_wm)
-                            
-                            # Store comparison result
+
                             entries.append((fn, original_int, wm_int, has_watermark))
 
                     if run_img_proc:
