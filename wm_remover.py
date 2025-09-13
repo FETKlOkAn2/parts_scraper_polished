@@ -38,6 +38,32 @@ class AdvancedWatermarkRemover:
     
         self.watermark_images = []  # List to store detected watermark images
 
+    def has_meaningful_watermark(self, mask, min_pixels=100, min_percentage=0.01):
+        """
+        Check if a mask contains enough content to be considered a meaningful watermark.
+        
+        Args:
+            mask: Binary mask (numpy array)
+            min_pixels: Minimum number of white pixels
+            min_percentage: Minimum percentage of image that should be masked
+        
+        Returns:
+            bool: True if mask contains meaningful watermark content
+        """
+        if mask is None:
+            return False
+        
+        # Count white pixels (watermark regions)
+        white_pixels = np.sum(mask > 0)
+        total_pixels = mask.shape[0] * mask.shape[1]
+        percentage = white_pixels / total_pixels
+        
+        # Check both absolute and relative thresholds
+        has_enough_pixels = white_pixels >= min_pixels
+        has_enough_percentage = percentage >= min_percentage
+        
+        return has_enough_pixels and has_enough_percentage
+
     def save_watermark_images(self, output_folder):
         """Save detected watermark images to the specified folder."""
         for i, img in enumerate(self.watermark_images):
@@ -323,12 +349,12 @@ def main():
     # remover.dilation_iterations = 0        # No mask expansion
     
     # BALANCED settings (current defaults):
-    remover.tesseract_confidence = 45
-    remover.easyocr_confidence = 0.4
-    remover.text_padding = 2
-    remover.enable_pattern_detection = True
-    remover.corner_edge_threshold = 20
-    remover.dilation_iterations = 1
+    remover.tesseract_confidence = 60
+    remover.easyocr_confidence = 0.7
+    remover.text_padding = 1
+    remover.enable_pattern_detection = False
+    remover.corner_edge_threshold = 30
+    remover.dilation_iterations = 0
     
     # Process image
     try:
