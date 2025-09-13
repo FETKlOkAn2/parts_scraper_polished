@@ -210,11 +210,14 @@ class AdvancedWatermarkRemover:
     
     def remove_watermark(self, image_path, output_path, mask_path=None, debug=False):
         """Main function to remove watermarks and text"""
-        print(f"Processing image: {image_path}")
-        
-        img = cv2.imread(image_path)
-        if img is None:
-            raise ValueError(f"Could not load image from {image_path}")
+        if isinstance(image_path, str):
+            print(f"Processing image: {image_path}")
+            
+            img = cv2.imread(image_path)
+            if img is None:
+                raise ValueError(f"Could not load image from {image_path}")
+        else:
+            img = image_path
         
         # Create combined mask from all detection methods
         print("Detecting text with Tesseract...")
@@ -299,7 +302,8 @@ class AdvancedWatermarkRemover:
 def main():
     # Initialize remover
     remover = AdvancedWatermarkRemover()
-    pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
+    #pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
+    pytesseract.pytesseract.tesseract_cmd = "Tesseract-OCR/tesseract.exe"
     # EASY TUNING - Adjust these based on your needs:
     
     # For STRONGER detection (catches more watermarks but might be aggressive):
@@ -334,6 +338,7 @@ def main():
             mask_path='detection_mask.jpg',
             debug=True
         )
+
         print("Processing completed successfully!")
         print(f"Settings used:")
         print(f"  - Tesseract confidence: {remover.tesseract_confidence}")

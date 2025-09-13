@@ -1,13 +1,17 @@
 import os, shutil, stat
 import boto3
 import re
+import numpy as np
 from botocore.exceptions import NoCredentialsError
 from sqlalchemy import create_engine, text
 import pandas as pd
 from threading import Lock
 from typing import Dict, Iterable, List, Iterator, Tuple
 from image_processing import Img_Proc
-
+from wm_remover import AdvancedWatermarkRemover
+import pytesseract
+import cv2
+import matplotlib.pyplot as plt
 
 class Database:
     def __init__(self):
@@ -152,7 +156,7 @@ class Database:
             Delete= deletion_request
         )
 
-    def retrieve_from_s3(self, bucket:str, prefix:str='', run_img_proc=False) -> Iterator[str]:
+    def retrieve_from_s3(self, bucket:str, prefix:str='', run_img_proc=False, run_water_remove=False) -> Iterator[str]:
         """will have to test after we have 1000 plus and iterates over new page"""
 
         paginator = self.s3.get_paginator("list_objects_v2")
@@ -173,9 +177,50 @@ class Database:
                     print('\n\t--New Group--')
                     self.download_group(bucket, grouped_strings)
 
+
+                    img_proc = Img_Proc()
+
+                    if run_water_remove:
+                        remover = AdvancedWatermarkRemover("Tesseract-OCR/tesseract.exe")
+                        #pytesseract.pytesseract.tesseract_cmd = 
+
+                        entries = []  # (name, hash_int)
+                        tracker = 0
+                        for fn in grouped_strings:
+                            path =  f"images/images/{fn}"
+                            #try:
+                            img_original = img_proc.load_and_resize_cv(path)
+                            plt.imshow(img_original)
+                            plt.show()
+
+                            original_int = img_proc.compute_hash(img_original)
+                            hex_len = (8 * 8 +3) //4
+                            hex_str_original = f"0x{original_int:0{hex_len}X}"
+
+                            print(hex_str_original)
+
+                            wm_removed_img = remover.remove_watermark(
+                                image_path=path,
+                                output_path=f'images/cleaned/{fn}',
+                                mask_path=f'images/mask/{fn}')
+                            plt.imshow(wm_removed_img)
+                            plt.show()
+                            
+            
+
+                            wm_int = img_proc.compute_hash(wm_removed_img)
+                            hex_str_wm = f"0x{wm_int:0{hex_len}X}"
+
+                            print(hex_str_wm)
+
+
+                        # except Exception as e:
+                        #     print(f" [skip] {fn}: {e}")
+                    
+
+
                     if run_img_proc:
                         #hash and compare group - image_processing
-                        img_proc = Img_Proc()
                         keep = img_proc.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
                                 distance_thresh=10, testing=True)
                         if not keep:
@@ -196,5 +241,5 @@ class Database:
 
 if __name__ == "__main__":
     db = Database()
-    db.retrieve_from_s3("partsbucket0000","images", True)
-    db.send_delete_request()
+    #db.retrieve_from_s3("partsbucket0000","images", False, True)
+    #db.send_delete_request()

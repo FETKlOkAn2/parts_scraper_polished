@@ -11,15 +11,15 @@ class Start:
     def start_program(self):
         
         # function gets images and saves them to s3 buckets
-        self.parse.run_driver(
-            function=self.parse.duck_image_search,
-            iterations=5)# can do len(self.df) for the entire database
+        # self.parse.run_driver(
+        #     function=self.parse.duck_image_search,
+        #     iterations=5)# can do len(self.df) for the entire database
         
         #downloads from s3, processes images, saves to final s3 bucket
-        self.db.retrieve_from_s3("partsbucket0000","images", run_img_proc=True)
+        self.db.retrieve_from_s3("partsbucket0000","images", run_img_proc=False, run_water_remove=True)
 
         # deletes all the unused images
-        self.db.send_delete_request()
+        #self.db.send_delete_request()
         
 
 if __name__ == "__main__":

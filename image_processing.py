@@ -4,11 +4,14 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 import numpy as np
 import boto3
+import cv2
 from skimage.io import imread
 from skimage.transform import resize
 from skimage.metrics import structural_similarity as ssim
 from skimage import img_as_float
 from skimage.color import rgb2gray
+from pathlib import Path
+
 
 class Img_Proc:
     def __init__(self, testing=False):
@@ -58,6 +61,38 @@ class Img_Proc:
 
         # resize to fixed dimensions
         img = resize(img, size, anti_aliasing=True)
+
+        return img
+
+    def load_and_resize_cv(self, path, where='(unknown)', size=(600,600)):
+        """
+        Load an image from `path` with OpenCV, resize to `size` (w,h),
+        return float32 in [0,1]. Handles gray/RGB/RGBA.
+        """
+        p = Path(path)
+        if not p.exists():
+            raise FileNotFoundError(f"{where}: file not found -> {p}")
+
+        # Read image (preserves alpha if present)
+        img = cv2.imread(str(p), cv2.IMREAD_UNCHANGED)
+        if img is None:
+            raise IOError(f"{where}: could not read {p}")
+
+        # Drop alpha channel if present
+        if img.ndim == 3 and img.shape[2] == 4:
+            img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+
+        # Accept 2-D (grayscale) or 3-D (color) only
+        if img.ndim not in (2, 3):
+            raise ValueError(f"{where}: expected 2-D or 3-D, got {img.shape}")
+
+        # Resize to fixed dimensions (OpenCV expects size=(w,h))
+        img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
+
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # # Convert to float32 [0,1] (matches img_as_float behaviour)
+        # img = img.astype(np.float32) / 255.0
 
         return img
 
