@@ -114,6 +114,50 @@ class Img_Proc:
         return img
 
 
+
+
+
+
+    def to_gray2d_uint8(self, img):
+        """Return a 2D grayscale uint8 image from BGR/BGRA/GRAY or float."""
+        if img is None:
+            raise ValueError("to_gray2d_uint8: got None")
+        arr = img
+
+        # dtype → uint8
+        if np.issubdtype(arr.dtype, np.floating):
+            arr = (np.clip(arr, 0, 1) * 255.0).round().astype(np.uint8) if arr.max() <= 1.0 else np.clip(arr, 0, 255).astype(np.uint8)
+        elif arr.dtype != np.uint8:
+            if np.issubdtype(arr.dtype, np.integer):
+                arr = (arr.astype(np.float32) * (255.0 / np.iinfo(arr.dtype).max)).round().astype(np.uint8)
+            else:
+                arr = arr.astype(np.uint8)
+
+        # channels → 1
+        if arr.ndim == 2:
+            gray = arr
+        elif arr.ndim == 3:
+            c = arr.shape[2]
+            if c == 3:
+                gray = cv2.cvtColor(arr, cv2.COLOR_BGR2GRAY)
+            elif c == 4:
+                gray = cv2.cvtColor(arr, cv2.COLOR_BGRA2GRAY)
+            else:
+                # collapse odd channel counts
+                gray = np.mean(arr, axis=2).round().astype(np.uint8)
+        else:
+            arr = np.squeeze(arr)
+            gray = arr if arr.ndim == 2 else arr[..., 0].astype(np.uint8)
+
+        return gray
+
+
+
+
+
+
+
+
     def resize_image(self, img, shape=(16, 16)):
         out = resize(img, shape, anti_aliasing=True)
         return np.ascontiguousarray(out, dtype=np.float32)

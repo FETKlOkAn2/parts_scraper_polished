@@ -190,8 +190,11 @@ class Database:
                             path =  f"images/images/{fn}"
                             #try:
                             img_original = img_proc.load_and_resize_cv(path)
-                            plt.imshow(img_original)
-                            plt.show()
+                            
+
+
+                            img_original = img_proc.to_gray2d_uint8(img_original)#######################################
+
 
                             original_int = img_proc.compute_hash(img_original)
                             hex_len = (8 * 8 +3) //4
@@ -203,10 +206,11 @@ class Database:
                                 image_path=path,
                                 output_path=f'images/cleaned/{fn}',
                                 mask_path=f'images/mask/{fn}')
-                            plt.imshow(wm_removed_img)
-                            plt.show()
+
                             
             
+                            wm_removed_img = img_proc.to_gray2d_uint8(wm_removed_img)
+
 
                             wm_int = img_proc.compute_hash(wm_removed_img)
                             hex_str_wm = f"0x{wm_int:0{hex_len}X}"
