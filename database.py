@@ -174,7 +174,7 @@ class Database:
                 elif previous_control is None:
                     previous_control = control_number
                 elif control_number < previous_control:
-                    print('\n\t--New Group--')
+                    print('\n\n\t--New Group--')
                     self.download_group(bucket, grouped_strings)
 
 
@@ -198,10 +198,10 @@ class Database:
                             original_int = img_proc.compute_hash(oriented)
                             hex_len = (8 * 8 + 3) // 4
                             hex_str_original = f"0x{original_int:0{hex_len}X}"
-                            print(hex_str_original)
+                
 
                             # FIRST: Check if watermark exists without expensive processing
-                            print(f"Checking for watermarks in {fn}...")
+                            print(f"\nChecking for watermarks in {fn}...")
                             mask = remover.detect_watermark_mask_only(path)
                             has_watermark = remover.has_meaningful_watermark(mask)
                             
@@ -228,7 +228,9 @@ class Database:
                                 shutil.copy2(path, f'images/cleaned/{fn}')
                             
                             hex_str_wm = f"0x{wm_int:0{hex_len}X}"
-                            print(hex_str_wm)
+
+                            print(f"Original: {hex_str_original}")
+                            print(f"WM Removed: {hex_str_wm}")
 
                             entries.append((fn, original_int, wm_int, has_watermark))
 

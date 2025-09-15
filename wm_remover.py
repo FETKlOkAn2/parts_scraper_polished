@@ -21,15 +21,15 @@ class AdvancedWatermarkRemover:
         
         # Pattern detection parameters
         self.enable_pattern_detection = True    # Enable/disable pattern detection
-        self.pattern_threshold = 25             # Threshold for pattern detection
-        self.min_pattern_area = 300             # Minimum area for patterns
+        self.pattern_threshold = 30             # Threshold for pattern detection
+        self.min_pattern_area = 3000             # Minimum area for patterns
         self.max_pattern_area = 15000           # Maximum area for patterns
         self.text_aspect_ratio_min = 1.2       # Min width/height ratio for text
         self.text_aspect_ratio_max = 10.0      # Max width/height ratio for text
         
         # Corner detection parameters
-        self.corner_size_ratio = 0.20           # Corner size as % of image
-        self.corner_edge_threshold = 20         # Edge density threshold for corners
+        self.corner_size_ratio = 0.15          # Corner size as % of image
+        self.corner_edge_threshold = 25        # Edge density threshold for corners
         
         # Morphological operations
         self.morph_kernel_size = 3              # Kernel size for cleanup
@@ -284,16 +284,16 @@ class AdvancedWatermarkRemover:
             img = image_path
         
         # Create combined mask from all detection methods
-        print("Detecting text with Tesseract...")
+        #print("Detecting text with Tesseract...")
         text_mask_tesseract = self.detect_text_regions_tesseract(img)
         
-        print("Detecting text with EasyOCR...")
+        #print("Detecting text with EasyOCR...")
         text_mask_easyocr = self.detect_text_regions_easyocr(img)
         
-        print("Detecting watermark patterns...")
+        #print("Detecting watermark patterns...")
         pattern_mask = self.detect_watermark_patterns(img)
         
-        print("Detecting corner watermarks...")
+        #print("Detecting corner watermarks...")
         corner_mask = self.detect_corner_watermarks(img)
         
         # Combine all masks based on parameters
@@ -316,10 +316,10 @@ class AdvancedWatermarkRemover:
         
         if debug:
             cv2.imwrite(image_path.replace('.', '_debug_mask.'), combined_mask)
-            print(f"Debug mask saved")
+            #print(f"Debug mask saved")
         
         # Inpainting with multiple methods for better results
-        print("Performing inpainting...")
+        #print("Performing inpainting...")
         
         # Method 1: TELEA
         cleaned_telea = cv2.inpaint(img, combined_mask, 7, cv2.INPAINT_TELEA)
