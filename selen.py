@@ -21,7 +21,7 @@ from contextlib import suppress
 load_dotenv()
 
 class Parser:
-    def __init__(self):
+    def __init__(self, dataframe=None):
         
         self.db = Database()
         self.s3 = boto3.client("s3")
@@ -32,7 +32,10 @@ class Parser:
         self.check_ip_url = 'https://checkip.amazonaws.com'
 
         #self.search_list = ['TORQUE ROD BUSHING ATRTS38000','ROTELLA T5 10W30 CK4 550045130'] # must have + for spaces
-        self.df = self.db.read_sql_query("SELECT number, description FROM parts WHERE final_tag IS NULL")
+        if not dataframe:
+            self.df = self.db.read_sql_query("SELECT number, description FROM parts WHERE final_tag IS NULL")
+        else:
+            self.db.execute_sql()
         self.driver = None
 
         self.links = []

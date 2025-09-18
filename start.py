@@ -16,7 +16,7 @@ class Start:
         #     iterations=5)# can do len(self.df) for the entire database
         
         #downloads from s3, processes images, saves to final s3 bucket
-        self.db.retrieve_from_s3("partsbucket0000","images", run_img_proc=False, run_water_remove=True)
+        self.db.retrieve_from_s3("partsbucket0000","images", run_img_proc=True, run_water_remove=False)
 
         # deletes all the unused images
         #self.db.send_delete_request()
