@@ -6,6 +6,7 @@ Tests with only a small number of images first
 from batch_watermark_detector import BatchWatermarkDetector
 import json, os
 from dotenv import load_dotenv
+from database import Database
 
 load_dotenv()
 
@@ -21,8 +22,8 @@ def test_small_batch(num_images=5):
     detector = BatchWatermarkDetector(openai_api_key=open_api_key)
     
     # Step 1: Get all URLs but don't process yet
-    print("\n[Step 1] Fetching image list from S3...")
-    all_urls = detector.get_s3_image_urls("partsbucket0000", "images/")
+    print("\n[Step 1] Fetching image list from Database...")
+    all_urls = detector.get_urls_from_db()
     print(f"Found {len(all_urls)} total images in bucket")
     
     # Step 2: Limit to test size
@@ -64,17 +65,31 @@ def test_small_batch(num_images=5):
     batch = detector.poll_batch_completion(batch_id)
     
     # Step 6: Download and parse results
-    if batch.status == "completed" and batch.output_file_id:
+    if batch.status == "completed":
         print("\n[Step 6] Downloading results...")
+
+        # Re-retrieve to ensure we have latest fields
+        batch = detector.client.batches.retrieve(batch_id)
+
+        if not getattr(batch, "output_file_id", None):
+            print("Batch completed but no output_file_id present.")
+            if getattr(batch, "error_file_id", None):
+                print(f"Errors were generated. Downloading error file: {batch.error_file_id}")
+                err_path = "test_batch_errors.jsonl"
+                detector.download_results(batch.error_file_id, err_path)
+                print(f"Saved errors to {err_path}")
+            raise RuntimeError("No output_file_id on completed batch—check error file and individual request statuses.")
+
         output_path = "test_batch_output.jsonl"
         detector.download_results(batch.output_file_id, output_path)
-        
+        print(f"Saved results to {output_path}")
+
         print("[Step 7] Parsing results...")
         results = detector.parse_results(output_path)
-        
-        # Save results
+
         with open("test_results.json", "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2)
+        print("Parsed results written to test_results.json")
         
         # Display summary
         print("\n" + "="*60)

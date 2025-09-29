@@ -126,6 +126,7 @@ class Parser:
                 try:
                     WebDriverWait(self.driver, 10).until(
                         EC.presence_of_element_located((By.CSS_SELECTOR, 'a.ACez7bVvgYxZ9w0qR8ne'))
+
                     )
                     file = self.driver.find_element(By.CSS_SELECTOR, 'a.ACez7bVvgYxZ9w0qR8ne')
 
@@ -208,19 +209,19 @@ class Parser:
                             ContentType='image/png'
                         )
                         print(f'uploaded to s3://partsbucket0000/{s3_key}')
-                        url_value = f"https://partsbucket0000.s3.us-east-1.amazonaws.com/{s3_key}"
-                        tag_values.append(url_value)
-                        part_ids.append(part_id)
-
-
-                        
+   
+    
                 except Exception as e:
                     print('ERROR', e)
 
+                else:
+                    url_value = f"https://partsbucket0000.s3.us-east-1.amazonaws.com/{s3_key}"
+                    tag_values.append(url_value)
+                    part_ids.append(part_id)
+
         except Exception as e:
             print("Request failed", e)
-
-
+            
         df = pd.DataFrame({
             "part_id": part_ids,
             "tag_value": tag_values

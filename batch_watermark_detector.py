@@ -8,6 +8,8 @@ import boto3
 from typing import Dict, List
 import pandas as pd
 from database import Database 
+import sys
+
 class BatchWatermarkDetector:
     def __init__(self, openai_api_key=None):
         self.client = OpenAI(api_key=openai_api_key)
@@ -15,24 +17,11 @@ class BatchWatermarkDetector:
         self.poll_interval = 30
         self.backoff_max = 300
         self.chunk_size = 10000  # OpenAI batch limit
-        
-    def get_s3_image_urls(self, bucket: str, prefix: str = 'images/') -> List[str]:
-        """Get all image URLs from S3 bucket"""
-        urls = []
-        paginator = self.s3.get_paginator("list_objects_v2")
-        
-        for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
-            for obj in page.get("Contents", []):
-                key = obj['Key']
-                # Create presigned URL that's valid for 7 days
-                url = self.s3.generate_presigned_url(
-                    'get_object',
-                    Params={'Bucket': bucket, 'Key': key},
-                    ExpiresIn=604800  # 7 days
-                )
-                urls.append(url)
-        
-        return urls
+        self.db = Database()
+
+    def get_urls_from_db(self):
+        return list(self.db.read_sql_query("SELECT tag_value FROM part_tags;")['tag_value'])
+
     
     def basename_from_url(self, url: str) -> str:
         """Extract filename from S3 URL"""
@@ -80,7 +69,7 @@ class BatchWatermarkDetector:
                                     "watermark_type": {"type": "string", "enum": ["logo", "text", "pattern", "overlay", "none"]},
                                     "description": {"type": "string"}
                                 },
-                                "required": ["has_watermark", "confidence", "watermark_type"],
+                                "required": ["has_watermark", "confidence", "watermark_type", "description"],
                                 "additionalProperties": False
                             }
                         }
@@ -131,10 +120,20 @@ class BatchWatermarkDetector:
             backoff = min(int(backoff * 1.5), self.backoff_max)
     
     def download_results(self, output_file_id: str, output_path: str):
-        """Download batch results"""
-        content = self.client.files.content(output_file_id).text
+        """Download batch results file_id -> write JSONL to disk"""
+        resp = self.client.files.content(output_file_id)
+        # SDK returns a response-like object; some versions expose .text, others .content/read()
+        data = getattr(resp, "text", None)
+        if data is None:
+            # fall back to bytes
+            data = getattr(resp, "content", None)
+        if data is None and hasattr(resp, "read"):
+            data = resp.read()
+        # ensure str
+        if isinstance(data, bytes):
+            data = data.decode("utf-8")
         with open(output_path, "w", encoding="utf-8") as f:
-            f.write(content)
+            f.write(data)
     
     def parse_results(self, jsonl_path: str) -> Dict[str, dict]:
         """Parse batch results into dictionary"""
