@@ -12,7 +12,9 @@ from wm_remover import AdvancedWatermarkRemover
 import pytesseract
 import cv2
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
 
+load_dotenv()
 class Database:
     def __init__(self):
         self.user = os.getenv("DB_USER")

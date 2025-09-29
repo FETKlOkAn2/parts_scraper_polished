@@ -7,10 +7,10 @@ from openai import OpenAI
 import boto3
 from typing import Dict, List
 import pandas as pd
-
+from database import Database 
 class BatchWatermarkDetector:
     def __init__(self, openai_api_key=None):
-        self.client = OpenAI(api_key=openai_api_key) if openai_api_key else OpenAI()
+        self.client = OpenAI(api_key=openai_api_key)
         self.s3 = boto3.client("s3")
         self.poll_interval = 30
         self.backoff_max = 300
@@ -198,9 +198,9 @@ class BatchWatermarkDetector:
             print(f"Waiting for batch {batch_name} to complete...")
             batch = self.poll_batch_completion(batch_id)
             
-            if batch.status == "completed":
+            if batch.status == "completed" and batch.output_file_id:
                 output_path = f"batch_{batch_name}_output.jsonl"
-                self.download_results(batch.output_file_id, output_path)
+                self.download_results(batch.output_file_id, output_path) 
                 batch_results = self.parse_results(output_path)
                 all_results.update(batch_results)
                 print(f"Batch {batch_name} completed: {len(batch_results)} results")
@@ -242,11 +242,11 @@ class BatchWatermarkDetector:
 
 
 # Enhanced Database class additions
-class EnhancedDatabase:
+class EnhancedDatabase(Database):
     """Add these methods to your existing Database class"""
     
     def __init__(self):
-        # ... existing __init__ code ...
+        super().__init__()
         self.watermark_detector = BatchWatermarkDetector()
     
     def detect_watermarks_ai(self, bucket: str, prefix: str = 'images/') -> Dict[str, dict]:
