@@ -16,7 +16,7 @@ from pathlib import Path
 class Img_Proc:
     def __init__(self, testing=False):
         self.testing = testing
-        self.folder = "images/images"
+        self.folder = "images"
         #self.s3 = boto3.client('S3')
 
         #self.group_images()
@@ -332,45 +332,7 @@ class Img_Proc:
                                         distance_thresh=distance_thresh, testing=self.testing)
 
 
-    # ---------- ssim  ----------
-    # def perform_ssim(self, testing=False):
-    #     for group_name, files in self.grouped.items():
-    #         if len(files) < 2:
-    #             continue
-    #         print(f"\n=== Comparing group: {group_name} ===")
-
-    #         imgs = []
-    #         for fn in files:
-    #             path = os.path.join(self.folder, fn)
-    #             try:
-    #                 gray = self.load_and_grayscale(path, where=fn)
-    #                 small = self.resize_image(gray, shape=(16, 16))
-    #                 oriented, desc, score = self.orient_top_left(small, weights_kind="gaussian")
-
-    #                 if testing:
-    #                     # Show 16x16 before vs oriented 16x16
-    #                     self.show_images_side_by_side(
-    #                         small, oriented,
-    #                         title1=f"{fn} (16×16)",
-    #                         title2=f"{fn} ({desc})",
-    #                         cmap='gray'
-    #                     )
-    #                 imgs.append((fn, oriented, desc))
-    #             except Exception as e:
-    #                 print(f"  [skip] {fn}: {e}")
-
-    #         # pairwise comparisons using oriented 16×16
-    #         for i in range(len(imgs)):
-    #             for j in range(i + 1, len(imgs)):
-    #                 name1, im1, d1 = imgs[i]
-    #                 name2, im2, d2 = imgs[j]
-    #                 score = ssim(im1, im2, data_range=1.0)
-    #                 print(f"{name1.split('_')[-1]} vs {name2.split('_')[-1]} → SSIM: {score:.4f}")
-
-
-
  # --------------- used with testing to show how images are processed -----------------
-
     def _int_to_bits(self, value: int, h: int, w: int) -> np.ndarray:
         """Inverse of _bits_to_int: unpack to (h, w) row-major boolean array."""
         nbits = h * w
@@ -452,7 +414,7 @@ class Img_Proc:
 
 
 if __name__ == "__main__":
-    img_proc = Img_Proc(testing = True)
+    img_proc = Img_Proc(testing = False)
     img_proc.run_hashing(
             method= 'phash',
             hash_size= 8,

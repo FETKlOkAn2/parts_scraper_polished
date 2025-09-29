@@ -180,6 +180,7 @@ class Database:
             Bucket = 'partsbucket0000',
             Delete= deletion_request
         )
+        self.delete_keys = []
 
     def retrieve_from_s3(self, bucket:str, prefix:str='', run_img_proc=False, run_water_remove=False) -> Iterator[str]:
         """will have to test after we have 1000 plus and iterates over new page"""

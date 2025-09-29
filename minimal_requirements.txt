@@ -1,7 +1,0 @@
-opencv-python
-pytesseract
-numpy
-pandas
-pillow
-matplotlib
-requests

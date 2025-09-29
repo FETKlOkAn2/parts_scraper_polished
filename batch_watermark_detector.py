@@ -138,6 +138,7 @@ class BatchWatermarkDetector:
     def parse_results(self, jsonl_path: str) -> Dict[str, dict]:
         """Parse batch results into dictionary"""
         results = {}
+
         
         with open(jsonl_path, "r", encoding="utf-8") as f:
             for line in f:
@@ -151,6 +152,7 @@ class BatchWatermarkDetector:
                     # Handle successful responses
                     if obj.get("response", {}).get("status_code") == 200:
                         content = obj["response"]["body"]["choices"][0]["message"]["content"]
+                        usage = obj["response"]["body"]["usage"]
                         watermark_data = json.loads(content)
                         results[filename] = {
                             "status": "success",
@@ -159,6 +161,10 @@ class BatchWatermarkDetector:
                             "watermark_type": watermark_data.get("watermark_type", "none"),
                             "description": watermark_data.get("description", "")
                         }
+
+                        if watermark_data.get('has_watermark'):
+                            self.db.delete_keys.append({'Key': f'images/{filename}'})
+                    
                     else:
                         # Handle errors
                         results[filename] = {
@@ -207,10 +213,11 @@ class BatchWatermarkDetector:
                 print(f"Batch {batch_name} failed with status: {batch.status}")
         
         # Save consolidated results
-        with open("watermark_detection_results.json", "w", encoding="utf-8") as f:
+        with open("data/watermark_detection_results.json", "w", encoding="utf-8") as f:
             json.dump(all_results, f, indent=2)
         
         print(f"Processed {len(all_results)} images total")
+        self.db.send_delete_request()
         return all_results
     
     def get_watermark_summary(self, results: Dict[str, dict]) -> dict:
