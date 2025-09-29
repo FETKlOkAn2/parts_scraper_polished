@@ -18,6 +18,9 @@ import requests
 import subprocess
 from dotenv import load_dotenv
 from contextlib import suppress
+import pandas as pd
+
+pd.set_option("display.max_colwidth", None)
 load_dotenv()
 
 class Parser:
@@ -148,10 +151,24 @@ class Parser:
             'http':  'socks5h://127.0.0.1:9050',
             'https': 'socks5h://127.0.0.1:9050'
         }
+
+
+        # part_split = s3_key.split('/')[1]
+        # part_number = part_split.split('_')[0]
+        # id = self.read_sql_query(f"SELECT part_id FROM parts WHERE number = '{part_number}'")
+        # print(id)
+
+        
+
         idx = 0
+        tag_values = []
+        part_ids = []
         try:
             info = ' '.join(list(self.df.iloc[iterator]))
             print(info)
+            part_number = info.split(" ")[0]
+            part_id = self.db.read_sql_query(f"SELECT part_id FROM parts WHERE number = '{part_number}'")
+            part_id = int(part_id["part_id"].iat[0])
 
             while self.links:
                 url = self.links.pop()
@@ -190,12 +207,12 @@ class Parser:
                             Body=buf.getvalue(),
                             ContentType='image/png'
                         )
-                        print(f'uploaded to s3://partsbucket000/{s3_key}')
+                        print(f'uploaded to s3://partsbucket0000/{s3_key}')
+                        url_value = f"https://partsbucket0000.s3.us-east-1.amazonaws.com/{s3_key}"
+                        tag_values.append(url_value)
+                        part_ids.append(part_id)
 
-                        # with open(path, 'wb') as f:
-                        #     for chunk in resp.iter_content(chunk_size=8192):
-                        #         if chunk:
-                        #             f.write(chunk) 
+
                         
                 except Exception as e:
                     print('ERROR', e)
@@ -203,6 +220,12 @@ class Parser:
         except Exception as e:
             print("Request failed", e)
 
+
+        df = pd.DataFrame({
+            "part_id": part_ids,
+            "tag_value": tag_values
+        })
+        self.db.to_sql(df, 'part_tags')
 
 if __name__ == "__main__":
     scraper = Parser()
