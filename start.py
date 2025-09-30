@@ -1,7 +1,7 @@
 """Once everything step of the program is working this will be where
 we call all the functions"""
-from selen import Parser
-from image_processing import Img_Proc
+from scraper_app.app.selen import Parser
+from image_proc_app.app.image_processing import Img_Proc
 
 class Start:
     def __init__(self):

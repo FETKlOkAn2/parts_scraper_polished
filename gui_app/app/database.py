@@ -7,7 +7,7 @@ from sqlalchemy import create_engine, text
 import pandas as pd
 from threading import Lock
 from typing import Dict, Iterable, List, Iterator, Tuple
-from image_processing import Img_Proc
+from image_proc_app.app.image_processing import Img_Proc
 from wm_remover import AdvancedWatermarkRemover
 import pytesseract
 import cv2

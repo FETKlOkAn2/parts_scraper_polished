@@ -5,7 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException, SessionNotCreatedException
 from PIL import Image
-from database import Database
+from scraper_app.app.database import Database
 import stem.process, stem.control
 import time
 import boto3

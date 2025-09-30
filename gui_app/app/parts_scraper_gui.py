@@ -4,8 +4,8 @@ from tkinter.scrolledtext import ScrolledText
 import threading
 import pandas as pd
 import math
-from selen import Parser
-from database import Database
+from scraper_app.app.selen import Parser
+from scraper_app.app.database import Database
 
 class PartsScraperGUI:
     def __init__(self, root):
@@ -34,7 +34,7 @@ class PartsScraperGUI:
         self.db = Database()
 
     def determine_state(self):
-        with open 
+        pass
 
     def toggle_controls(self, enabled):
         """Enable/disable all controls except CSV browse button"""

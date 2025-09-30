@@ -3,10 +3,10 @@
 Safe testing script for watermark detection
 Tests with only a small number of images first
 """
-from batch_watermark_detector import BatchWatermarkDetector
+from gui_app.app.batch_watermark_detector import BatchWatermarkDetector
 import json, os
 from dotenv import load_dotenv
-from database import Database
+from scraper_app.app.database import Database
 
 load_dotenv()
 

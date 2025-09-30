@@ -7,7 +7,7 @@ from openai import OpenAI
 import boto3
 from typing import Dict, List
 import pandas as pd
-from database import Database 
+from scraper_app.app.database import Database 
 import sys
 
 class BatchWatermarkDetector:

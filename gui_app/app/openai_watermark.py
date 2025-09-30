@@ -1,7 +1,7 @@
 # runner.py
 import json, time, os, urllib.parse
 from openai import OpenAI
-from database import Database
+from scraper_app.app.database import Database
 
 
 class AIWatermark:
