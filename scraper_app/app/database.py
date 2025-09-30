@@ -94,27 +94,6 @@ class Database:
         except Exception as e:
             print(f"Error occurred while creating table {table_name}: {e}")
 
-    def upsert_append_new_only(self, df, target="dbo.parts", stage="dbo.parts_stage"):
-        # 1) Load into staging (create or truncate first)
-        with self.lock, self.engine.begin() as conn:
-            conn.execute(text(f"""
-                IF OBJECT_ID('{stage}', 'U') IS NULL
-                    SELECT TOP 0 * INTO {stage} FROM {target};
-                ELSE
-                    TRUNCATE TABLE {stage};
-            """))
-            df.to_sql(stage.split('.',1)[-1], conn, if_exists='append', index=False, method='multi', chunksize=20000)
-
-            # 2) Insert only not-yet-existing keys (example keeps 'number' unique)
-            conn.execute(text(f"""
-                MERGE {target} AS tgt
-                USING (SELECT DISTINCT * FROM {stage}) AS src
-                ON tgt.number = src.number
-                WHEN NOT MATCHED BY TARGET THEN
-                INSERT (number, description)  -- list all columns you want to insert
-                VALUES (src.number, src.description);
-            """))
-
 
     def upload_to_folder(self,bucket_name:str, folder_name: str,local_file_path:str, s3_file_name: str=None, delete_after:bool=True):
         s3_file_name = f"{folder_name}/{local_file_path}"
@@ -181,47 +160,6 @@ class Database:
             Delete= deletion_request
         )
         self.delete_keys = []
-
-    def retrieve_from_s3(self, bucket:str, prefix:str='', run_img_proc=False) -> Iterator[str]:
-        """will have to test after we have 1000 plus and iterates over new page"""
-
-        paginator = self.s3.get_paginator("list_objects_v2")
-        previous_control = None
-        grouped_strings = []
-
-        for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
-            print('-------------------------------')
-            for obj in page.get("Contents", []):
-                control_number = obj['Key'].split('_')[-1][0]
-                file_name = obj['Key'].split('/')[1]
-
-                if control_number == 'i':
-                    continue
-                elif previous_control is None:
-                    previous_control = control_number
-                elif control_number < previous_control:
-                    print('\n\n\t--New Group--')
-                    self.download_group(bucket, grouped_strings)
-
-
-                    img_proc = Img_Proc()
-
-                    #hash and compare group - image_processing
-                    keep = img_proc.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
-                            distance_thresh=10, testing=True)
-                    if not keep:
-                        keep = img_proc.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
-                                distance_thresh=14, testing=True)
-
-                    self.save_data_for_deletion(grouped_strings, keep)
-                    self.upload_to_folder('partsbucket0000', 'final', keep[0])
-                    self.empty_dir('images')
-
-                    previous_control = None
-                    grouped_strings = []
-
-                grouped_strings.append(file_name)
-                previous_control = control_number
 
 
 

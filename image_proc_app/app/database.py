@@ -94,27 +94,6 @@ class Database:
         except Exception as e:
             print(f"Error occurred while creating table {table_name}: {e}")
 
-    def upsert_append_new_only(self, df, target="dbo.parts", stage="dbo.parts_stage"):
-        # 1) Load into staging (create or truncate first)
-        with self.lock, self.engine.begin() as conn:
-            conn.execute(text(f"""
-                IF OBJECT_ID('{stage}', 'U') IS NULL
-                    SELECT TOP 0 * INTO {stage} FROM {target};
-                ELSE
-                    TRUNCATE TABLE {stage};
-            """))
-            df.to_sql(stage.split('.',1)[-1], conn, if_exists='append', index=False, method='multi', chunksize=20000)
-
-            # 2) Insert only not-yet-existing keys (example keeps 'number' unique)
-            conn.execute(text(f"""
-                MERGE {target} AS tgt
-                USING (SELECT DISTINCT * FROM {stage}) AS src
-                ON tgt.number = src.number
-                WHEN NOT MATCHED BY TARGET THEN
-                INSERT (number, description)  -- list all columns you want to insert
-                VALUES (src.number, src.description);
-            """))
-
 
     def upload_to_folder(self,bucket_name:str, folder_name: str,local_file_path:str, s3_file_name: str=None, delete_after:bool=True):
         s3_file_name = f"{folder_name}/{local_file_path}"

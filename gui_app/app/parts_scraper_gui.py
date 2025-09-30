@@ -4,8 +4,11 @@ from tkinter.scrolledtext import ScrolledText
 import threading
 import pandas as pd
 import math
-from scraper_app.app.selen import Parser
-from scraper_app.app.database import Database
+from database import Database
+from statedb import StateDB
+
+
+
 
 class PartsScraperGUI:
     def __init__(self, root):
@@ -20,40 +23,54 @@ class PartsScraperGUI:
         self.csv_loaded = False
         self.total_rows = 0
         self.dataframe = None
-
-        # States
-        self.image_search_state = False
-        self.image_watermark_detection = False
-        self.image_hashing = False
         
         # Setup GUI
         self.create_widgets()
-        self.determine_state()
-        self.toggle_controls(False)  # Start with controls disabled
 
         self.db = Database()
+        self.state = StateDB()
+
+        self.determine_state()
 
     def determine_state(self):
-        pass
+        current = self.state.read()
+        if current.get("image_search_state"):
+            self.log_message("Retreiving Images via Cloud will update when finished")
+            self.toggle_controls(False, True)
 
-    def toggle_controls(self, enabled):
+        elif current.get("image_watermark_detection"):
+            self.log_message("Waiting for completion of AI Watermark detector via Cloud will update when finished")
+            self.toggle_controls(False, True)
+
+        elif current.get("image_hashing"):
+            self.log_message("Image Hashing is talking place via Cloud will update whne finished")
+            self.toggle_controls(False, True)
+        else:
+            self.log_message("No jobs yet performed")
+            self.toggle_controls(False)
+
+
+
+    def toggle_controls(self, enabled, full_lock=False):
         """Enable/disable all controls except CSV browse button"""
         state = tk.NORMAL if enabled else tk.DISABLED
-        
-        # # Output folder controls
-        # self.output_entry.config(state=state)
-        # self.output_browse_btn.config(state=state)
         
         # Processing options
         for widget in self.options_frame.winfo_children():
             if isinstance(widget, ttk.Checkbutton):
                 widget.config(state=state)
+        if full_lock:
+            # needs to set CSV to disable
+            self.csv_browse_btn.configure(state=tk.DISABLED)
+            
         
         # Process button
         if enabled and self.csv_loaded:
             self.process_btn.config(state=tk.NORMAL)
         else:
             self.process_btn.config(state=tk.DISABLED)
+
+        
         
     def create_widgets(self):
         # Main frame
@@ -83,8 +100,8 @@ class PartsScraperGUI:
         self.csv_entry = ttk.Entry(csv_frame, textvariable=self.csv_file_path, width=60)
         self.csv_entry.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=(0, 5))
         
-        csv_browse_btn = ttk.Button(csv_frame, text="Browse", command=self.browse_csv)
-        csv_browse_btn.grid(row=0, column=1)
+        self.csv_browse_btn = ttk.Button(csv_frame, text="Browse", command=self.browse_csv)
+        self.csv_browse_btn.grid(row=0, column=1)
         
 
         # CSV Info Label
@@ -101,9 +118,13 @@ class PartsScraperGUI:
 
 
         # Progress Bar
-        self.progress_var = tk.DoubleVar()
-        self.progress_bar = ttk.Progressbar(main_frame, variable=self.progress_var, 
-                                           maximum=100, length=400)
+        # self.progress_var = tk.DoubleVar()
+        # self.progress_bar = ttk.Progressbar(main_frame, variable=self.progress_var, 
+        #                                    maximum=100, length=400)
+        # self.progress_bar.grid(row=7, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
+
+        self.progress_bar = ttk.Progressbar(main_frame, mode=['indeterminate'], 
+                                           length=400)
         self.progress_bar.grid(row=7, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
         
 
@@ -162,23 +183,30 @@ class PartsScraperGUI:
         
     def browse_csv(self):
         """Browse for CSV file"""
-        file_path = filedialog.askopenfilename(
+        self.file_path = filedialog.askopenfilename(
             title="Select CSV File",
             filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
         )
-        if file_path:
-            self.csv_file_path.set(file_path)
-            self.load_csv_info(file_path)
+        if self.file_path:
+            self.csv_file_path.set(self.file_path)
+            self.load_csv_info(self.file_path)
+
+        # Enable controls
+        self.csv_loaded = True
+        self.toggle_controls(True)
+        self.status_var.set("Ready to process...")
+        self.log_message(f"CSV loaded: {self.total_rows} images")
+
             
     def load_csv_info(self, csv_path):
         """Load CSV file and update UI accordingly"""
         try:
             # Read CSV
-            df = pd.read_csv(csv_path, sep=',', header=0, index_col=0)
-            self.total_rows = len(df)
+            self.dataframe = pd.read_csv(csv_path, sep=',', header=0, index_col=0)
+            self.total_rows = len(self.dataframe)
             
             # Validate CSV structure
-            is_valid, message = self.validate_csv_structure(df)
+            is_valid, message = self.validate_csv_structure(self.dataframe)
             
             if not is_valid:
                 messagebox.showerror("Invalid CSV", message)
@@ -189,15 +217,13 @@ class PartsScraperGUI:
             
             # Update CSV info
             self.csv_info_var.set(f"✓ {message}")
-            self.db.upsert_append_new_only(df)
+            self.clear_log()
+            self.log_message('\nHere is a view of the data.')
+            self.log_message(self.dataframe.head(5).to_string())
+            self.log_message('..........................................')
+            self.log_message('..........................................')
+            self.log_message(self.dataframe.tail(5).to_string())
 
-            
-            # Enable controls
-            self.csv_loaded = True
-            self.toggle_controls(True)
-            self.status_var.set("Ready to process...")
-            
-            self.log_message(f"CSV loaded: {self.total_rows} images")
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load CSV file:\n{str(e)}")
@@ -227,46 +253,50 @@ class PartsScraperGUI:
             
     def process_images(self):
         """Main processing function"""
-        self.parse = Parser()
-        try:
-            # function gets images and saves them to s3 buckets
-            self.parse.run_driver(
-                function=self.parse.duck_image_search,
-                iterations=len(self.df))# can do len(self.df) for the entire database
-            
-            #downloads from s3, processes images, saves to final s3 bucket
-            self.db.retrieve_from_s3("partsbucket0000","images", run_img_proc=True, run_water_remove=False)
+        self.progress_bar.start(30)
+        self.log_message('Uploading CSV to Database...')
+        self.db.upsert_append_new_only(self.dataframe)
+        self.log_message("Finished Processing")
+        self.progress_bar.stop()
 
-            # deletes all the unused images
-            #self.db.send_delete_request()         
-            
-        except Exception as e:
-            self.log_message(f"ERROR: {str(e)}")
-            messagebox.showerror("Error", f"An error occurred: {str(e)}")
-        finally:
-            self.processing = False
-            self.toggle_controls(True)
-            self.stop_btn.config(state=tk.DISABLED)
             
     def start_processing(self):
         """Start processing in a separate thread"""
         if not self.csv_loaded:
             messagebox.showerror("Error", "Please load a valid CSV file first")
             return
+        result = messagebox.askyesno("Confirm", "This will upload the parts to the Database and start Cloud Instances to Process all the images.\nIf the part and number is already in the database it will not be duplicated. \n\nMAKE SURE THE DATA IS CORRECT BEFORE CHOOSING YES.", default='no')
+        if result:
             
-        self.processing = True
-        self.toggle_controls(False)
-        self.stop_btn.config(state=tk.NORMAL)
-        self.progress_var.set(0)
-        
-        # Start processing thread
-        threading.Thread(target=self.process_images, daemon=True).start()
+            self.processing = True
+            self.toggle_controls(False)
+            self.stop_btn.config(state=tk.NORMAL)
+            #self.progress_var.set(0)
+
+
+            # Start processing thread
+            self.clear_log()
+            self.log_message("Starting to Process...")
+
+            self.start_threading(self.process_images)
+        else:
+            pass
+
+    def start_threading(self, function, params=None):
+        if params is not None:
+            threading.Thread(target=function(params), daemon=True).start()
+
+        else:
+            threading.Thread(target=function, daemon=True).start()
+
+                            
         
     def stop_processing(self):
         """Stop processing"""
         self.processing = False
         self.status_var.set("Stopping...")
         self.log_message("Processing stopped by user")
+        self.progress_bar.stop()
 
 
 def main():

@@ -1,16 +1,9 @@
 import os, shutil, stat
 import boto3
-import re
-import numpy as np
 from botocore.exceptions import NoCredentialsError
 from sqlalchemy import create_engine, text
 import pandas as pd
 from threading import Lock
-from typing import Dict, Iterable, List, Iterator, Tuple
-from image_proc_app.app.image_processing import Img_Proc
-from wm_remover import AdvancedWatermarkRemover
-import pytesseract
-import cv2
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 
@@ -26,6 +19,7 @@ class Database:
         self.engine = self.get_engine() # Initialize engine in the constructor
         self.lock = Lock() # Thread lock for database access
         self.s3 = boto3.client("s3")
+        self.sqs = boto3.client("sqs")
         #self.suffix_re = re.compile()
         self.delete_keys = []
 
@@ -95,25 +89,38 @@ class Database:
             print(f"Error occurred while creating table {table_name}: {e}")
 
     def upsert_append_new_only(self, df, target="dbo.parts", stage="dbo.parts_stage"):
-        # 1) Load into staging (create or truncate first)
+        schema, stage_table = stage.split('.', 1)   # e.g., 'dbo', 'parts_stage'
+
         with self.lock, self.engine.begin() as conn:
+            # 1) Create stage from target shape (first run) or truncate
             conn.execute(text(f"""
                 IF OBJECT_ID('{stage}', 'U') IS NULL
                     SELECT TOP 0 * INTO {stage} FROM {target};
                 ELSE
                     TRUNCATE TABLE {stage};
             """))
-            df.to_sql(stage.split('.',1)[-1], conn, if_exists='append', index=False, method='multi', chunksize=20000)
 
-            # 2) Insert only not-yet-existing keys (example keeps 'number' unique)
+            # 2) Bulk append to stage in batches of <= 1000 (SQL Server limit)
+            df.to_sql(
+                name=stage_table,
+                con=conn,
+                schema=schema,
+                if_exists='append',
+                index=False,
+                method='multi',
+                chunksize=1000,   # <= 1000 to avoid "COUNT field incorrect"
+            )
+
+            # 3) Insert only new rows (adjust column list to your real columns)
             conn.execute(text(f"""
                 MERGE {target} AS tgt
                 USING (SELECT DISTINCT * FROM {stage}) AS src
                 ON tgt.number = src.number
                 WHEN NOT MATCHED BY TARGET THEN
-                INSERT (number, description)  -- list all columns you want to insert
+                INSERT (number, description)
                 VALUES (src.number, src.description);
             """))
+
 
 
     def upload_to_folder(self,bucket_name:str, folder_name: str,local_file_path:str, s3_file_name: str=None, delete_after:bool=True):
@@ -181,103 +188,6 @@ class Database:
             Delete= deletion_request
         )
         self.delete_keys = []
-
-    def retrieve_from_s3(self, bucket:str, prefix:str='', run_img_proc=False, run_water_remove=False) -> Iterator[str]:
-        """will have to test after we have 1000 plus and iterates over new page"""
-
-        paginator = self.s3.get_paginator("list_objects_v2")
-        previous_control = None
-        grouped_strings = []
-
-        for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
-            print('-------------------------------')
-            for obj in page.get("Contents", []):
-                control_number = obj['Key'].split('_')[-1][0]
-                file_name = obj['Key'].split('/')[1]
-
-                if control_number == 'i':
-                    continue
-                elif previous_control is None:
-                    previous_control = control_number
-                elif control_number < previous_control:
-                    print('\n\n\t--New Group--')
-                    self.download_group(bucket, grouped_strings)
-
-
-                    img_proc = Img_Proc()
-
-                    if run_water_remove:
-                        remover = AdvancedWatermarkRemover("Tesseract-OCR/tesseract.exe")
-                        #pytesseract.pytesseract.tesseract_cmd = 
-
-                        entries = []  # (name, hash_int)
-                        tracker = 0
-                        for fn in grouped_strings:
-                            path = f"images/images/{fn}"
-                            
-                            img_original = img_proc.load_and_resize_cv(path)
-                            gray_uint8 = img_proc.to_gray2d_uint8(img_original)
-                            gray_float = img_proc.to_grayscale(gray_uint8.astype(np.float32) / 255.0)
-                            small = img_proc.resize_image(gray_float, shape=(16, 16))
-                            oriented, desc, _ = img_proc.orient_top_left(small)
-                            
-                            original_int = img_proc.compute_hash(oriented)
-                            hex_len = (8 * 8 + 3) // 4
-                            hex_str_original = f"0x{original_int:0{hex_len}X}"
-                
-
-                            # FIRST: Check if watermark exists without expensive processing
-                            print(f"\nChecking for watermarks in {fn}...")
-                            mask = remover.detect_watermark_mask_only(path)
-                            has_watermark = remover.has_meaningful_watermark(mask)
-                            
-                            if has_watermark:
-                                print(f"WATERMARK DETECTED in {fn}")
-                                # Only NOW do the expensive watermark removal
-                                wm_removed_img = remover.remove_watermark(
-                                    image_path=path,
-                                    output_path=f'images/cleaned/{fn}',
-                                    mask_path=f'images/mask/{fn}')
-                                
-                                cleaned_gray_uint8 = img_proc.to_gray2d_uint8(wm_removed_img)
-                                cleaned_gray_float = img_proc.to_grayscale(cleaned_gray_uint8.astype(np.float32) / 255.0)
-                                cleaned_small = img_proc.resize_image(cleaned_gray_float, shape=(16, 16))
-                                cleaned_oriented, _, _ = img_proc.orient_top_left(cleaned_small)
-                                wm_int = img_proc.compute_hash(cleaned_oriented)
-                                
-                            else:
-                                print(f"NO WATERMARK in {fn}")
-                                wm_int = original_int
-                                cv2.imwrite(f'images/mask/{fn}', mask)
-                                # Copy original to cleaned folder for consistency
-                                import shutil
-                                shutil.copy2(path, f'images/cleaned/{fn}')
-                            
-                            hex_str_wm = f"0x{wm_int:0{hex_len}X}"
-
-                            print(f"Original: {hex_str_original}")
-                            print(f"WM Removed: {hex_str_wm}")
-
-                            entries.append((fn, original_int, wm_int, has_watermark))
-
-                    if run_img_proc:
-                        #hash and compare group - image_processing
-                        keep = img_proc.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
-                                distance_thresh=10, testing=True)
-                        if not keep:
-                            keep = img_proc.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
-                                    distance_thresh=14, testing=True)
-
-                        self.save_data_for_deletion(grouped_strings, keep)
-                        self.upload_to_folder('partsbucket0000', 'final', keep[0])
-                        self.empty_dir('images/images')
-
-                    previous_control = None
-                    grouped_strings = []
-
-                grouped_strings.append(file_name)
-                previous_control = control_number
-
 
 
 if __name__ == "__main__":

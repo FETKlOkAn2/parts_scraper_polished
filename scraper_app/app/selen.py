@@ -6,14 +6,11 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException, SessionNotCreatedException
 from PIL import Image
 from scraper_app.app.database import Database
-import stem.process, stem.control
 import time
 import boto3
 import io
 import os
 import gc
-import re
-import sys
 import requests
 import subprocess
 from dotenv import load_dotenv
@@ -50,6 +47,13 @@ class Parser:
         # self.run_driver(
         #     function=self.duck_image_search,
         #     iterations=4)# can do len(self.df)
+
+    def start(self):
+        #self.run_driver(function=self.check_ip, iterations= 10)
+
+        self.run_driver(
+            function=self.duck_image_search,
+            iterations=4)# can do len(self.df)
 
     def run_driver(self, function, iterations:int=0):
         for i in range(iterations):
@@ -153,17 +157,10 @@ class Parser:
             'https': 'socks5h://127.0.0.1:9050'
         }
 
-
-        # part_split = s3_key.split('/')[1]
-        # part_number = part_split.split('_')[0]
-        # id = self.read_sql_query(f"SELECT part_id FROM parts WHERE number = '{part_number}'")
-        # print(id)
-
-        
-
         idx = 0
         tag_values = []
         part_ids = []
+
         try:
             info = ' '.join(list(self.df.iloc[iterator]))
             print(info)

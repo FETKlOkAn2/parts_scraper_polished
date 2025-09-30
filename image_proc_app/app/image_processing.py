@@ -1,9 +1,7 @@
 import os
-import sys
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import numpy as np
-import boto3
 import cv2
 from skimage.io import imread
 from skimage.transform import resize
@@ -11,15 +9,15 @@ from skimage.metrics import structural_similarity as ssim
 from skimage import img_as_float
 from skimage.color import rgb2gray
 from pathlib import Path
+from database import Database
 
 
 class Img_Proc:
     def __init__(self, testing=False):
         self.testing = testing
         self.folder = "images"
-        #self.s3 = boto3.client('S3')
+        self.db = Database()
 
-        #self.group_images()
 
     def group_images(self):
         self.images = [f for f in os.listdir(self.folder) if os.path.isfile(os.path.join(self.folder, f))]
@@ -61,7 +59,6 @@ class Img_Proc:
 
         # resize to fixed dimensions
         img = resize(img, size, anti_aliasing=True)
-
         return img
 
     def load_and_resize_cv(self, path, where='(unknown)', size=(600,600)):
@@ -150,12 +147,6 @@ class Img_Proc:
             gray = arr if arr.ndim == 2 else arr[..., 0].astype(np.uint8)
 
         return gray
-
-
-
-
-
-
 
 
     def resize_image(self, img, shape=(16, 16)):
@@ -413,9 +404,52 @@ class Img_Proc:
         plt.show()
 
 
+    def retrieve_from_s3_and_run(self, bucket:str, prefix:str=''):
+        """will have to test after we have 1000 plus and iterates over new page"""
+
+        paginator = self.db.s3.get_paginator("list_objects_v2")
+        previous_control = None
+        grouped_strings = []
+
+        for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+            print('-------------------------------')
+            for obj in page.get("Contents", []):
+                control_number = obj['Key'].split('_')[-1][0]
+                file_name = obj['Key'].split('/')[1]
+
+                if control_number == 'i':
+                    continue
+                elif previous_control is None:
+                    previous_control = control_number
+                elif control_number < previous_control:
+                    print('\n\n\t--New Group--')
+                    self.db.download_group(bucket, grouped_strings)
+
+
+
+                    #hash and compare group - image_processing
+                    keep = self.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
+                            distance_thresh=10, testing=True)
+                    if not keep:
+                        keep = self.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
+                                distance_thresh=14, testing=True)
+
+                    self.db.save_data_for_deletion(grouped_strings, keep)
+                    self.db.upload_to_folder('partsbucket0000', 'final', keep[0])
+                    self.db.empty_dir('images/images')
+
+                    previous_control = None
+                    grouped_strings = []
+
+                grouped_strings.append(file_name)
+                previous_control = control_number
+
+
 if __name__ == "__main__":
     img_proc = Img_Proc(testing = False)
-    img_proc.run_hashing(
-            method= 'phash',
-            hash_size= 8,
-            distance_thresh= 12)
+    # img_proc.run_hashing(
+    #         method= 'phash',
+    #         hash_size= 8,
+    #         distance_thresh= 12)
+
+    img_proc.retrieve_from_s3("partsbucket0000","images")
