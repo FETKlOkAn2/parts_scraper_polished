@@ -65,7 +65,7 @@ class Parser:
 
             self.links = []
             self.tor.terminate()
-        time.sleep(1)
+        time.sleep(5)
 
 
     def initiate_driver(self):
@@ -73,7 +73,7 @@ class Parser:
         exe_path = os.getenv("TOR_PATH")
         self.tor = subprocess.Popen(exe_path,stdout=subprocess.DEVNULL)
 
-        time.sleep(1)
+        time.sleep(5)
         """initiates the Undetected Chrome Browser"""
 
         opts = uc.ChromeOptions()
@@ -146,7 +146,7 @@ class Parser:
                 self.driver.service.stop()
                 del self.driver
                 self.driver = None  # ensures UC doesn't try during teardown
-                gc.collet()
+                #gc.collect()
 
 
     def download_images(self, iterator, keep_bytes=True):
