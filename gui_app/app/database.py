@@ -6,7 +6,7 @@ import pandas as pd
 from threading import Lock
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
-
+from uuid import uuid4
 load_dotenv()
 class Database:
     def __init__(self):
@@ -19,7 +19,6 @@ class Database:
         self.engine = self.get_engine() # Initialize engine in the constructor
         self.lock = Lock() # Thread lock for database access
         self.s3 = boto3.client("s3")
-        self.sqs = boto3.client("sqs")
         #self.suffix_re = re.compile()
         self.delete_keys = []
 
@@ -88,38 +87,53 @@ class Database:
         except Exception as e:
             print(f"Error occurred while creating table {table_name}: {e}")
 
-    def upsert_append_new_only(self, df, target="dbo.parts", stage="dbo.parts_stage"):
-        schema, stage_table = stage.split('.', 1)   # e.g., 'dbo', 'parts_stage'
+    def upsert_append_new_only(self, df, target="dbo.parts", key_col="number"):
+        """
+        Bulk load df into a throwaway staging table, MERGE into target,
+        insert only rows whose key_col doesn't exist yet, then DROP the stage.
+        """
+        if df.empty:
+            return 0
 
-        with self.lock, self.engine.begin() as conn:
-            # 1) Create stage from target shape (first run) or truncate
-            conn.execute(text(f"""
-                IF OBJECT_ID('{stage}', 'U') IS NULL
-                    SELECT TOP 0 * INTO {stage} FROM {target};
-                ELSE
-                    TRUNCATE TABLE {stage};
-            """))
+        schema, tgt_name = target.split('.', 1)
+        stage_name = f"{tgt_name}_stage_{uuid4().hex[:8]}"
+        stage_full = f"{schema}.{stage_name}"
 
-            # 2) Bulk append to stage in batches of <= 1000 (SQL Server limit)
-            df.to_sql(
-                name=stage_table,
-                con=conn,
-                schema=schema,
-                if_exists='append',
-                index=False,
-                method='multi',
-                chunksize=1000,   # <= 1000 to avoid "COUNT field incorrect"
-            )
+        # Adjust these to your actual column list
+        cols = list(df.columns)
+        col_csv = ", ".join(f"[{c}]" for c in cols)
+        src_cols_csv = ", ".join(f"src.[{c}]" for c in cols)
 
-            # 3) Insert only new rows (adjust column list to your real columns)
-            conn.execute(text(f"""
-                MERGE {target} AS tgt
-                USING (SELECT DISTINCT * FROM {stage}) AS src
-                ON tgt.number = src.number
-                WHEN NOT MATCHED BY TARGET THEN
-                INSERT (number, description)
-                VALUES (src.number, src.description);
-            """))
+        try:
+            with self.lock, self.engine.begin() as conn:
+                # 1) Create an empty stage with same shape as target
+                conn.execute(text(f"SELECT TOP 0 * INTO {stage_full} FROM {target};"))
+
+                # 2) Bulk into stage
+                df.to_sql(
+                    name=stage_name,
+                    con=conn,
+                    schema=schema,
+                    if_exists='append',
+                    index=False,
+                    method='multi',
+                    chunksize=1000,  # keep params under SQL Server limits
+                )
+
+                # 3) MERGE: insert only not-yet-existing keys
+                conn.execute(text(f"""
+                    MERGE {target} AS tgt
+                    USING (SELECT DISTINCT {col_csv} FROM {stage_full}) AS src
+                    ON tgt.[{key_col}] = src.[{key_col}]
+                    WHEN NOT MATCHED BY TARGET THEN
+                    INSERT ({col_csv}) VALUES ({src_cols_csv});
+                """))
+
+        finally:
+            # 4) Always drop the stage, even if an error occurred above
+            with self.engine.begin() as conn:
+                conn.execute(text(f"IF OBJECT_ID('{stage_full}', 'U') IS NOT NULL DROP TABLE {stage_full};"))
+
 
 
 
@@ -188,6 +202,18 @@ class Database:
             Delete= deletion_request
         )
         self.delete_keys = []
+    
+    def empty_prefix(self, bucket_name, prefix):
+        s3 = boto3.client("s3")
+        paginator = s3.get_paginator("list_objects_v2")
+
+        for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
+            if "Contents" in page:
+                objects = [{"Key": obj["Key"]} for obj in page["Contents"]]
+                s3.delete_objects(
+                    Bucket=bucket_name,
+                    Delete={"Objects": objects, "Quiet": True}
+                )
 
 
 if __name__ == "__main__":

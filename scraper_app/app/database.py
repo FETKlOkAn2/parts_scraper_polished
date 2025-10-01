@@ -1,18 +1,12 @@
 import os, shutil, stat
 import boto3
-import re
-import numpy as np
 from botocore.exceptions import NoCredentialsError
 from sqlalchemy import create_engine, text
 import pandas as pd
 from threading import Lock
-from typing import Dict, Iterable, List, Iterator, Tuple
-from image_proc_app.app.image_processing import Img_Proc
-from wm_remover import AdvancedWatermarkRemover
-import pytesseract
-import cv2
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
+from uuid import uuid4
 
 load_dotenv()
 class Database:
@@ -160,6 +154,54 @@ class Database:
             Delete= deletion_request
         )
         self.delete_keys = []
+
+
+    def upsert_append_new_only(self, df, target="dbo.parts", key_col="number"):
+        """
+        Bulk load df into a throwaway staging table, MERGE into target,
+        insert only rows whose key_col doesn't exist yet, then DROP the stage.
+        """
+        if df.empty:
+            return 0
+
+        schema, tgt_name = target.split('.', 1)
+        stage_name = f"{tgt_name}_stage_{uuid4().hex[:8]}"
+        stage_full = f"{schema}.{stage_name}"
+
+        # Adjust these to your actual column list
+        cols = list(df.columns)
+        col_csv = ", ".join(f"[{c}]" for c in cols)
+        src_cols_csv = ", ".join(f"src.[{c}]" for c in cols)
+
+        try:
+            with self.lock, self.engine.begin() as conn:
+                # 1) Create an empty stage with same shape as target
+                conn.execute(text(f"SELECT TOP 0 * INTO {stage_full} FROM {target};"))
+
+                # 2) Bulk into stage
+                df.to_sql(
+                    name=stage_name,
+                    con=conn,
+                    schema=schema,
+                    if_exists='append',
+                    index=False,
+                    method='multi',
+                    chunksize=1000,  # keep params under SQL Server limits
+                )
+
+                # 3) MERGE: insert only not-yet-existing keys
+                conn.execute(text(f"""
+                    MERGE {target} AS tgt
+                    USING (SELECT DISTINCT {col_csv} FROM {stage_full}) AS src
+                    ON tgt.[{key_col}] = src.[{key_col}]
+                    WHEN NOT MATCHED BY TARGET THEN
+                    INSERT ({col_csv}) VALUES ({src_cols_csv});
+                """))
+
+        finally:
+            # 4) Always drop the stage, even if an error occurred above
+            with self.engine.begin() as conn:
+                conn.execute(text(f"IF OBJECT_ID('{stage_full}', 'U') IS NOT NULL DROP TABLE {stage_full};"))
 
 
 

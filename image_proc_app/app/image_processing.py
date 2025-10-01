@@ -452,4 +452,4 @@ if __name__ == "__main__":
     #         hash_size= 8,
     #         distance_thresh= 12)
 
-    img_proc.retrieve_from_s3("partsbucket0000","images")
+    img_proc.retrieve_from_s3_and_run("partsbucket0000","images")

@@ -6,8 +6,12 @@ import pandas as pd
 import math
 from database import Database
 from statedb import StateDB
-
-
+from math import ceil
+import io
+import time
+from helpers import Helper
+from dotenv import load_dotenv
+load_dotenv()
 
 
 class PartsScraperGUI:
@@ -17,20 +21,86 @@ class PartsScraperGUI:
         self.root.geometry("850x700")
         self.root.resizable(True, True)
         
+        # Constants
+        self.bucket = "partsbucket0000"
+        self.search_job_key = 'search_jobs'
+        self.process_job_key = 'proc_jobs'
+        self.search_queue = ''
+        self.process_queue = ''
+        self.search_chunk_size = 250
+        self.processing_chunk_size = 500
+
+        # Tests
+        self.test_input_key = 'jobs'
+        self.test_queue = "https://sqs.us-east-1.amazonaws.com/390403858209/Dazetestqueue"
+
         # Variables
         self.csv_file_path = tk.StringVar()
         self.processing = False
         self.csv_loaded = False
         self.total_rows = 0
         self.dataframe = None
+
         
         # Setup GUI
         self.create_widgets()
 
         self.db = Database()
+        self.helper = Helper(self.db)
         self.state = StateDB()
 
         self.determine_state()
+
+
+
+    def process_images(self):
+        """Main processing function"""
+        # uploading to database
+        self.progress_bar.start(30)
+        self.log_message('Uploading CSV to Database...')
+        self.db.upsert_append_new_only(self.dataframe)
+
+        # retriving data from database 
+        self.log_message('Gathering all parts without an image...')
+        all_data = self.db.read_sql_query("SELECT * FROM parts WHERE final_tag IS NULL;")
+
+        # spliting data into chucks and upload to s3
+        self.log_message("splitting data into jobs...")
+        num_chunks = self.helper.split_data_and_upload_jobs(
+            df=all_data,
+            bucket=self.bucket,
+            prefix=self.search_job_key,
+            chunk_size = self.search_chunk_size) 
+        
+        self.clear_log()
+
+        self.helper.send_chunk_messages(    # real
+            job_id = "Testing",             #images_search
+            queue_url = self.test_queue,    #self.search_queue
+            num_chunks =  10,               #num_chunks
+            key = self.test_input_key)      #self.search_key
+
+
+        self.log_message("Watermark Button will become clickable when all images have been downloaded...")
+        self.log_message(f"{num_chunks} Instances being created in cloud please wait...")
+
+        all_terminated = False
+        count = 0
+        time.sleep(30)
+        while not all_terminated:
+            time.sleep(60)
+            all_terminated,state = self.helper.determine_instance_state()
+            count += 1
+            self.clear_log()
+            self.log_message("Watermark Button will become clickable when all images have been downloaded...")
+            self.log_message(f"\nStill downloading images...\n\tStatus: {state}\n\tMinutes: {count}")
+        
+        # Deletes the CSV files from search_jobs
+        self.db.empty_prefix(self.bucket, self.search_job_key)
+
+        self.clear_log()
+        self.log_message("You can now start the watermark")
+        self.progress_bar.stop()
 
     def determine_state(self):
         current = self.state.read()
@@ -250,16 +320,8 @@ class PartsScraperGUI:
             self.status_var.set(status)
         self.root.update_idletasks()
 
-            
-    def process_images(self):
-        """Main processing function"""
-        self.progress_bar.start(30)
-        self.log_message('Uploading CSV to Database...')
-        self.db.upsert_append_new_only(self.dataframe)
-        self.log_message("Finished Processing")
-        self.progress_bar.stop()
 
-            
+
     def start_processing(self):
         """Start processing in a separate thread"""
         if not self.csv_loaded:

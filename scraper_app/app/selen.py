@@ -5,7 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException, SessionNotCreatedException
 from PIL import Image
-from scraper_app.app.database import Database
+from database import Database
 import time
 import boto3
 import io
@@ -223,7 +223,15 @@ class Parser:
             "part_id": part_ids,
             "tag_value": tag_values
         })
-        self.db.to_sql(df, 'part_tags')
+
+        self.db.upsert_append_new_only(
+            df=df,
+            target='dbo.part_tags',
+            key_col='tag_value'
+        )
 
 if __name__ == "__main__":
     scraper = Parser()
+    scraper.run_driver(
+        function=scraper.duck_image_search,
+        iterations=4)# can do len(self.df)
