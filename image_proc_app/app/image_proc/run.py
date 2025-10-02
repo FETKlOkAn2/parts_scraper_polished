@@ -9,7 +9,7 @@ def process_shard(csv_path: str):
             reader = csv.reader(f)
             for line in reader:
                 
-                img_proc = Img_Proc()
+                img_proc = Img_Proc(line)
 
 
     except Exception as e:

@@ -13,7 +13,7 @@ from database import Database
 
 
 class Img_Proc:
-    def __init__(self, testing=False):
+    def __init__(self, inpout:str,testing=False):
         self.testing = testing
         self.folder = "images"
         self.db = Database()
@@ -438,7 +438,7 @@ class Img_Proc:
 
                     self.db.save_data_for_deletion(grouped_strings, keep)
                     self.db.upload_to_folder('partsbucket0000', 'final', keep[0])
-                    self.db.empty_dir('images/images')
+                    self.db.empty_dir('images')
 
                     previous_control = None
                     grouped_strings = []

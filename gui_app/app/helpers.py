@@ -45,6 +45,35 @@ class Helper:
 
         return num_chunks
     
+    def split_group_upload(self,df, bucket, prefix, chunk_size):
+        n = len(df)
+        num_chunks = ceil(n /chunk_size) if n else 0
+        if num_chunks ==0:
+            print("Dataframe is empty, nothing to upload.")
+            return
+        
+        base_prefix = prefix.rstrip('/')
+        
+        for i in range(num_chunks):
+            start = i * chunk_size
+            stop = min(start + chunk_size, n)
+            chunk = df.iloc[start:stop]
+
+            csv_buf = io.StringIO()
+            chunk.to_csv(csv_buf, index=False, header=True)
+            data_bytes = csv_buf.getvalue().encode("utf-8")
+
+            chunk_key = f"{base_prefix}/chunk_{i+1}.csv"
+
+            self.db.s3.put_object(
+                Body=data_bytes,
+                Bucket=bucket,
+                Key=chunk_key,
+                ContentType='text/csv'
+            )
+
+        return num_chunks
+    
     def send_chunk_messages(self, job_id: str, queue_url: str, num_chunks: int, key: str):
         """
         Send SQS messages for each chunk file.

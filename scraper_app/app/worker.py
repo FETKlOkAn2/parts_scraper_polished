@@ -3,9 +3,9 @@ import os, time, json, boto3, tempfile, pathlib
 from scraper.run import process_shard
 
 
-REGION        = os.getenv("AWS_REGION", "us-east-1")
-QUEUE_URL     = os.getenv("QUEUE_URL",     "https://sqs.us-east-1.amazonaws.com/390403858209/Dazetestqueue")
-INPUT_BUCKET  = os.getenv("INPUT_BUCKET",  "partsbucket0000")
+REGION        = os.getenv("AWS_REGION")
+QUEUE_URL     = os.getenv("QUEUE_URL")
+INPUT_BUCKET  = os.getenv("INPUT_BUCKET")
 
 # choose a temp dir that works everywhere (Windows/Mac/Linux)
 LOCAL_TMP_DIR = os.getenv("LOCAL_TMP_DIR", tempfile.gettempdir())

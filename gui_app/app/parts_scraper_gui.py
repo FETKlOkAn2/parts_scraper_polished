@@ -59,6 +59,7 @@ class PartsScraperGUI:
 
     def perform_watermark(self):
         self.progress_bar.start(30)
+        self.status_var.set("Performing AI watermark detection")
         self.ai_watermark_btn.configure(state=tk.DISABLED)
 
         ids = self.helper.organize_and_submit_batch()
@@ -95,13 +96,29 @@ class PartsScraperGUI:
 
     def perform_filter(self):
         self.progress_bar.start(30)
+        self.filter_images_btn.configure(state=tk.DISABLED)
+        self.status_var.set("Performing Hash Similiarity")
+
         self.log_message("Gathering Remaining Images...")
+        
+        all_data = self.db.read_sql_query("SELECT tag_value FROM part_tags ORDER BY tag_value ASC;")
+
+        num_chunks = self.helper.split_group_upload(
+            df=all_data,
+            bucket=self.bucket,
+            prefix=self.process_job_key,
+            chunk_size = self.processing_chunk_size
+        )
+
 
         self.log_message("Instances being created in the Cloud Please Wait...")
+
+        self.status_var.set("COMPLETED: Images are Ready for Deployment")
 
     def process_images(self):
         """Main processing function"""
         # uploading to database
+        self.status_var.set("Performing Image Search...")
         self.progress_bar.start(30)
         self.log_message('Uploading CSV to Database...')
         self.db.upsert_append_new_only(self.dataframe)
@@ -256,7 +273,7 @@ class PartsScraperGUI:
         button_frame = ttk.Frame(main_frame)
         button_frame.grid(row=9, column=0, columnspan=3, pady=20)
         
-        self.process_btn = ttk.Button(button_frame, text="Start Processing", 
+        self.process_btn = ttk.Button(button_frame, text="Start Image Search", 
                                      command=self.start_processing, style="Accent.TButton")
         self.process_btn.pack(side=tk.LEFT, padx=5)
 
@@ -270,10 +287,10 @@ class PartsScraperGUI:
 
         self.stop_btn = ttk.Button(button_frame, text="Stop", 
                                   command=self.stop_processing, state=tk.DISABLED)
-        self.stop_btn.pack(side=tk.LEFT, padx=5)
+        self.stop_btn.pack(side=tk.RIGHT, padx=5)
         
         clear_btn = ttk.Button(button_frame, text="Clear Log", command=self.clear_log)
-        clear_btn.pack(side=tk.LEFT, padx=5)
+        clear_btn.pack(side=tk.RIGHT, padx=5)
 
 
 

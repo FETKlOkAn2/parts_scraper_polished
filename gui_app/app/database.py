@@ -34,6 +34,7 @@ class Database:
         self.db = new_db
 
     def execute_sql(self, sql_text):
+        "Executes any SQL in the statement"
         with self.lock, self.engine.begin() as conn:
             return conn.execute(text(sql_text))
              
@@ -42,10 +43,10 @@ class Database:
         with self.lock, self.engine.begin() as conn:
             return pd.read_sql_query(text(sql_text), conn)
     
-    def to_sql(self, df, table_name, if_exists='append', index=False):
+    def to_sql(self, df, table_name, if_exists='append', index=False, schema=None):
         """Write records stored in a DataFrame to a SQL database."""
         with self.lock, self.engine.begin() as conn:
-            df.to_sql(table_name, conn, if_exists=if_exists, index=index, method='multi', chunksize=20000)
+            df.to_sql(table_name, conn, if_exists=if_exists, index=index, method='multi', schema=schema, chunksize=20000)
 
 
 
@@ -196,11 +197,17 @@ class Database:
             self.delete_keys.append({'Key': f'images/{key}'})
         
     def send_delete_request(self):
+        """"Deletes from s3 and also deletes from parts_tags database
+        data insdie self.delete_keys needs to be self.delete_keys.append({'Key': f'images/{key}'})"""
         # limits to 1000 keys
         def _chunk_list(data, limit=900):
             for i in range(0, len(data), limit):
                 yield data[i:i + limit]
 
+        self.create_table_if_not_exists("dbo.to_delete", df_urls)
+        self.execute_sql("TRUNCATE TABLE dbo.to_delete")
+
+        base_url = "https://partsbucket0000.s3.us-east-1.amazonaws.com/"
         for chunk in _chunk_list(self.delete_keys):
             deletion_request = {'Objects': chunk,
                                 'Quiet': True}
@@ -208,7 +215,20 @@ class Database:
                 Bucket = 'partsbucket0000',
                 Delete= deletion_request
             )
+            
+            # format and get ready for deletion from database
+            temp_delete = [f"{base_url}{obj['Key']}" for obj in chunk]
+            df_urls = pd.DataFrame({"tag_value": temp_delete})
+            self.to_sql(df_urls, 'to_delete', schema='dbo')
 
+
+        self.execute_sql("""
+            DELETE pt
+            FROM dbo.part_tags AS pt
+            INNER JOIN dbo.to_delete AS td
+                ON td.tag_value = pt.tag_value;
+            """)
+        self.execute_sql("DROP TABLE dbo.delete;")
         self.delete_keys = []
     
     def empty_prefix(self, bucket_name, prefix):
