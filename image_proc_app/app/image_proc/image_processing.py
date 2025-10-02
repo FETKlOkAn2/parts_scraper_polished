@@ -422,6 +422,8 @@ class Img_Proc:
                 elif previous_control is None:
                     previous_control = control_number
                 elif control_number < previous_control:
+
+                    
                     print('\n\n\t--New Group--')
                     self.db.download_group(bucket, grouped_strings)
 

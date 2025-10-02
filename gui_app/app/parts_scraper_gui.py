@@ -9,7 +9,9 @@ from statedb import StateDB
 from math import ceil
 import io
 import time
+import os
 from helpers import Helper
+from batch_watermark_detector import BatchWatermarkDetector
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -22,10 +24,11 @@ class PartsScraperGUI:
         self.root.resizable(True, True)
         
         # Constants
+        self.open_ai_key = os.getenv("OPENAI_API_KEY")
         self.bucket = "partsbucket0000"
         self.search_job_key = 'search_jobs'
         self.process_job_key = 'proc_jobs'
-        self.search_queue = ''
+        self.search_queue = 'https://sqs.us-east-1.amazonaws.com/390403858209/scraper_queue'
         self.process_queue = ''
         self.search_chunk_size = 250
         self.processing_chunk_size = 500
@@ -46,12 +49,55 @@ class PartsScraperGUI:
         self.create_widgets()
 
         self.db = Database()
-        self.helper = Helper(self.db)
+        self.detector = BatchWatermarkDetector(self.db, self.open_ai_key)
+        self.helper = Helper(self.db, self.detector)
         self.state = StateDB()
+
 
         self.determine_state()
 
 
+    def perform_watermark(self):
+        self.progress_bar.start(30)
+        self.ai_watermark_btn.configure(state=tk.DISABLED)
+
+        ids = self.helper.organize_and_submit_batch()
+        self.state.set(batch_ids=ids)
+        self.poll_open_ai()
+        self.db.send_delete_request()
+
+        self.progress_bar.stop()
+
+
+    def poll_open_ai(self):
+        current = self.state.read()
+        batch_ids = current.get("batch_ids")
+
+        completed = False
+        count = 0
+        all_results = []
+        time.sleep(30)
+
+        while not completed:
+            time.sleep(60)
+            count += 1
+            for batch_id in batch_ids:
+                result, status = self.detector.poll_multiple_batch_completion(batch_id)
+                self.log_message(f"Batch {batch_id} status: {status}")
+                all_results.append(result)
+            if all(all_results):
+                completed = True
+            self.log_message('\n')
+        
+        self.log_message("AI has determined which images have watermarks and they are being deleted...")
+
+        self.helper.parse_ai_results(batch_ids)
+
+    def perform_filter(self):
+        self.progress_bar.start(30)
+        self.log_message("Gathering Remaining Images...")
+
+        self.log_message("Instances being created in the Cloud Please Wait...")
 
     def process_images(self):
         """Main processing function"""
@@ -62,7 +108,7 @@ class PartsScraperGUI:
 
         # retriving data from database 
         self.log_message('Gathering all parts without an image...')
-        all_data = self.db.read_sql_query("SELECT * FROM parts WHERE final_tag IS NULL;")
+        all_data = self.db.read_sql_query("SELECT number, description FROM parts WHERE final_tag IS NULL;")
 
         # spliting data into chucks and upload to s3
         self.log_message("splitting data into jobs...")
@@ -99,7 +145,9 @@ class PartsScraperGUI:
         self.db.empty_prefix(self.bucket, self.search_job_key)
 
         self.clear_log()
-        self.log_message("You can now start the watermark")
+        self.log_message("All images have been downloaded.\nYou can now start the watermark")
+        self.ai_watermark_btn.configure(state=tk.Normal)
+        self.process_btn.configure(state=tk.DISABLED)
         self.progress_bar.stop()
 
     def determine_state(self):
@@ -211,14 +259,24 @@ class PartsScraperGUI:
         self.process_btn = ttk.Button(button_frame, text="Start Processing", 
                                      command=self.start_processing, style="Accent.TButton")
         self.process_btn.pack(side=tk.LEFT, padx=5)
-        
+
+        self.ai_watermark_btn = ttk.Button(button_frame, text='AI Watermark',
+                                           command=self.start_watermark, style='Accent.TButton', state=tk.DISABLED)  
+        self.ai_watermark_btn.pack(side=tk.LEFT, padx=5)
+
+        self.filter_images_btn = ttk.Button(button_frame, text="Filter Images",
+                                            command=self.start_filter, style='Accent.TButton', state=tk.DISABLED)
+        self.filter_images_btn.pack(side=tk.LEFT, padx=5)
+
         self.stop_btn = ttk.Button(button_frame, text="Stop", 
                                   command=self.stop_processing, state=tk.DISABLED)
         self.stop_btn.pack(side=tk.LEFT, padx=5)
         
         clear_btn = ttk.Button(button_frame, text="Clear Log", command=self.clear_log)
         clear_btn.pack(side=tk.LEFT, padx=5)
-        
+
+
+
         # Log Text Area
         log_frame = ttk.LabelFrame(main_frame, text="Processing Log", padding="5")
         log_frame.grid(row=10, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=10)
@@ -320,7 +378,15 @@ class PartsScraperGUI:
             self.status_var.set(status)
         self.root.update_idletasks()
 
+    def start_filter(self):
+        self.clear_log()
+        self.log_message("Starting filter process of remaining images...")
+        self.start_threading(self.perform_filter)
 
+    def start_watermark(self):
+        self.clear_log()
+        self.log_message('Sending data to AI for watermark detection...')
+        self.start_threading(self.perform_watermark)
 
     def start_processing(self):
         """Start processing in a separate thread"""

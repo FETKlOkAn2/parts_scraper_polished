@@ -7,17 +7,16 @@ from openai import OpenAI
 import boto3
 from typing import Dict, List
 import pandas as pd
-from scraper_app.app.database import Database 
+from database import Database 
 import sys
 
 class BatchWatermarkDetector:
-    def __init__(self, openai_api_key=None):
+    def __init__(self, db, openai_api_key=None):
         self.client = OpenAI(api_key=openai_api_key)
         self.s3 = boto3.client("s3")
         self.poll_interval = 30
         self.backoff_max = 300
-        self.chunk_size = 10000  # OpenAI batch limit
-        self.db = Database()
+        self.db = db
 
     def get_urls_from_db(self):
         return list(self.db.read_sql_query("SELECT tag_value FROM part_tags;")['tag_value'])
@@ -105,19 +104,28 @@ class BatchWatermarkDetector:
         print(f"Submitted batch {batch_name}: {batch.id} ({len(requests)} requests)")
         return batch.id
     
-    def poll_batch_completion(self, batch_id: str):
-        """Poll until batch is complete"""
-        backoff = self.poll_interval
+    # def poll_batch_completion(self, batch_id: str):
+    #     """Poll until batch is complete"""
+    #     backoff = self.poll_interval
         
-        while True:
-            batch = self.client.batches.retrieve(batch_id)
-            print(f"Batch {batch_id} status: {batch.status}")
+    #     while True:
+    #         batch = self.client.batches.retrieve(batch_id)
+    #         print(f"Batch {batch_id} status: {batch.status}")
             
-            if batch.status in ("completed", "failed", "expired", "cancelling", "cancelled"):
-                return batch
+    #         if batch.status in ("completed", "failed", "expired", "cancelling", "cancelled"):
+    #             return batch
             
-            time.sleep(backoff)
-            backoff = min(int(backoff * 1.5), self.backoff_max)
+    #         time.sleep(backoff)
+    #         backoff = min(int(backoff * 1.5), self.backoff_max)
+
+    def poll_multiple_batch_completion(self, batch_id):
+        
+        batch = self.client.retrieve(batch_id)
+        if batch.status not in ["completed", "failed", "expired", "cancelling", "cancelled"]:
+            return False, batch.status
+        return True, batch.status
+
+        
     
     def download_results(self, output_file_id: str, output_path: str):
         """Download batch results file_id -> write JSONL to disk"""
@@ -138,7 +146,6 @@ class BatchWatermarkDetector:
     def parse_results(self, jsonl_path: str) -> Dict[str, dict]:
         """Parse batch results into dictionary"""
         results = {}
-
         
         with open(jsonl_path, "r", encoding="utf-8") as f:
             for line in f:
@@ -179,46 +186,46 @@ class BatchWatermarkDetector:
         
         return results
     
-    def process_images_batch(self, bucket: str, prefix: str = 'images/') -> Dict[str, dict]:
-        """Main function to process all images in batches"""
-        print(f"Getting image URLs from s3://{bucket}/{prefix}")
-        urls = self.get_s3_image_urls(bucket, prefix)
-        print(f"Found {len(urls)} images")
+    # def process_images_batch(self, bucket: str, prefix: str = 'images/') -> Dict[str, dict]:
+    #     """Main function to process all images in batches"""
+    #     print(f"Getting image URLs from s3://{bucket}/{prefix}")
+    #     urls = self.get_s3_image_urls(bucket, prefix)
+    #     print(f"Found {len(urls)} images")
         
-        if not urls:
-            return {}
+    #     if not urls:
+    #         return {}
         
-        # Split into chunks
-        batch_ids = []
-        for i in range(0, len(urls), self.chunk_size):
-            chunk_urls = urls[i:i + self.chunk_size]
-            batch_name = f"{i // self.chunk_size:03d}"
-            requests = self.create_batch_requests(chunk_urls)
-            batch_id = self.submit_batch(requests, batch_name)
-            batch_ids.append((batch_id, batch_name))
+    #     # Split into chunks
+    #     batch_ids = []
+    #     for i in range(0, len(urls), self.chunk_size):
+    #         chunk_urls = urls[i:i + self.chunk_size]
+    #         batch_name = f"{i // self.chunk_size:03d}"
+    #         requests = self.create_batch_requests(chunk_urls)
+    #         batch_id = self.submit_batch(requests, batch_name)
+    #         batch_ids.append((batch_id, batch_name))
         
-        # Wait for all batches to complete and collect results
-        all_results = {}
-        for batch_id, batch_name in batch_ids:
-            print(f"Waiting for batch {batch_name} to complete...")
-            batch = self.poll_batch_completion(batch_id)
+    #     # Wait for all batches to complete and collect results
+    #     all_results = {}
+    #     for batch_id, batch_name in batch_ids:
+    #         print(f"Waiting for batch {batch_name} to complete...")
+    #         batch = self.poll_batch_completion(batch_id)
             
-            if batch.status == "completed" and batch.output_file_id:
-                output_path = f"batch_{batch_name}_output.jsonl"
-                self.download_results(batch.output_file_id, output_path) 
-                batch_results = self.parse_results(output_path)
-                all_results.update(batch_results)
-                print(f"Batch {batch_name} completed: {len(batch_results)} results")
-            else:
-                print(f"Batch {batch_name} failed with status: {batch.status}")
+    #         if batch.status == "completed" and batch.output_file_id:
+    #             output_path = f"batch_{batch_name}_output.jsonl"
+    #             self.download_results(batch.output_file_id, output_path) 
+    #             batch_results = self.parse_results(output_path)
+    #             all_results.update(batch_results)
+    #             print(f"Batch {batch_name} completed: {len(batch_results)} results")
+    #         else:
+    #             print(f"Batch {batch_name} failed with status: {batch.status}")
         
-        # Save consolidated results
-        with open("data/watermark_detection_results.json", "w", encoding="utf-8") as f:
-            json.dump(all_results, f, indent=2)
+    #     # Save consolidated results
+    #     with open("data/watermark_detection_results.json", "w", encoding="utf-8") as f:
+    #         json.dump(all_results, f, indent=2)
         
-        print(f"Processed {len(all_results)} images total")
-        self.db.send_delete_request()
-        return all_results
+    #     print(f"Processed {len(all_results)} images total")
+    #     self.db.send_delete_request()
+    #     return all_results
     
     def get_watermark_summary(self, results: Dict[str, dict]) -> dict:
         """Get summary statistics of watermark detection"""
@@ -245,60 +252,6 @@ class BatchWatermarkDetector:
             "confidence_distribution": confidence_counts,
             "watermark_type_distribution": type_counts
         }
-
-
-# Enhanced Database class additions
-class EnhancedDatabase(Database):
-    """Add these methods to your existing Database class"""
-    
-    def __init__(self):
-        super().__init__()
-        self.watermark_detector = BatchWatermarkDetector()
-    
-    def detect_watermarks_ai(self, bucket: str, prefix: str = 'images/') -> Dict[str, dict]:
-        """Use AI to detect watermarks in batch"""
-        return self.watermark_detector.process_images_batch(bucket, prefix)
-    
-    def filter_images_by_watermark_status(self, detection_results: Dict[str, dict], 
-                                            keep_with_watermarks: bool = False) -> List[str]:
-        """Filter images based on watermark detection results"""
-        filtered_images = []
-        
-        for filename, result in detection_results.items():
-            has_watermark = result.get("has_watermark", False)
-            
-            # Keep images based on watermark status preference
-            if keep_with_watermarks and has_watermark:
-                filtered_images.append(filename)
-            elif not keep_with_watermarks and not has_watermark:
-                filtered_images.append(filename)
-        
-        return filtered_images
-    
-    def save_watermark_results_to_db(self, results: Dict[str, dict], table_name: str = "watermark_detection"):
-        """Save watermark detection results to database"""
-        # Convert results to DataFrame
-        data = []
-        for filename, result in results.items():
-            data.append({
-                'filename': filename,
-                'has_watermark': result.get('has_watermark', False),
-                'confidence': result.get('confidence', 'unknown'),
-                'watermark_type': result.get('watermark_type', 'unknown'),
-                'description': result.get('description', ''),
-                'status': result.get('status', 'unknown'),
-                'error_message': result.get('error', ''),
-                'detection_date': pd.Timestamp.now()
-            })
-        
-        df = pd.DataFrame(data)
-        
-        # Create table if it doesn't exist
-        self.create_table_if_not_exists(table_name, df)
-        
-        # Save to database
-        self.to_sql(df, table_name, if_exists='append')
-        print(f"Saved {len(data)} watermark detection results to {table_name}")
 
 
 # Usage example

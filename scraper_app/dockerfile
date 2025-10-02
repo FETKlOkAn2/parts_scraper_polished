@@ -1,1 +1,16 @@
-# blank right now
+# syntax=docker/dockerfile:1
+
+FROM python:3.13-slim AS runtime
+
+# App
+WORKDIR /app
+COPY app/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -U pip && pip install --no-cache-dir -r /app/requirements.txt
+
+COPY app /app
+
+# Healthcheck is optional but useful for ASG container restarts
+HEALTHCHECK --interval=30s --timeout=5s --retries=5 CMD python -c "import boto3;print('ok')"
+
+# Environment comes from docker run; keep image generic
+CMD ["python", "-u", "worker.py"]

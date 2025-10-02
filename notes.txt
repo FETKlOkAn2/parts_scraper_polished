@@ -1,7 +1,18 @@
-on cloud:
-during selen working in the cloud. need to have gui ruitinely queue
-for instance and when they are all finished then send chatgpt batch
-then have it que the batch and wait until done
+need to change how image_procc_app gets the data as of right now it paginates through
+s3 - we sent a delete request to all of the s3, we also need to send those same urls
+to the database so we can delete them from parts_tags
 
-then have hash done in cloud, have it queue the instances again until done
-finally when finished database should have final_tag values
+
+
+
+get df for all parts_tags (after deletion) order them by part_id - split those into equal csv files
+making sure the groups are still together and don't get cut off, upload those csv files
+s3 image processing jobs
+
+
+
+then we queue the datbase to get a list of everything that is still left, from there
+break it into chunks and then send it to a queue
+
+need to make docker, send it to ecr, sqs, autoscaling w/ launch template, and any other cloud
+to work with these 2 new containers

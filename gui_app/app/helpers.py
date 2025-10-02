@@ -2,14 +2,18 @@ import io
 from math import ceil
 import boto3
 import json
+import os
 from dotenv import load_dotenv
 load_dotenv()
+from batch_watermark_detector import BatchWatermarkDetector
 
 class Helper:
-    def __init__(self, db):
+    def __init__(self, db, detector):
         self.db = db
         self.sqs = boto3.client("sqs", region_name='us-east-1')
         self.ec2 = boto3.client("ec2")
+        self.detector = detector
+        self.max_batch_size = 40000
 
 
     def split_data_and_upload_jobs(self,df, bucket, prefix, chunk_size):
@@ -86,4 +90,50 @@ class Helper:
                     if state not in ['terminated', 'shutting-down']:
                         return False,state
         return True, 'Terminated'
+
+
+    def organize_and_submit_batch(self):
+        all_urls = self.detector.get_urls_from_db()
+
+        n = len(all_urls)
+        num_chunks = ceil(n /self.max_batch_size) if n else 0
+        if num_chunks ==0:
+            print("Dataframe is empty, nothing to upload.")
+            return
+        all_batch_ids = []
+        for i in range(num_chunks):
+            start = i * self.max_batch_size
+            stop = min(start + self.max_batch_size, n)
+            batch = all_urls.iloc[start:stop]
+
+            request = self.detector.create_batch_requests(batch)
+            batch_id = self.detector.submit_batch(request, f'batch_{i}')
+            all_batch_ids.append(batch_id)
+
+        return all_batch_ids
+    
+    def parse_ai_results(self, batch_ids):
+        for batch_id in batch_ids:
+            batch = self.detector.client.batches.retrieve(batch_id)
+            if not getattr(batch, "output_file_id", None):
+                print("Batch completed but no output_file_id present.")
+                if getattr(batch, "error_file_id", None):
+                    print(f"Errors were generated. Downloading error file: {batch.error_file_id}")
+                    err_path = "data/test_batch_errors.jsonl"
+                    self.detector.download_results(batch.error_file_id, err_path)
+                    print(f"Saved errors to {err_path}")
+                raise RuntimeError("No output_file_id on completed batch—check error file and individual request statuses.")   
+            
+            output_path = f'data/raw_ai_output/{batch_id}_output.jsonl'
+            self.detector.download_results(
+                outut_file_id = batch.output_file_id,
+                output_path = output_path)
+            
+            results = self.detector.parse_results(output_path) # appends key to delete in the database
+            with open(f"data/ai_output/{batch_id}_output.json", "w", encoding="utf-8") as f:
+                json.dump(results, f, indent=2)
+
+
+
+
 

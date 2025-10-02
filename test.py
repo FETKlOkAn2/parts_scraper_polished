@@ -18,8 +18,8 @@ def test_small_batch(num_images=5):
     print("="*60)
     
     # Initialize detector
-    open_api_key = os.getenv("OPENAI_API_KEY")
-    detector = BatchWatermarkDetector(openai_api_key=open_api_key)
+    #open_api_key = os.getenv("OPENAI_API_KEY")
+    #detector = BatchWatermarkDetector(openai_api_key=open_api_key)
     
     # Step 1: Get all URLs but don't process yet
     print("\n[Step 1] Fetching image list from Database...")
@@ -37,11 +37,11 @@ def test_small_batch(num_images=5):
         print(f"  {i}. {filename}")
     
     # Step 3: Confirm before proceeding
-    print("\n" + "="*60)
-    print("COST ESTIMATE:")
-    cost = (len(test_urls) / 1000) * 10  # Rough estimate
-    print(f"Processing {len(test_urls)} images will cost approximately: ${cost:.4f}")
-    print("="*60)
+    # print("\n" + "="*60)
+    # print("COST ESTIMATE:")
+    # cost = (len(test_urls) / 1000) * 10  # Rough estimate
+    # print(f"Processing {len(test_urls)} images will cost approximately: ${cost:.4f}")
+    # print("="*60)
     
     response = input("\nProceed with test? (yes/no): ").strip().lower()
     if response != 'yes':

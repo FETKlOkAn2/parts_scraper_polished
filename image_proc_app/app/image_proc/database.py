@@ -121,7 +121,7 @@ class Database:
 
     def download_group(self,bucket: str, group_list:list):
         for key in group_list:
-            self.s3.download_file(bucket, f'images/{key}', f'images/images/{key}')
+            self.s3.download_file(bucket, f'images/{key}', f'images/{key}')
 
 
 
@@ -153,13 +153,49 @@ class Database:
             self.delete_keys.append({'Key': f'images/{key}'})
         
     def send_delete_request(self):
-        deletion_request = {'Objects': self.delete_keys,
-                            'Quiet': True}
-        self.s3.delete_objects(
-            Bucket = 'partsbucket0000',
-            Delete= deletion_request
-        )
+        # limits to 1000 keys
+        def _chunk_list(data, limit=900):
+            for i in range(0, len(data), limit):
+                yield data[i:i + limit]
+
+        for chunk in _chunk_list(self.delete_keys):
+            deletion_request = {'Objects': chunk,
+                                'Quiet': True}
+            self.s3.delete_objects(
+                Bucket = 'partsbucket0000',
+                Delete= deletion_request
+            )
+
         self.delete_keys = []
+
+
+    def empty_prefix(self, bucket_name, prefix):
+        def _chunk_list(items, limit=900):
+            for i in range(0, len(items), limit):
+                yield items[i:i+limit]
+
+
+        s3 = boto3.client("s3")
+        paginator = s3.get_paginator("list_objects_v2")
+        total_deleted = 0
+
+        for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
+
+            contents = page['Contents']
+
+            if not contents:
+                continue
+
+            objects = [{"Key": obj["Key"]} for obj in contents]
+
+            for chunk in _chunk_list(objects):
+                s3.delete_objects(
+                    Bucket=bucket_name,
+                    Delete={"Objects": objects, "Quiet": True}
+                )
+                total_deleted += len(chunk)
+
+        return total_deleted        
 
     def retrieve_from_s3(self, bucket:str, prefix:str='', run_img_proc=False) -> Iterator[str]:
         """will have to test after we have 1000 plus and iterates over new page"""

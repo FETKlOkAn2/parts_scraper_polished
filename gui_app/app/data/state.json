@@ -1,5 +1,6 @@
 {
   "image_search_state": false,
   "image_watermark_detection": false,
-  "image_hashing": false
+  "image_hashing": false,
+  "batch_ids":[]
 }
