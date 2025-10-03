@@ -1,4 +1,4 @@
-import os
+import os, sys
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import numpy as np
@@ -10,13 +10,16 @@ from skimage import img_as_float
 from skimage.color import rgb2gray
 from pathlib import Path
 from database import Database
+import pandas as pd
 
 
 class Img_Proc:
-    def __init__(self, inpout:str,testing=False):
+    def __init__(self,testing=False):
         self.testing = testing
         self.folder = "images"
         self.db = Database()
+        self.bucket = "partsbucket0000"
+        self.prefix = "images"
 
 
     def group_images(self):
@@ -50,6 +53,7 @@ class Img_Proc:
 
     def load_and_resize(self, path, where="(unknown)", size=(600, 600)):
         """Load image from path and resize to target size (default 600x600)."""
+
         img = imread(path)
         img = img_as_float(img)  # scale to [0,1]
         img = np.squeeze(img)
@@ -109,10 +113,6 @@ class Img_Proc:
             img = np.ascontiguousarray(img, dtype=np.float32)
 
         return img
-
-
-
-
 
 
     def to_gray2d_uint8(self, img):
@@ -267,8 +267,8 @@ class Img_Proc:
         entries = []  # (name, hash_int)
         tracker = 0
         for fn in files:
-            #path = os.path.join(self.folder, fn)
-            path =  f"{self.folder}/{fn}"
+            path = fn
+
             try:
                 #gray = self.load_and_grayscale(path, where=fn)
                 img = self.load_and_resize(path)
@@ -277,7 +277,8 @@ class Img_Proc:
                 oriented, desc, _ = self.orient_top_left(small)
 
                 h = self.compute_hash(oriented, method=method, hash_size=hash_size)
-                entries.append((fn, h))
+                entries.append((path, h))
+
 
                 if testing and tracker == 0:
                     # self.show_images_side_by_side(small, oriented,
@@ -295,7 +296,7 @@ class Img_Proc:
 
 
             except Exception as e:
-                print(f"  [skip] {fn}: {e}")
+                print(f"  [skip] {path}: {e}")
 
         # Compare all pairs
         final_set = set()
@@ -404,48 +405,50 @@ class Img_Proc:
         plt.show()
 
 
-    def retrieve_from_s3_and_run(self, bucket:str, prefix:str=''):
-        """will have to test after we have 1000 plus and iterates over new page"""
-
-        paginator = self.db.s3.get_paginator("list_objects_v2")
-        previous_control = None
-        grouped_strings = []
-
-        for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
-            print('-------------------------------')
-            for obj in page.get("Contents", []):
-                control_number = obj['Key'].split('_')[-1][0]
-                file_name = obj['Key'].split('/')[1]
-
-                if control_number == 'i':
-                    continue
-                elif previous_control is None:
-                    previous_control = control_number
-                elif control_number < previous_control:
-
-                    
-                    print('\n\n\t--New Group--')
-                    self.db.download_group(bucket, grouped_strings)
+    def retrieve_from_s3_and_run(self, grouped):
+        """download from s3 puts them in images folder then processes them for similarities"""
+        grouped_strings = ['/'.join(x.split('/')[-2:]) for x in grouped]
 
 
+        print('\n\n\t--New Group--')
+        self.db.download_group(self.bucket, grouped_strings)
 
-                    #hash and compare group - image_processing
-                    keep = self.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
-                            distance_thresh=10, testing=True)
-                    if not keep:
-                        keep = self.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
-                                distance_thresh=14, testing=True)
 
-                    self.db.save_data_for_deletion(grouped_strings, keep)
-                    self.db.upload_to_folder('partsbucket0000', 'final', keep[0])
-                    self.db.empty_dir('images')
+        keep =  self.try_mulitiple_hashes(grouped_strings)
+        keep = [keep[0]] # only grabs the first one to keep
 
-                    previous_control = None
-                    grouped_strings = []
+        self.db.save_data_for_deletion(grouped_strings, keep)
 
-                grouped_strings.append(file_name)
-                previous_control = control_number
 
+        df_urls = pd.DataFrame({"tag_value": pd.Series(dtype="string")})
+        self.db.create_table_if_not_exists("to_delete", df_urls)######
+
+
+        self.db.send_delete_request()
+
+        self.db.execute_sql("DROP TABLE dbo.to_delete;")########
+        self.db.empty_dir('images')
+
+
+    def try_mulitiple_hashes(self, grouped_strings):
+        configs = [
+            {"method": "phash", "hash_size": 8, "thresholds": [10, 14, 20]},
+            {"method": "ahash", "hash_size": 16, "thresholds": [12, 18]},
+            {"method": "dhash", "hash_size": 8, "thresholds": [8, 12]},
+        ]
+
+        for cfg in configs:
+            for t in cfg["thresholds"]:
+                keep = self.hash_and_compare_group(
+                    grouped_strings,
+                    method=cfg["method"],
+                    hash_size=cfg["hash_size"],
+                    distance_thresh=t,
+                    testing=False,
+                )
+                if keep:
+                    return keep                
+        return [grouped_strings[0]]
 
 if __name__ == "__main__":
     img_proc = Img_Proc(testing = False)

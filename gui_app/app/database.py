@@ -145,12 +145,7 @@ class Database:
         try:
             self.s3.upload_file(local_file_path, bucket_name, s3_file_name, ExtraArgs = {'ContentType': "image/png"})
 
-            # self.s3.put_object(
-            #     Bucket=bucket_name,
-            #     Key=s3_file_name,
-            #     Body=local_file_path,
-            #     ContentType='image/png'
-            # )
+
             print(f"uploaded {local_file_path}")
             
             if delete_after:
@@ -203,9 +198,9 @@ class Database:
         def _chunk_list(data, limit=900):
             for i in range(0, len(data), limit):
                 yield data[i:i + limit]
-
+                
+        df_urls = pd.DataFrame({"tag_value": []})
         self.create_table_if_not_exists("dbo.to_delete", df_urls)
-        self.execute_sql("TRUNCATE TABLE dbo.to_delete")
 
         base_url = "https://partsbucket0000.s3.us-east-1.amazonaws.com/"
         for chunk in _chunk_list(self.delete_keys):
@@ -228,7 +223,7 @@ class Database:
             INNER JOIN dbo.to_delete AS td
                 ON td.tag_value = pt.tag_value;
             """)
-        self.execute_sql("DROP TABLE dbo.delete;")
+        self.execute_sql("DROP TABLE dbo.to_delete;")
         self.delete_keys = []
     
     def empty_prefix(self, bucket_name, prefix):

@@ -1,19 +1,14 @@
 import os, shutil, stat
 import boto3
-import re
-import numpy as np
 from botocore.exceptions import NoCredentialsError
 from sqlalchemy import create_engine, text
 import pandas as pd
 from threading import Lock
-from typing import Dict, Iterable, List, Iterator, Tuple
-from image_proc_app.app.image_processing import Img_Proc
-from wm_remover import AdvancedWatermarkRemover
-import pytesseract
-import cv2
-import matplotlib.pyplot as plt
-from dotenv import load_dotenv
+import sys
+from typing import Iterator
+import time
 
+from dotenv import load_dotenv
 load_dotenv()
 class Database:
     def __init__(self):
@@ -48,10 +43,10 @@ class Database:
         with self.lock, self.engine.begin() as conn:
             return pd.read_sql_query(text(sql_text), conn)
     
-    def to_sql(self, df, table_name, if_exists='append', index=False):
+    def to_sql(self, df, table_name, if_exists='append', index=False, schema=None):
         """Write records stored in a DataFrame to a SQL database."""
         with self.lock, self.engine.begin() as conn:
-            df.to_sql(table_name, conn, if_exists=if_exists, index=index, method='multi', chunksize=20000)
+            df.to_sql(table_name, conn, if_exists=if_exists, index=index, method='multi', schema=schema, chunksize=20000)
 
 
 
@@ -101,12 +96,7 @@ class Database:
         try:
             self.s3.upload_file(local_file_path, bucket_name, s3_file_name, ExtraArgs = {'ContentType': "image/png"})
 
-            # self.s3.put_object(
-            #     Bucket=bucket_name,
-            #     Key=s3_file_name,
-            #     Body=local_file_path,
-            #     ContentType='image/png'
-            # )
+
             print(f"uploaded {local_file_path}")
             
             if delete_after:
@@ -121,8 +111,8 @@ class Database:
 
     def download_group(self,bucket: str, group_list:list):
         for key in group_list:
-            self.s3.download_file(bucket, f'images/{key}', f'images/{key}')
-
+            formated_key = "/".join(key.split('/')[-2:])
+            self.s3.download_file(bucket, formated_key, formated_key)
 
 
     def empty_dir(self, folder: str) -> None:
@@ -150,22 +140,43 @@ class Database:
             if name not in keep:
                 delete.append(name)
         for key in delete:
-            self.delete_keys.append({'Key': f'images/{key}'})
+            self.delete_keys.append({'Key': key})
         
     def send_delete_request(self):
+        """"Deletes from s3 and also deletes from parts_tags database
+        data insdie self.delete_keys needs to be self.delete_keys.append({'Key': f'images/{key}'})"""
         # limits to 1000 keys
         def _chunk_list(data, limit=900):
             for i in range(0, len(data), limit):
                 yield data[i:i + limit]
+                
+        # df_urls = pd.DataFrame({"tag_value": []})
+        # self.create_table_if_not_exists("dbo.to_delete", df_urls)
 
+        base_url = "https://partsbucket0000.s3.us-east-1.amazonaws.com/"
         for chunk in _chunk_list(self.delete_keys):
+            
             deletion_request = {'Objects': chunk,
                                 'Quiet': True}
             self.s3.delete_objects(
-                Bucket = 'partsbucket0000',
+                Bucket = 'partsbucket0000', 
                 Delete= deletion_request
             )
+            
+            # format and get ready for deletion from database
+            temp_delete = [f"{base_url}{obj['Key']}" for obj in chunk]
+            df_urls = pd.DataFrame({"tag_value": temp_delete})
+            self.to_sql(df_urls, 'to_delete', schema='dbo')
 
+
+        self.execute_sql("""
+            DELETE pt
+            FROM [dbo].[part_tags] AS pt
+            INNER JOIN [dbo].[to_delete] AS td
+                ON td.tag_value = pt.tag_value;
+            """)
+        self.execute_sql("TRUNCATE TABLE [dbo].[to_delete];")
+        
         self.delete_keys = []
 
 
@@ -195,50 +206,7 @@ class Database:
                 )
                 total_deleted += len(chunk)
 
-        return total_deleted        
-
-    def retrieve_from_s3(self, bucket:str, prefix:str='', run_img_proc=False) -> Iterator[str]:
-        """will have to test after we have 1000 plus and iterates over new page"""
-
-        paginator = self.s3.get_paginator("list_objects_v2")
-        previous_control = None
-        grouped_strings = []
-
-        for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
-            print('-------------------------------')
-            for obj in page.get("Contents", []):
-                control_number = obj['Key'].split('_')[-1][0]
-                file_name = obj['Key'].split('/')[1]
-
-                if control_number == 'i':
-                    continue
-                elif previous_control is None:
-                    previous_control = control_number
-                elif control_number < previous_control:
-                    print('\n\n\t--New Group--')
-                    self.download_group(bucket, grouped_strings)
-
-
-                    img_proc = Img_Proc()
-
-                    #hash and compare group - image_processing
-                    keep = img_proc.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
-                            distance_thresh=10, testing=True)
-                    if not keep:
-                        keep = img_proc.hash_and_compare_group(grouped_strings, method='phash', hash_size=8,
-                                distance_thresh=14, testing=True)
-
-                    self.save_data_for_deletion(grouped_strings, keep)
-                    self.upload_to_folder('partsbucket0000', 'final', keep[0])
-                    self.empty_dir('images')
-
-                    previous_control = None
-                    grouped_strings = []
-
-                grouped_strings.append(file_name)
-                previous_control = control_number
-
-
+        return total_deleted
 
 if __name__ == "__main__":
     db = Database()

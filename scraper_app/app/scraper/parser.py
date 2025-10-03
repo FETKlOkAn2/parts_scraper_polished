@@ -1,7 +1,7 @@
 from PIL import Image
 from database import Database
 import boto3
-import io, json, os, requests, subprocess, time
+import io, json, os, requests, subprocess, time, sys
 from dotenv import load_dotenv
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -14,7 +14,7 @@ class Parser:
         username = os.getenv("DECODO_USERNAME")
         password = os.getenv("DECODO_PASSWORD")
 
-        self.query = " ".join(input)
+        self.query = input
         self.url = f"https://www.bing.com/images/search?q={self.query}&form=HDRSC2"
         self.proxy = f"http://{username}:{password}@gate.decodo.com:7000"
         self.headers = {"User-Agent": "Mozilla/5.0"}

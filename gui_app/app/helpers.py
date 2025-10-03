@@ -3,6 +3,7 @@ from math import ceil
 import boto3
 import json
 import os
+import sys
 from dotenv import load_dotenv
 load_dotenv()
 from batch_watermark_detector import BatchWatermarkDetector
@@ -16,7 +17,8 @@ class Helper:
         self.max_batch_size = 40000
 
 
-    def split_data_and_upload_jobs(self,df, bucket, prefix, chunk_size):
+    def split_data_and_upload_jobs(self,df, bucket, prefix, chunk_size, testing=False):
+        """Function for Image Search"""
         n = len(df)
         num_chunks = ceil(n /chunk_size) if n else 0
         if num_chunks ==0:
@@ -29,12 +31,39 @@ class Helper:
             start = i * chunk_size
             stop = min(start + chunk_size, n)
             chunk = df.iloc[start:stop]
+            if testing:
+                chunk.to_csv('data/test_data/test_upload.csv', header=False, index=False)
+                sys.exit()
+                
+            else:
+                csv_buf = io.StringIO()
+                chunk.to_csv(csv_buf, index=False, header=False)
+                data_bytes = csv_buf.getvalue().encode("utf-8")
 
+                chunk_key = f"{base_prefix}/chunk_{i+1}.csv"
+                
+
+                self.db.s3.put_object(
+                    Body=data_bytes,
+                    Bucket=bucket,
+                    Key=chunk_key,
+                    ContentType='text/csv'
+                )
+
+        return num_chunks
+    
+    def split_group_upload(self, df, bucket, prefix, chunk_size):
+        """Function for Image Proc"""
+
+        def _process_dataframe(df, bucket, prefix, iteration):
+            base_prefix = prefix.rstrip('/')
+
+            chunk = df
             csv_buf = io.StringIO()
-            chunk.to_csv(csv_buf, index=False, header=True)
-            data_bytes = csv_buf.getvalue().encode("utf-8")
+            chunk.to_csv(csv_buf, index=False, header=False)
+            data_bytes = csv_buf.getvalue().encode('utf-8')
 
-            chunk_key = f"{base_prefix}/chunk_{i+1}.csv"
+            chunk_key = f"{base_prefix}/chunk_{iteration+1}.csv"
 
             self.db.s3.put_object(
                 Body=data_bytes,
@@ -42,38 +71,49 @@ class Helper:
                 Key=chunk_key,
                 ContentType='text/csv'
             )
-
-        return num_chunks
-    
-    def split_group_upload(self,df, bucket, prefix, chunk_size):
-        n = len(df)
-        num_chunks = ceil(n /chunk_size) if n else 0
-        if num_chunks ==0:
-            print("Dataframe is empty, nothing to upload.")
-            return
+            return 1
         
-        base_prefix = prefix.rstrip('/')
+        def _split(value):
+            return value.split('images/')[-1].split('_')[:-1][0]
+
+        num_df = df['tag_value'].apply(_split)
+        end_idxs = num_df.index[num_df.ne(num_df.shift(-1))].tolist()
         
-        for i in range(num_chunks):
-            start = i * chunk_size
-            stop = min(start + chunk_size, n)
-            chunk = df.iloc[start:stop]
+        displacement = None
+        start = None
+        stop = None
+        num_chunks = 0
 
-            csv_buf = io.StringIO()
-            chunk.to_csv(csv_buf, index=False, header=True)
-            data_bytes = csv_buf.getvalue().encode("utf-8")
+        for i, idx in enumerate(end_idxs):
+            if start is None:
+                start = i
+                continue
 
-            chunk_key = f"{base_prefix}/chunk_{i+1}.csv"
+            elif stop is None: # first chunk
+                if idx >= chunk_size:
+                    stop = idx
+                    chunk = df.iloc[start:stop+1]
+                    start = stop +1
+                    displacement = stop
+                    num_chunks += _process_dataframe(chunk, bucket, prefix, num_chunks)
+                continue
 
-            self.db.s3.put_object(
-                Body=data_bytes,
-                Bucket=bucket,
-                Key=chunk_key,
-                ContentType='text/csv'
-            )
+            else: 
+                displaced_idx = idx - displacement
+                if end_idxs[-1] == idx: # last chunk
+                    chunk = df.iloc[start: idx+1]
+                    num_chunks += _process_dataframe(chunk, bucket, prefix, num_chunks)
+                    return num_chunks
 
-        return num_chunks
+                elif displaced_idx >= chunk_size: # all middle chunks
+                    stop = idx
+                    chunk = df.iloc[start:stop+1]
+                    start = stop +1
+                    displacement = stop
+                    num_chunks +=_process_dataframe(chunk, bucket, prefix, num_chunks)
     
+
+
     def send_chunk_messages(self, job_id: str, queue_url: str, num_chunks: int, key: str):
         """
         Send SQS messages for each chunk file.

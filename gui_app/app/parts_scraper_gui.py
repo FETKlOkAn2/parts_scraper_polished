@@ -10,6 +10,7 @@ from math import ceil
 import io
 import time
 import os
+import sys
 from helpers import Helper
 from batch_watermark_detector import BatchWatermarkDetector
 from dotenv import load_dotenv
@@ -17,7 +18,8 @@ load_dotenv()
 
 
 class PartsScraperGUI:
-    def __init__(self, root):
+    def __init__(self, root, testing=False):
+        self.testing = testing
         self.root = root
         self.root.title("Parts Scraper - Watermark Remover")
         self.root.geometry("850x700")
@@ -94,7 +96,7 @@ class PartsScraperGUI:
 
         self.helper.parse_ai_results(batch_ids)
 
-    def perform_filter(self):
+    def perform_filter(self): # this is process
         self.progress_bar.start(30)
         self.filter_images_btn.configure(state=tk.DISABLED)
         self.status_var.set("Performing Hash Similiarity")
@@ -103,6 +105,7 @@ class PartsScraperGUI:
         
         all_data = self.db.read_sql_query("SELECT tag_value FROM part_tags ORDER BY tag_value ASC;")
 
+        self.log_message("Splitting groups into jobs...")
         num_chunks = self.helper.split_group_upload(
             df=all_data,
             bucket=self.bucket,
@@ -110,12 +113,39 @@ class PartsScraperGUI:
             chunk_size = self.processing_chunk_size
         )
 
+        self.clear_log()
+        self.helper.send_chunk_messages(    # real
+            job_id = "Testing",             # "process_images"
+            queue_url = self.test_queue,    #self.process_queue
+            num_chunks =  10,               #num_chunks
+            key = self.test_input_key)      #self.process_key
+
 
         self.log_message("Instances being created in the Cloud Please Wait...")
 
+        all_terminated = False
+        count = 0
+        time.sleep(30)
+        while not all_terminated:
+            time.sleep(60)
+            all_terminated,state = self.helper.determine_instance_state()
+            count += 1
+            self.clear_log()
+            self.log_message("Program will be complete after processing...")
+            self.log_message(f"\nProcessing Images...\n\tStatus: {state}\n\tMinutes: {count}")
+        
+        # Deletes the CSV files from search_jobs
+        self.db.empty_prefix(self.bucket, self.process_job_key)
+
+        self.clear_log()
+        self.log_message("All images have been processed")
+        self.ai_watermark_btn.configure(state=tk.Normal)
+        self.search_images_btn.configure(state=tk.DISABLED)
+        self.progress_bar.stop()
+
         self.status_var.set("COMPLETED: Images are Ready for Deployment")
 
-    def process_images(self):
+    def search_images(self): # this is search
         """Main processing function"""
         # uploading to database
         self.status_var.set("Performing Image Search...")
@@ -133,7 +163,8 @@ class PartsScraperGUI:
             df=all_data,
             bucket=self.bucket,
             prefix=self.search_job_key,
-            chunk_size = self.search_chunk_size) 
+            chunk_size = self.search_chunk_size,
+            testing=self.testing) 
         
         self.clear_log()
 
@@ -147,6 +178,7 @@ class PartsScraperGUI:
         self.log_message("Watermark Button will become clickable when all images have been downloaded...")
         self.log_message(f"{num_chunks} Instances being created in cloud please wait...")
 
+        
         all_terminated = False
         count = 0
         time.sleep(30)
@@ -164,7 +196,7 @@ class PartsScraperGUI:
         self.clear_log()
         self.log_message("All images have been downloaded.\nYou can now start the watermark")
         self.ai_watermark_btn.configure(state=tk.Normal)
-        self.process_btn.configure(state=tk.DISABLED)
+        self.search_images_btn.configure(state=tk.DISABLED)
         self.progress_bar.stop()
 
     def determine_state(self):
@@ -201,9 +233,9 @@ class PartsScraperGUI:
         
         # Process button
         if enabled and self.csv_loaded:
-            self.process_btn.config(state=tk.NORMAL)
+            self.search_images_btn.config(state=tk.NORMAL)
         else:
-            self.process_btn.config(state=tk.DISABLED)
+            self.search_images_btn.config(state=tk.DISABLED)
 
         
         
@@ -273,9 +305,9 @@ class PartsScraperGUI:
         button_frame = ttk.Frame(main_frame)
         button_frame.grid(row=9, column=0, columnspan=3, pady=20)
         
-        self.process_btn = ttk.Button(button_frame, text="Start Image Search", 
-                                     command=self.start_processing, style="Accent.TButton")
-        self.process_btn.pack(side=tk.LEFT, padx=5)
+        self.search_images_btn = ttk.Button(button_frame, text="Start Image Search", 
+                                     command=self.start_search, style="Accent.TButton")
+        self.search_images_btn.pack(side=tk.LEFT, padx=5)
 
         self.ai_watermark_btn = ttk.Button(button_frame, text='AI Watermark',
                                            command=self.start_watermark, style='Accent.TButton', state=tk.DISABLED)  
@@ -405,7 +437,7 @@ class PartsScraperGUI:
         self.log_message('Sending data to AI for watermark detection...')
         self.start_threading(self.perform_watermark)
 
-    def start_processing(self):
+    def start_search(self):
         """Start processing in a separate thread"""
         if not self.csv_loaded:
             messagebox.showerror("Error", "Please load a valid CSV file first")
@@ -423,7 +455,7 @@ class PartsScraperGUI:
             self.clear_log()
             self.log_message("Starting to Process...")
 
-            self.start_threading(self.process_images)
+            self.start_threading(self.search_images)
         else:
             pass
 
@@ -454,7 +486,7 @@ def main():
     except:
         pass  # Theme not available
         
-    app = PartsScraperGUI(root)
+    app = PartsScraperGUI(root, testing=True)
     
     # Center window
     root.update_idletasks()

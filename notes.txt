@@ -1,8 +1,9 @@
 need to change how image_procc_app gets the data as of right now it paginates through
 s3 - we sent a delete request to all of the s3, we also need to send those same urls
-to the database so we can delete them from parts_tags
+to the database so we can delete them from parts_tags - error with thsi right now
 
-
+need to make in scraper when a it cannot get an image to keep going until it gets 10
+should be easy as long as i grab the first 20 or more and then make some logic to catch errors until 10 succesful
 
 
 get df for all parts_tags (after deletion) order them by part_id - split those into equal csv files
