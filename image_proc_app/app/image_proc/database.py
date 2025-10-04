@@ -15,14 +15,15 @@ class Database:
         self.user = os.getenv("DB_USER")
         self.password = os.getenv("DB_PASSWORD")
         self.host = os.getenv("DB_HOST")
-        self.port = os.getenv("DB_PORT", "1433")
+        self.port = os.getenv("DB_PORT")
         self.db = 'parts_db'
         self.driver = "ODBC+Driver+18+for+SQL+Server"
         self.engine = self.get_engine() # Initialize engine in the constructor
         self.lock = Lock() # Thread lock for database access
         self.s3 = boto3.client("s3")
-        #self.suffix_re = re.compile()
+        self.bucket = os.getenv("BUCKET")
         self.delete_keys = []
+        self.to_delete_df = pd.DataFrame({"tag_value": pd.Series(dtype="string")})
 
     def get_engine(self):
         url = (
@@ -134,40 +135,38 @@ class Database:
             except FileNotFoundError:
                 pass  # already gone
 
-    def save_data_for_deletion(self, all_data, keep):
+    def save_data_for_deletion_img_proc(self, all_data, keep):
+        """"used in image processing"""
+        base_url = f"https://{self.bucket}.s3.us-east-1.amazonaws.com/" 
+        temp_delete = []
         delete = []
         for name in all_data:
             if name not in keep:
                 delete.append(name)
         for key in delete:
             self.delete_keys.append({'Key': key})
+            temp_delete.append(f"{base_url}{key}")
         
-    def send_delete_request(self):
-        """"Deletes from s3 and also deletes from parts_tags database
+        df_urls = pd.DataFrame({"tag_value": temp_delete})
+        self.to_delete_df = pd.concat([self.to_delete_df, df_urls], ignore_index=True)
+
+        
+    def send_delete_request_img_proc(self):
+        """" Used im image proc Deletes from s3 and also deletes from parts_tags database
         data insdie self.delete_keys needs to be self.delete_keys.append({'Key': f'images/{key}'})"""
         # limits to 1000 keys
         def _chunk_list(data, limit=900):
             for i in range(0, len(data), limit):
                 yield data[i:i + limit]
-                
-        # df_urls = pd.DataFrame({"tag_value": []})
-        # self.create_table_if_not_exists("dbo.to_delete", df_urls)
 
-        base_url = "https://partsbucket0000.s3.us-east-1.amazonaws.com/"
         for chunk in _chunk_list(self.delete_keys):
             
             deletion_request = {'Objects': chunk,
                                 'Quiet': True}
             self.s3.delete_objects(
-                Bucket = 'partsbucket0000', 
+                Bucket = self.bucket, 
                 Delete= deletion_request
             )
-            
-            # format and get ready for deletion from database
-            temp_delete = [f"{base_url}{obj['Key']}" for obj in chunk]
-            df_urls = pd.DataFrame({"tag_value": temp_delete})
-            self.to_sql(df_urls, 'to_delete', schema='dbo')
-
 
         self.execute_sql("""
             DELETE pt
@@ -175,9 +174,8 @@ class Database:
             INNER JOIN [dbo].[to_delete] AS td
                 ON td.tag_value = pt.tag_value;
             """)
-        self.execute_sql("TRUNCATE TABLE [dbo].[to_delete];")
-        
-        self.delete_keys = []
+        self.execute_sql("DROP TABLE dbo.to_delete;")
+
 
 
     def empty_prefix(self, bucket_name, prefix):
@@ -208,6 +206,7 @@ class Database:
 
         return total_deleted
 
+   
 if __name__ == "__main__":
     db = Database()
     #db.retrieve_from_s3("partsbucket0000","images", False, True)

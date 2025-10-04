@@ -14,13 +14,13 @@ class Database:
         self.user = os.getenv("DB_USER")
         self.password = os.getenv("DB_PASSWORD")
         self.host = os.getenv("DB_HOST")
-        self.port = os.getenv("DB_PORT", "1433")
+        self.port = os.getenv("DB_PORT")
         self.db = 'parts_db'
         self.driver = "ODBC+Driver+18+for+SQL+Server"
         self.engine = self.get_engine() # Initialize engine in the constructor
         self.lock = Lock() # Thread lock for database access
         self.s3 = boto3.client("s3")
-        #self.suffix_re = re.compile()
+        self.bucket = os.getenv("BUCKET")
         self.delete_keys = []
 
     def get_engine(self):
@@ -152,12 +152,12 @@ class Database:
         df_urls = pd.DataFrame({"tag_value": []})
         self.create_table_if_not_exists("dbo.to_delete", df_urls)
 
-        base_url = "https://partsbucket0000.s3.us-east-1.amazonaws.com/"
+        base_url = f"https://{self.bucket}.s3.us-east-1.amazonaws.com/"
         for chunk in _chunk_list(self.delete_keys):
             deletion_request = {'Objects': chunk,
                                 'Quiet': True}
             self.s3.delete_objects(
-                Bucket = 'partsbucket0000',
+                Bucket = self.bucket,
                 Delete= deletion_request
             )
             

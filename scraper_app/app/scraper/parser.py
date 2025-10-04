@@ -1,5 +1,4 @@
 from PIL import Image
-from database import Database
 import boto3
 import io, json, os, requests, subprocess, time, sys
 from dotenv import load_dotenv
@@ -10,20 +9,22 @@ pd.set_option("display.max_colwidth", None)
 load_dotenv()
 
 class Parser:
-    def __init__(self, input:str):
+    def __init__(self, db, text):
         username = os.getenv("DECODO_USERNAME")
         password = os.getenv("DECODO_PASSWORD")
 
-        self.query = input
+        self.query = text
         self.url = f"https://www.bing.com/images/search?q={self.query}&form=HDRSC2"
         self.proxy = f"http://{username}:{password}@gate.decodo.com:7000"
         self.headers = {"User-Agent": "Mozilla/5.0"}
         
-        self.db = Database()
+        self.db = db
         self.s3 = boto3.client("s3")
 
         self.links = []
         self.tor = None
+        self.max_images = 10
+        self.images_downloaded = 0
 
     def tor_start(self):
         exe_path = os.getenv("TOR_PATH")
@@ -47,7 +48,7 @@ class Parser:
             if m:
                 data = json.loads(m)
                 all_links.append(data.get("murl"))
-        self.links = all_links[:10]
+        self.links = all_links[:30]
 
 
     def download_images(self, keep_bytes=True):
@@ -61,9 +62,8 @@ class Parser:
             'https': 'socks5h://127.0.0.1:9050'
         }
 
-        idx = 0
         tag_values = []
-        part_ids = []
+        part_id = None
 
         try:
             info = self.query
@@ -72,14 +72,13 @@ class Parser:
             part_id = self.db.read_sql_query(f"SELECT part_id FROM parts WHERE number = '{part_number}'")
             part_id = int(part_id["part_id"].iat[0])
 
-            while self.links:
+            while self.images_downloaded < self.max_images:
                 url = self.links.pop()
                 #tag = url.split('.')[-1]
-                file_name = info.replace(" ", "_") + "_" + str(idx) + ".png"
+                file_name = info.replace(" ", "_") + "_" + str(self.images_downloaded) + ".png"
                 file_name = file_name.replace('/',"_")
                 file_name = file_name.replace(',','')
                 s3_key = f"images/{file_name}"
-                idx+=1
 
                 session.headers.update({
                     "User-Agent": (
@@ -110,6 +109,7 @@ class Parser:
                             ContentType='image/png'
                         )
                         print(f'uploaded to s3://partsbucket0000/{s3_key}')
+                        self.images_downloaded += 1
    
     
                 except Exception as e:
@@ -118,22 +118,13 @@ class Parser:
                 else:
                     url_value = f"https://partsbucket0000.s3.us-east-1.amazonaws.com/{s3_key}"
                     tag_values.append(url_value)
-                    part_ids.append(part_id)
 
         except Exception as e:
             print("Request failed", e)
-            
-        df = pd.DataFrame({
-            "part_id": part_ids,
-            "tag_value": tag_values
-        })
-
-        self.db.upsert_append_new_only(
-            df=df,
-            target='dbo.part_tags',
-            key_col='tag_value'
-        )
+        
         self.terminate_tor()
+
+        return part_id, tag_values
 
 if __name__ == "__main__":
     scraper = Parser()

@@ -21,23 +21,23 @@ class PartsScraperGUI:
     def __init__(self, root, testing=False):
         self.testing = testing
         self.root = root
-        self.root.title("Parts Scraper - Watermark Remover")
+        self.root.title("-Parts Scraper-")
         self.root.geometry("850x700")
         self.root.resizable(True, True)
         
         # Constants
         self.open_ai_key = os.getenv("OPENAI_API_KEY")
-        self.bucket = "partsbucket0000"
-        self.search_job_key = 'search_jobs'
-        self.process_job_key = 'proc_jobs'
-        self.search_queue = 'https://sqs.us-east-1.amazonaws.com/390403858209/scraper_queue'
-        self.process_queue = ''
+        self.bucket = os.getenv("BUCKET")
+        self.search_job_key = os.getenv("SEARCH_KEY")
+        self.process_job_key = os.getenv("PROC_KEY")
+        self.search_queue = os.getenv("SEARCH_QUEUE_URL")
+        self.process_queue = os.getenv("PROC_QUEUE_URL")
         self.search_chunk_size = 250
         self.processing_chunk_size = 500
 
         # Tests
-        self.test_input_key = 'jobs'
-        self.test_queue = "https://sqs.us-east-1.amazonaws.com/390403858209/Dazetestqueue"
+        self.test_input_key = os.getenv("TEST_KEY")
+        self.test_queue = os.getenv("TEST_QUEUE_URL")
 
         # Variables
         self.csv_file_path = tk.StringVar()
@@ -67,7 +67,7 @@ class PartsScraperGUI:
         ids = self.helper.organize_and_submit_batch()
         self.state.set(batch_ids=ids)
         self.poll_open_ai()
-        self.db.send_delete_request()
+        self.db.send_delete_request_watermark()
 
         self.progress_bar.stop()
 
@@ -114,11 +114,20 @@ class PartsScraperGUI:
         )
 
         self.clear_log()
-        self.helper.send_chunk_messages(    # real
-            job_id = "Testing",             # "process_images"
-            queue_url = self.test_queue,    #self.process_queue
-            num_chunks =  10,               #num_chunks
-            key = self.test_input_key)      #self.process_key
+
+        if self.testing:
+            self.helper.send_chunk_messages(   
+                job_id = "Testing",           
+                queue_url = self.test_queue,   
+                num_chunks =  10,               
+                key = self.test_input_key)      
+        else:
+            self.helper.send_chunk_messages(  
+                job_id = "process_images",          
+                queue_url = self.process_queue,   
+                num_chunks =  num_chunks,            
+                key = self.process_key)   
+    
 
 
         self.log_message("Instances being created in the Cloud Please Wait...")
@@ -143,6 +152,7 @@ class PartsScraperGUI:
         self.search_images_btn.configure(state=tk.DISABLED)
         self.progress_bar.stop()
 
+        self.db.update_all_final_tags()
         self.status_var.set("COMPLETED: Images are Ready for Deployment")
 
     def search_images(self): # this is search
@@ -167,12 +177,19 @@ class PartsScraperGUI:
             testing=self.testing) 
         
         self.clear_log()
-
-        self.helper.send_chunk_messages(    # real
-            job_id = "Testing",             #images_search
-            queue_url = self.test_queue,    #self.search_queue
-            num_chunks =  10,               #num_chunks
-            key = self.test_input_key)      #self.search_key
+        
+        if self.testing:
+            self.helper.send_chunk_messages(   
+                job_id = "Testing",           
+                queue_url = self.test_queue,  
+                num_chunks =  10,              
+                key = self.test_input_key)     
+        else:
+            self.helper.send_chunk_messages(  
+                job_id = "image search",          
+                queue_url = self.search_queue,   
+                num_chunks =  num_chunks,          
+                key = self.search_key)        
 
 
         self.log_message("Watermark Button will become clickable when all images have been downloaded...")

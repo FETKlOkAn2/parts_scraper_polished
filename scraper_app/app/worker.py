@@ -5,7 +5,7 @@ from scraper.run import process_shard
 
 REGION        = os.getenv("AWS_REGION")
 QUEUE_URL     = os.getenv("QUEUE_URL")
-INPUT_BUCKET  = os.getenv("INPUT_BUCKET")
+INPUT_BUCKET  = os.getenv("BUCKET")
 
 # choose a temp dir that works everywhere (Windows/Mac/Linux)
 LOCAL_TMP_DIR = os.getenv("LOCAL_TMP_DIR", tempfile.gettempdir())

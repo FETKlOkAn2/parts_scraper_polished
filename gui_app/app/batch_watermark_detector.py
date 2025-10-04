@@ -104,19 +104,6 @@ class BatchWatermarkDetector:
         print(f"Submitted batch {batch_name}: {batch.id} ({len(requests)} requests)")
         return batch.id
     
-    # def poll_batch_completion(self, batch_id: str):
-    #     """Poll until batch is complete"""
-    #     backoff = self.poll_interval
-        
-    #     while True:
-    #         batch = self.client.batches.retrieve(batch_id)
-    #         print(f"Batch {batch_id} status: {batch.status}")
-            
-    #         if batch.status in ("completed", "failed", "expired", "cancelling", "cancelled"):
-    #             return batch
-            
-    #         time.sleep(backoff)
-    #         backoff = min(int(backoff * 1.5), self.backoff_max)
 
     def poll_multiple_batch_completion(self, batch_id):
         

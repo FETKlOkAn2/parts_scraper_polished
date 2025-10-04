@@ -14,14 +14,15 @@ class Database:
         self.user = os.getenv("DB_USER")
         self.password = os.getenv("DB_PASSWORD")
         self.host = os.getenv("DB_HOST")
-        self.port = os.getenv("DB_PORT", "1433")
+        self.port = os.getenv("DB_PORT")
         self.db = 'parts_db'
         self.driver = "ODBC+Driver+18+for+SQL+Server"
         self.engine = self.get_engine() # Initialize engine in the constructor
         self.lock = Lock() # Thread lock for database access
         self.s3 = boto3.client("s3")
-        #self.suffix_re = re.compile()
+        self.bucket = os.getenv("BUCKET")
         self.delete_keys = []
+        self.to_delete_df = pd.DataFrame({"tag_value": pd.Series(dtype="string")})
 
     def get_engine(self):
         url = (
@@ -191,7 +192,7 @@ class Database:
         for key in delete:
             self.delete_keys.append({'Key': f'images/{key}'})
         
-    def send_delete_request(self):
+    def send_delete_request_watermark(self):
         """"Deletes from s3 and also deletes from parts_tags database
         data insdie self.delete_keys needs to be self.delete_keys.append({'Key': f'images/{key}'})"""
         # limits to 1000 keys
@@ -199,24 +200,22 @@ class Database:
             for i in range(0, len(data), limit):
                 yield data[i:i + limit]
                 
-        df_urls = pd.DataFrame({"tag_value": []})
-        self.create_table_if_not_exists("dbo.to_delete", df_urls)
 
-        base_url = "https://partsbucket0000.s3.us-east-1.amazonaws.com/"
+        base_url = f"https://{self.bucket}.s3.us-east-1.amazonaws.com/"
         for chunk in _chunk_list(self.delete_keys):
             deletion_request = {'Objects': chunk,
                                 'Quiet': True}
             self.s3.delete_objects(
-                Bucket = 'partsbucket0000',
+                Bucket = self.bucket,
                 Delete= deletion_request
             )
-            
-            # format and get ready for deletion from database
+                   # format and get ready for deletion from database
             temp_delete = [f"{base_url}{obj['Key']}" for obj in chunk]
             df_urls = pd.DataFrame({"tag_value": temp_delete})
-            self.to_sql(df_urls, 'to_delete', schema='dbo')
+            self.to_delete_df = pd.concat([self.to_delete_df, df_urls], ignore_index=True)
 
-
+        self.create_table_if_not_exists("dbo.to_delete", self.to_delete_df)
+        self.to_sql(self.to_delete_df, 'to_delete', schema='dbo')
         self.execute_sql("""
             DELETE pt
             FROM dbo.part_tags AS pt
@@ -224,7 +223,6 @@ class Database:
                 ON td.tag_value = pt.tag_value;
             """)
         self.execute_sql("DROP TABLE dbo.to_delete;")
-        self.delete_keys = []
     
     def empty_prefix(self, bucket_name, prefix):
         def _chunk_list(items, limit=900):
@@ -254,6 +252,20 @@ class Database:
 
         return total_deleted
 
+    def update_all_final_tags(self):
+        sql_statement = """
+            WITH s AS (
+                SELECT part_id, MIN(tag_value) AS tag_value
+                FROM dbo.part_tags
+                GROUP BY part_id
+            )
+            UPDATE p
+            SET p.final_tag = s.tag_value
+            FROM dbo.parts AS p
+            INNER JOIN s ON s.part_id = p.part_id
+            WHERE p.final_tag IS NULL;
+            """
+        self.execute_sql(sql_statement)
 
 if __name__ == "__main__":
     db = Database()

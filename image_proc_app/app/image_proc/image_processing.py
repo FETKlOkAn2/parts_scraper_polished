@@ -11,15 +11,17 @@ from skimage.color import rgb2gray
 from pathlib import Path
 from database import Database
 import pandas as pd
+from dotenv import load_dotenv
+load_dotenv()
 
 
 class Img_Proc:
-    def __init__(self,testing=False):
+    def __init__(self,db, testing=False):
         self.testing = testing
         self.folder = "images"
-        self.db = Database()
-        self.bucket = "partsbucket0000"
-        self.prefix = "images"
+        self.db = db
+        self.bucket = os.getenv("BUCKET")
+        self.prefix = os.getenv('IMAGE_KEY')
 
 
     def group_images(self):
@@ -417,16 +419,8 @@ class Img_Proc:
         keep =  self.try_mulitiple_hashes(grouped_strings)
         keep = [keep[0]] # only grabs the first one to keep
 
-        self.db.save_data_for_deletion(grouped_strings, keep)
+        self.db.save_data_for_deletion_img_proc(grouped_strings, keep)
 
-
-        df_urls = pd.DataFrame({"tag_value": pd.Series(dtype="string")})
-        self.db.create_table_if_not_exists("to_delete", df_urls)######
-
-
-        self.db.send_delete_request()
-
-        self.db.execute_sql("DROP TABLE dbo.to_delete;")########
         self.db.empty_dir('images')
 
 
