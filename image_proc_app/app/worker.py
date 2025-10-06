@@ -1,11 +1,11 @@
 # app/worker.py
 import os, time, json, boto3, tempfile, pathlib
-from scraper.run import process_shard
+from image_proc.run import process_shard
 
 
-REGION        = os.getenv("AWS_REGION")
-QUEUE_URL     = os.getenv("QUEUE_URL")
-INPUT_BUCKET  = os.getenv("BUCKET")
+REGION      = os.getenv("AWS_REGION", "us-east-1")
+QUEUE_URL   = os.getenv("QUEUE_URL", "https://sqs.us-east-1.amazonaws.com/390403858209/image_proc_queue")
+BUCKET      = os.getenv("BUCKET", "partsbucket0000")
 
 # choose a temp dir that works everywhere (Windows/Mac/Linux)
 LOCAL_TMP_DIR = os.getenv("LOCAL_TMP_DIR", tempfile.gettempdir())
@@ -22,8 +22,8 @@ def handle_message(m):
     basename  = os.path.basename(key)                 # chunk_1.csv
     local_in  = f"/tmp/{basename}"    # still write temp as .results.json
 
-    print(f"[worker] downloading s3://{INPUT_BUCKET}/{key} -> {local_in}")
-    s3.download_file(INPUT_BUCKET, key, local_in)
+    print(f"[worker] downloading s3://{BUCKET}/{key} -> {local_in}")
+    s3.download_file(BUCKET, key, local_in)
 
     print(f"[worker] processing shard {local_in}")
     process_shard(local_in)
@@ -34,7 +34,7 @@ def main():
 
     print(f"[worker] starting in {REGION}")
     print(f"[worker] queue={QUEUE_URL}")
-    print(f"[worker] input_bucket={INPUT_BUCKET}")
+    print(f"[worker] input_bucket={BUCKET}")
 
     while True:
         resp = sqs.receive_message(

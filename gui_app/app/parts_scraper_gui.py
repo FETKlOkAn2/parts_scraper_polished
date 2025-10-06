@@ -70,6 +70,7 @@ class PartsScraperGUI:
         self.db.send_delete_request_watermark()
 
         self.progress_bar.stop()
+        self.filter_images_btn.configure(state=tk.NORMAL)
 
 
     def poll_open_ai(self):
@@ -126,7 +127,7 @@ class PartsScraperGUI:
                 job_id = "process_images",          
                 queue_url = self.process_queue,   
                 num_chunks =  num_chunks,            
-                key = self.process_key)   
+                key = self.process_job_key)   
     
 
 
@@ -148,7 +149,7 @@ class PartsScraperGUI:
 
         self.clear_log()
         self.log_message("All images have been processed")
-        self.ai_watermark_btn.configure(state=tk.Normal)
+        self.ai_watermark_btn.configure(state=tk.NORMAL)
         self.search_images_btn.configure(state=tk.DISABLED)
         self.progress_bar.stop()
 
@@ -189,7 +190,7 @@ class PartsScraperGUI:
                 job_id = "image search",          
                 queue_url = self.search_queue,   
                 num_chunks =  num_chunks,          
-                key = self.search_key)        
+                key = self.search_job_key)        
 
 
         self.log_message("Watermark Button will become clickable when all images have been downloaded...")
@@ -212,7 +213,7 @@ class PartsScraperGUI:
 
         self.clear_log()
         self.log_message("All images have been downloaded.\nYou can now start the watermark")
-        self.ai_watermark_btn.configure(state=tk.Normal)
+        self.ai_watermark_btn.configure(state=tk.NORMAL)
         self.search_images_btn.configure(state=tk.DISABLED)
         self.progress_bar.stop()
 
@@ -503,7 +504,7 @@ def main():
     except:
         pass  # Theme not available
         
-    app = PartsScraperGUI(root, testing=True)
+    app = PartsScraperGUI(root, testing=False)
     
     # Center window
     root.update_idletasks()

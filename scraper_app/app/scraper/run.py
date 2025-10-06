@@ -1,7 +1,7 @@
 import csv
-from parser import Parser
+from .parser import Parser
 import pandas as pd
-from database import Database
+from .database import Database
 
 
 def process_shard(csv_path: str):

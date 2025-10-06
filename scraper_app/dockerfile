@@ -1,16 +1,43 @@
 # syntax=docker/dockerfile:1
+FROM python:3.13-slim
 
-FROM python:3.13-slim AS runtime
+# ---- Environment (no inline comments here) ----
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    ACCEPT_EULA=Y
 
-# App
+# ---- System deps for pyodbc + MS SQL ODBC driver ----
+# - unixodbc: provides libodbc.so.2 (runtime)
+# - unixodbc-dev: headers so pyodbc can build (often needed on 3.13)
+# - curl/gnupg/ca-certificates: to add MS repo
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates curl gnupg \
+      unixodbc unixodbc-dev \
+  && rm -rf /var/lib/apt/lists/*
+
+# Add Microsoft repo for Debian 12 (bookworm) and install ODBC Driver 18
+# (ACCEPT_EULA from ENV is used by the package installer)
+RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+      | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
+  && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" \
+      > /etc/apt/sources.list.d/microsoft-prod.list \
+  && apt-get update && apt-get install -y --no-install-recommends \
+      msodbcsql18 \
+  && rm -rf /var/lib/apt/lists/*
+
+# ---- App deps ----
 WORKDIR /app
-COPY app/requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -U pip && pip install --no-cache-dir -r /app/requirements.txt
+COPY app/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -U pip \
+ && pip install --no-cache-dir -r requirements.txt
 
-COPY app /app
+# ---- App code ----
+COPY app/ .
 
-# Healthcheck is optional but useful for ASG container restarts
-HEALTHCHECK --interval=30s --timeout=5s --retries=5 CMD python -c "import boto3;print('ok')"
+# Optional: quick healthcheck (boto3 should be in requirements)
+HEALTHCHECK --interval=30s --timeout=5s --retries=5 \
+  CMD python -c "import boto3; print('ok')" || exit 1
 
-# Environment comes from docker run; keep image generic
-CMD ["python", "-u", "worker.py"]
+# Start worker (your imports are now relative inside scraper/)
+CMD ["python", "-u", "/app/worker.py"]

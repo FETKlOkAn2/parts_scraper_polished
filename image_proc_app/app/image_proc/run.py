@@ -1,6 +1,6 @@
 import csv
-from image_processing import Img_Proc
-from database import Database
+from .image_processing import Img_Proc
+from .database import Database
 import sys
 import pandas as pd
 

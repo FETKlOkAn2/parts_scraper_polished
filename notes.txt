@@ -1,2 +1,4 @@
 need to make docker, send it to ecr, sqs, autoscaling w/ launch template, and any other cloud
 to work with these 2 new containers
+
+note environment in user-data no quotes

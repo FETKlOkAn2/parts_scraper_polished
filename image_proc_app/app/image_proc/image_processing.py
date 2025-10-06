@@ -9,7 +9,6 @@ from skimage.metrics import structural_similarity as ssim
 from skimage import img_as_float
 from skimage.color import rgb2gray
 from pathlib import Path
-from database import Database
 import pandas as pd
 from dotenv import load_dotenv
 load_dotenv()

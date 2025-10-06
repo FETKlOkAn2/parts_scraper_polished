@@ -4,10 +4,6 @@ from botocore.exceptions import NoCredentialsError
 from sqlalchemy import create_engine, text
 import pandas as pd
 from threading import Lock
-import sys
-from typing import Iterator
-import time
-
 from dotenv import load_dotenv
 load_dotenv()
 class Database:
