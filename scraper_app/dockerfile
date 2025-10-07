@@ -16,6 +16,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       unixodbc unixodbc-dev \
   && rm -rf /var/lib/apt/lists/*
 
+
+RUN apt-get update && apt-get install -y --no-install-recommends tor \
+    && rm -rf /var/lib/apt/lists/*
+# if you use requests with SOCKS:
+RUN pip install --no-cache-dir "requests[socks]"
+
+
 # Add Microsoft repo for Debian 12 (bookworm) and install ODBC Driver 18
 # (ACCEPT_EULA from ENV is used by the package installer)
 RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \

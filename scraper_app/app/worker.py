@@ -1,5 +1,5 @@
 # app/worker.py
-import os, time, json, boto3, tempfile, pathlib
+import os, time, json, boto3, tempfile, pathlib, traceback
 from scraper.run import process_shard
 
 
@@ -39,7 +39,7 @@ def main():
     while True:
         resp = sqs.receive_message(
             QueueUrl=QUEUE_URL,
-            MaxNumberOfMessages=5,
+            MaxNumberOfMessages=1,
             WaitTimeSeconds=20,
             VisibilityTimeout=900
         )

@@ -80,7 +80,7 @@ class PartsScraperGUI:
         completed = False
         count = 0
         all_results = []
-        time.sleep(30)
+        time.sleep(40)
 
         while not completed:
             time.sleep(60)
@@ -135,7 +135,7 @@ class PartsScraperGUI:
 
         all_terminated = False
         count = 0
-        time.sleep(30)
+        time.sleep(40)
         while not all_terminated:
             time.sleep(60)
             all_terminated,state = self.helper.determine_instance_state()

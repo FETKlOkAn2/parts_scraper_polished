@@ -2,5 +2,8 @@
   "image_search_state": false,
   "image_watermark_detection": false,
   "image_hashing": false,
-  "batch_ids":[]
+  "batch_ids": null,
+  "_meta": {
+    "last_updated_utc": "2025-10-07T12:01:40Z"
+  }
 }
