@@ -162,6 +162,7 @@ class PartsScraperGUI:
 
         # self.db.update_all_final_tags() handling this in image process class
         self.db.execute_sql("DELETE FROM part_tags;")
+        self.db.empty_prefix(self.bucket, 'images')
         self.status_var.set("COMPLETED: Images are Ready for Deployment")
 
     def search_images(self): # this is search
