@@ -267,8 +267,10 @@ class Img_Proc:
         """
         entries = []  # (name, hash_int)
         tracker = 0
-        for fn in files:
-            path = fn
+        for i, fn in enumerate(files):
+            #path = fn
+            path = f'images/image_{i}.png'
+
 
             try:
                 #gray = self.load_and_grayscale(path, where=fn)
@@ -410,16 +412,26 @@ class Img_Proc:
         """download from s3 puts them in images folder then processes them for similarities"""
         grouped_strings = ['/'.join(x.split('/')[-2:]) for x in grouped]
 
+        display_string = grouped_strings[0].split('/')[1:][0]
+        display_string = ' '.join(display_string.split('_')[:-1])
+        #print(f'--New Group--->> {display_string}')
 
-        print('\n\n\t--New Group--')
-        self.db.download_group(self.bucket, grouped_strings)
+        group_map = self.db.download_group(self.bucket, grouped_strings)
 
 
         keep =  self.try_mulitiple_hashes(grouped_strings)
         keep = [keep[0]] # only grabs the first one to keep
 
+        if len(keep[0]) ==18:
+            keep = [group_map[keep[0]]]
+
+ 
         self.db.save_data_for_deletion_img_proc(grouped_strings, keep)
 
+        ##### right here we need to grab the local image and put a watermark on it
+        ##### then right after upload to final partsbucket hashed
+        ##### need to keep the hashed and send it to the the final_tag
+        ##### ON number = number
         self.db.empty_dir('images')
 
 
@@ -442,6 +454,7 @@ class Img_Proc:
                 if keep:
                     return keep                
         return [grouped_strings[0]]
+    
 
 if __name__ == "__main__":
     img_proc = Img_Proc(testing = False)

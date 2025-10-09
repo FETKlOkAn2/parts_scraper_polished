@@ -27,7 +27,7 @@ class Parser:
                           "AppleWebKit/537.36 (KHTML, like Gecko) "
                           "Chrome/126.0.0.0 Safari/537.36"
         }
-        self.timeout = 25.0
+        self.timeout = 5
 
         
         self.db = db
@@ -53,7 +53,7 @@ class Parser:
         # Don’t inherit host/container proxy env; we’ll pass proxies explicitly.
         session.trust_env = False
         retry = Retry(
-            total=3,
+            total=2,
             backoff_factor=0.4,
             status_forcelist=[429, 500, 502, 503, 504],
             allowed_methods=["GET"],
@@ -135,7 +135,7 @@ class Parser:
                     "Referer": f'https://www.google.com/search?tbm=isch&q={info.replace(" ","+")}'
                 })
                 try:
-                    with session.get(url, stream=True, timeout=10) as resp:
+                    with session.get(url, stream=True, timeout=self.timeout) as resp:
                         if resp.status_code == 403:
                             continue
                         resp.raise_for_status()

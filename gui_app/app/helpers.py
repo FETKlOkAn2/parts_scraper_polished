@@ -6,7 +6,7 @@ import os
 import sys
 from dotenv import load_dotenv
 load_dotenv()
-from batch_watermark_detector import BatchWatermarkDetector
+from urllib.parse import quote
 
 class Helper:
     def __init__(self, db, detector):
@@ -163,8 +163,16 @@ class Helper:
 
     def organize_and_submit_batch(self):
         all_urls = self.detector.get_urls_from_db()
+        encoded_urls = []
 
-        n = len(all_urls)
+        base = "https://partsbucket0000.s3.us-east-1.amazonaws.com/images/"
+        for url in all_urls:
+            splits = url.split(base)[-1]
+            key = splits.split('.png')[0]
+            encoded_urls.append(f"{base}{quote(key, safe='/%-_.()~')}.png")
+
+
+        n = len(encoded_urls)
         num_chunks = ceil(n /self.max_batch_size) if n else 0
         if num_chunks ==0:
             print("Dataframe is empty, nothing to upload.")
@@ -173,10 +181,10 @@ class Helper:
         for i in range(num_chunks):
             start = i * self.max_batch_size
             stop = min(start + self.max_batch_size, n)
-            batch = all_urls.iloc[start:stop]
+            batch = encoded_urls[start:stop]
 
             request = self.detector.create_batch_requests(batch)
-            batch_id = self.detector.submit_batch(request, f'batch_{i}')
+            batch_id = self.detector.submit_batch(requests=request, batch_num=i)
             all_batch_ids.append(batch_id)
 
         return all_batch_ids
@@ -194,13 +202,16 @@ class Helper:
                 raise RuntimeError("No output_file_id on completed batch—check error file and individual request statuses.")   
             
             output_path = f'data/raw_ai_output/{batch_id}_output.jsonl'
+
             self.detector.download_results(
-                outut_file_id = batch.output_file_id,
+                output_file_id = batch.output_file_id,
                 output_path = output_path)
             
             results = self.detector.parse_results(output_path) # appends key to delete in the database
+
             with open(f"data/ai_output/{batch_id}_output.json", "w", encoding="utf-8") as f:
                 json.dump(results, f, indent=2)
+
 
 
 

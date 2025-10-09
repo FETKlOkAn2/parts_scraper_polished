@@ -161,7 +161,7 @@ class Database:
 
     def download_group(self,bucket: str, group_list:list):
         for key in group_list:
-            self.s3.download_file(bucket, f'images/{key}', f'images/images/{key}')
+            self.s3.download_file(bucket, f'images/{key}', f'images/{key}')
 
 
 

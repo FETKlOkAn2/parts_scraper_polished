@@ -32,7 +32,7 @@ class PartsScraperGUI:
         self.process_job_key = os.getenv("PROC_KEY")
         self.search_queue = os.getenv("SEARCH_QUEUE_URL")
         self.process_queue = os.getenv("PROC_QUEUE_URL")
-        self.search_chunk_size = 250
+        self.search_chunk_size = 25
         self.processing_chunk_size = 500
 
         # Tests
@@ -62,10 +62,12 @@ class PartsScraperGUI:
     def perform_watermark(self):
         self.progress_bar.start(30)
         self.status_var.set("Performing AI watermark detection")
+        self.log_message("Performing AI watermark detection")
         self.ai_watermark_btn.configure(state=tk.DISABLED)
 
         ids = self.helper.organize_and_submit_batch()
-        self.state.set(batch_ids=ids)
+        self.log_message("Data has been sent to AI - waiting for response")
+        self.state.set_batches(batch_ids=ids)
         self.poll_open_ai()
         self.db.send_delete_request_watermark()
 
@@ -85,12 +87,16 @@ class PartsScraperGUI:
         while not completed:
             time.sleep(60)
             count += 1
+            self.clear_log()
+            self.log_message("Data has been sent to AI - Could take anywhere from 5 minutes to 12 hours to process")
+            self.log_message(f"minutes: {count}")
             for batch_id in batch_ids:
                 result, status = self.detector.poll_multiple_batch_completion(batch_id)
-                self.log_message(f"Batch {batch_id} status: {status}")
+                self.log_message(f"{batch_id} : {status}")
                 all_results.append(result)
             if all(all_results):
                 completed = True
+            all_results = []
             self.log_message('\n')
         
         self.log_message("AI has determined which images have watermarks and they are being deleted...")
@@ -115,7 +121,7 @@ class PartsScraperGUI:
         )
 
         self.clear_log()
-
+        start = time.time()
         if self.testing:
             self.helper.send_chunk_messages(   
                 job_id = "Testing",           
@@ -130,7 +136,6 @@ class PartsScraperGUI:
                 key = self.process_job_key)   
     
 
-
         self.log_message("Instances being created in the Cloud Please Wait...")
 
         all_terminated = False
@@ -144,6 +149,8 @@ class PartsScraperGUI:
             self.log_message("Program will be complete after processing...")
             self.log_message(f"\nProcessing Images...\n\tStatus: {state}\n\tMinutes: {count}")
         
+        end = time.time()
+        print(f"Elapsed Time for filter : {end - start}")
         # Deletes the CSV files from search_jobs
         self.db.empty_prefix(self.bucket, self.process_job_key)
 
@@ -167,6 +174,7 @@ class PartsScraperGUI:
         # retriving data from database 
         self.log_message('Gathering all parts without an image...')
         all_data = self.db.read_sql_query("SELECT number, description FROM parts WHERE final_tag IS NULL;")
+        all_data = all_data.iloc[:101]
 
         # spliting data into chucks and upload to s3
         self.log_message("splitting data into jobs...")
@@ -179,6 +187,7 @@ class PartsScraperGUI:
         
         self.clear_log()
         
+        start = time.time()   #####################################
         if self.testing:
             self.helper.send_chunk_messages(   
                 job_id = "Testing",           
@@ -208,6 +217,9 @@ class PartsScraperGUI:
             self.log_message("Watermark Button will become clickable when all images have been downloaded...")
             self.log_message(f"\nStill downloading images...\n\tStatus: {state}\n\tMinutes: {count}")
         
+
+        end = time.time()
+        print(f"Time Elapsed for image search: {end - start}")
         # Deletes the CSV files from search_jobs
         self.db.empty_prefix(self.bucket, self.search_job_key)
 
@@ -328,7 +340,7 @@ class PartsScraperGUI:
         self.search_images_btn.pack(side=tk.LEFT, padx=5)
 
         self.ai_watermark_btn = ttk.Button(button_frame, text='AI Watermark',
-                                           command=self.start_watermark, style='Accent.TButton', state=tk.DISABLED)  
+                                           command=self.start_watermark, style='Accent.TButton', state=tk.NORMAL)  
         self.ai_watermark_btn.pack(side=tk.LEFT, padx=5)
 
         self.filter_images_btn = ttk.Button(button_frame, text="Filter Images",

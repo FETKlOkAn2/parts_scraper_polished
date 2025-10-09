@@ -107,9 +107,14 @@ class Database:
             print(f"Upload failed {e}")
 
     def download_group(self,bucket: str, group_list:list):
-        for key in group_list:
+        group_map = {}
+        for i, key in enumerate(group_list):
             formated_key = "/".join(key.split('/')[-2:])
-            self.s3.download_file(bucket, formated_key, formated_key)
+            local_file = f"images/image_{i}.png"
+            group_map[local_file]=formated_key
+
+            self.s3.download_file(bucket, formated_key, f"images/image_{i}.png")#f"image_{i}")
+        return group_map
 
 
     def empty_dir(self, folder: str) -> None:

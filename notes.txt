@@ -1,4 +1,9 @@
-need to make docker, send it to ecr, sqs, autoscaling w/ launch template, and any other cloud
-to work with these 2 new containers
+need to fix issue with scraper app doubling up and re-instansiating
+messages --gpt already gave solution need to implement
 
-note environment in user-data no quotes
+need to make a folder for final image and hash upload them to bucket with
+hashed key as well as add a watermark to all images
+
+
+HMAC-SHA256
+html_secret = "Bruckners1932"

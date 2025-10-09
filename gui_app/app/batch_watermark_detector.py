@@ -7,8 +7,8 @@ from openai import OpenAI
 import boto3
 from typing import Dict, List
 import pandas as pd
-from database import Database 
 import sys
+
 
 class BatchWatermarkDetector:
     def __init__(self, db, openai_api_key=None):
@@ -19,7 +19,7 @@ class BatchWatermarkDetector:
         self.db = db
 
     def get_urls_from_db(self):
-        return list(self.db.read_sql_query("SELECT tag_value FROM part_tags;")['tag_value'])
+        return self.db.read_sql_query("SELECT tag_value FROM part_tags;")['tag_value']
 
     
     def basename_from_url(self, url: str) -> str:
@@ -81,10 +81,10 @@ class BatchWatermarkDetector:
         
         return requests
     
-    def submit_batch(self, requests: List[dict], batch_name: str) -> str:
+    def submit_batch(self, requests: List[dict], batch_num: str) -> str:
         """Submit batch to OpenAI API"""
         # Create JSONL file
-        jsonl_path = f"batch_{batch_name}.jsonl"
+        jsonl_path = f"data/ai_sent_data/batch_{batch_num}.jsonl"
         with open(jsonl_path, "w", encoding="utf-8") as f:
             for request in requests:
                 f.write(json.dumps(request) + "\n")
@@ -98,16 +98,16 @@ class BatchWatermarkDetector:
             input_file_id=upload_file.id,
             endpoint="/v1/chat/completions",
             completion_window="24h",
-            metadata={"description": f"Watermark detection batch {batch_name}"}
+            metadata={"description": f"Watermark detection batch {batch_num}"}
         )
         
-        print(f"Submitted batch {batch_name}: {batch.id} ({len(requests)} requests)")
+        print(f"Submitted batch {batch_num}: {batch.id} ({len(requests)} requests)")
         return batch.id
     
 
     def poll_multiple_batch_completion(self, batch_id):
         
-        batch = self.client.retrieve(batch_id)
+        batch = self.client.batches.retrieve(batch_id)
         if batch.status not in ["completed", "failed", "expired", "cancelling", "cancelled"]:
             return False, batch.status
         return True, batch.status
