@@ -5,6 +5,7 @@ from sqlalchemy import create_engine, text
 import pandas as pd
 from threading import Lock
 from dotenv import load_dotenv
+import sys
 load_dotenv()
 class Database:
     def __init__(self):
@@ -88,8 +89,8 @@ class Database:
 
 
     def upload_to_folder(self,bucket_name:str, folder_name: str,local_file_path:str, s3_file_name: str=None, delete_after:bool=True):
-        s3_file_name = f"{folder_name}/{local_file_path}"
-        local_file_path = f"images/images/{local_file_path}"
+        s3_file_name = folder_name
+
         try:
             self.s3.upload_file(local_file_path, bucket_name, s3_file_name, ExtraArgs = {'ContentType': "image/png"})
 

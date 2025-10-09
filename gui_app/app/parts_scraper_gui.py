@@ -160,7 +160,8 @@ class PartsScraperGUI:
         self.search_images_btn.configure(state=tk.DISABLED)
         self.progress_bar.stop()
 
-        self.db.update_all_final_tags()
+        # self.db.update_all_final_tags() handling this in image process class
+        self.db.execute_sql("DELETE FROM part_tags;")
         self.status_var.set("COMPLETED: Images are Ready for Deployment")
 
     def search_images(self): # this is search

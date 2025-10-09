@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, re
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import numpy as np
@@ -10,6 +10,9 @@ from skimage import img_as_float
 from skimage.color import rgb2gray
 from pathlib import Path
 import pandas as pd
+from PIL import Image 
+import hmac, hashlib, base64
+import io
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -21,6 +24,8 @@ class Img_Proc:
         self.db = db
         self.bucket = os.getenv("BUCKET")
         self.prefix = os.getenv('IMAGE_KEY')
+        self.html_secret = os.getenv('HTML_SECRET')
+        self.final_url = "https://partsbucket0000.s3.us-east-1.amazonaws.com/"
 
 
     def group_images(self):
@@ -416,17 +421,46 @@ class Img_Proc:
         display_string = ' '.join(display_string.split('_')[:-1])
         #print(f'--New Group--->> {display_string}')
 
-        group_map = self.db.download_group(self.bucket, grouped_strings)
+        self.group_map = self.db.download_group(self.bucket, grouped_strings)
 
 
         keep =  self.try_mulitiple_hashes(grouped_strings)
         keep = [keep[0]] # only grabs the first one to keep
 
         if len(keep[0]) ==18:
-            keep = [group_map[keep[0]]]
+            keep = [self.group_map[keep[0]]]
 
  
         self.db.save_data_for_deletion_img_proc(grouped_strings, keep)
+
+
+        # 20SRTSB10303
+  
+
+        img= self.grab_image_and_implement_watermark(keep)
+        hash_key = self.hash_key(keep, self.html_secret)
+
+        pil = self.to_pil(img)
+        buf = io.BytesIO()
+        pil.save(buf, format='PNG', optimize=True)
+        buf.seek(0)
+        
+
+        self.db.s3.put_object(
+            Bucket=self.bucket,
+            Key=hash_key,
+            Body=buf.getvalue(),
+            ContentType='image/png'
+        )
+
+        s = keep[0]
+        m = re.search(r'(?<=/)[^_]+(?=_)', s)
+        number = m.group(0)
+        self.db.execute_sql(f"""
+        UPDATE dbo.parts
+        SET final_tag = '{self.final_url}{hash_key}'
+        WHERE [number] = '{number}';
+        """)
 
         ##### right here we need to grab the local image and put a watermark on it
         ##### then right after upload to final partsbucket hashed
@@ -455,6 +489,88 @@ class Img_Proc:
                     return keep                
         return [grouped_strings[0]]
     
+    def grab_image_and_implement_watermark(self, keep):
+
+        keep_value = keep[0]
+
+        keep_path = next((k for k, v in self.group_map.items() if v == keep_value), None)
+        img = imread(keep_path)
+        watermark = imread('watermark.png')
+
+        out = self.add_watermark_center(img, watermark, scale=0.99, opacity=.60)
+        return out
+
+
+
+    def hash_key(self, keep, secret):
+        keep_value = keep[0]
+        splited = keep_value.split('/')[1:][0]
+        msg = splited.split('.')[:-1][0]
+
+        sig = hmac.new(secret.encode("utf-8"),
+                    msg.encode("utf-8"),
+                    hashlib.sha256).digest()
+        # URL/HTML attribute safe (no + / =)
+        new_value = base64.urlsafe_b64encode(sig).decode().rstrip("=")
+        return f"final/{new_value}.png"
+
+    def add_watermark_center(self, img, wm, scale=0.12, opacity=0.65):
+        """
+        Center the watermark on the image, scaling it to `scale` * base width.
+        `img`, `wm` are ndarrays (RGB/RGBA or grayscale). Returns uint8 RGB.
+        """
+        base = img.copy()
+        if base.ndim == 2:
+            base = np.stack([base]*3, axis=-1)
+        if base.shape[2] == 4:
+            base = base[:, :, :3]
+        H, W = base.shape[:2]
+
+        # Split watermark into RGB + alpha
+        if wm.ndim == 2:
+            overlay = np.stack([wm]*3, axis=-1).astype(np.uint8)
+            alpha = np.ones(wm.shape, dtype=np.float32)
+        elif wm.shape[2] == 4:
+            overlay = wm[:, :, :3].astype(np.uint8)
+            alpha = (wm[:, :, 3].astype(np.float32) / 255.0)
+        else:
+            overlay = wm.astype(np.uint8)
+            alpha = np.ones(wm.shape[:2], dtype=np.float32)
+
+        # Resize watermark to a fraction of base width
+        target_w = max(1, int(W * float(scale)))
+        ratio = target_w / overlay.shape[1]
+        new_size = (target_w, max(1, int(overlay.shape[0] * ratio)))
+        overlay = np.array(Image.fromarray(overlay).resize(new_size, Image.LANCZOS))
+        alpha   = np.array(Image.fromarray((alpha * 255).astype(np.uint8)).resize(new_size, Image.LANCZOS)).astype(np.float32) / 255.0
+
+        # Center coords
+        h, w = overlay.shape[:2]
+        y0 = (H - h) // 2; x0 = (W - w) // 2
+        y1 = y0 + h; x1 = x0 + w
+
+        # Blend
+        roi = base[y0:y1, x0:x1].astype(np.float32)
+        a = (alpha * float(opacity))[..., None]
+        blended = a * overlay.astype(np.float32) + (1.0 - a) * roi
+        base[y0:y1, x0:x1] = np.clip(blended, 0, 255).astype(np.uint8)
+        return base
+    
+    def to_pil(self, arr, *, bgr=False):
+        a = arr
+        if a.dtype != np.uint8:
+            a = np.clip(a, 0, 255).astype(np.uint8)
+        if a.ndim == 2:
+            return Image.fromarray(a, mode="L")
+        if a.shape[2] == 3:
+            if bgr:  # OpenCV -> convert BGR to RGB
+                a = a[:, :, ::-1]
+            return Image.fromarray(a, mode="RGB")
+        if a.shape[2] == 4:
+            if bgr:  # BGRA -> RGBA
+                a = a[:, :, [2,1,0,3]]
+            return Image.fromarray(a, mode="RGBA")
+        raise ValueError("unsupported image shape")
 
 if __name__ == "__main__":
     img_proc = Img_Proc(testing = False)
