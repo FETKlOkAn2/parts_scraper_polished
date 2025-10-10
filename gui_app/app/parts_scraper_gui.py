@@ -33,7 +33,7 @@ class PartsScraperGUI:
         self.search_queue = os.getenv("SEARCH_QUEUE_URL")
         self.process_queue = os.getenv("PROC_QUEUE_URL")
         self.search_chunk_size = 25
-        self.processing_chunk_size = 500
+        self.processing_chunk_size = 200
 
         # Tests
         self.test_input_key = os.getenv("TEST_KEY")
@@ -60,6 +60,7 @@ class PartsScraperGUI:
 
 
     def perform_watermark(self):
+        self.state.set(image_search_state=False)
         self.progress_bar.start(30)
         self.status_var.set("Performing AI watermark detection")
         self.log_message("Performing AI watermark detection")
@@ -67,7 +68,7 @@ class PartsScraperGUI:
 
         ids = self.helper.organize_and_submit_batch()
         self.log_message("Data has been sent to AI - waiting for response")
-        self.state.set_batches(batch_ids=ids)
+        self.state.set(batch_ids=ids)
         self.poll_open_ai()
         self.db.send_delete_request_watermark()
 
@@ -102,7 +103,7 @@ class PartsScraperGUI:
         self.log_message("AI has determined which images have watermarks and they are being deleted...")
 
         self.helper.parse_ai_results(batch_ids)
-
+        self.state.set(image_watermark_detection=True)
     def perform_filter(self): # this is process
         self.progress_bar.start(30)
         self.filter_images_btn.configure(state=tk.DISABLED)
@@ -220,7 +221,9 @@ class PartsScraperGUI:
             self.log_message(f"\nStill downloading images...\n\tStatus: {state}\n\tMinutes: {count}")
         
 
+
         end = time.time()
+        self.state.set(image_search_state=True)
         print(f"Time Elapsed for image search: {end - start}")
         # Deletes the CSV files from search_jobs
         self.db.empty_prefix(self.bucket, self.search_job_key)
@@ -234,12 +237,14 @@ class PartsScraperGUI:
     def determine_state(self):
         current = self.state.read()
         if current.get("image_search_state"):
-            self.log_message("Retreiving Images via Cloud will update when finished")
+            self.log_message("Images Search has been performed next step is for AI watermark")
             self.toggle_controls(False, True)
+            self.ai_watermark_btn.configure(state=tk.NORMAL)
 
         elif current.get("image_watermark_detection"):
             self.log_message("Waiting for completion of AI Watermark detector via Cloud will update when finished")
             self.toggle_controls(False, True)
+            self.filter_images_btn.configure(state=tk.NORMAL)
 
         elif current.get("image_hashing"):
             self.log_message("Image Hashing is talking place via Cloud will update whne finished")
@@ -342,7 +347,7 @@ class PartsScraperGUI:
         self.search_images_btn.pack(side=tk.LEFT, padx=5)
 
         self.ai_watermark_btn = ttk.Button(button_frame, text='AI Watermark',
-                                           command=self.start_watermark, style='Accent.TButton', state=tk.NORMAL)  
+                                           command=self.start_watermark, style='Accent.TButton', state=tk.DISABLED)  
         self.ai_watermark_btn.pack(side=tk.LEFT, padx=5)
 
         self.filter_images_btn = ttk.Button(button_frame, text="Filter Images",

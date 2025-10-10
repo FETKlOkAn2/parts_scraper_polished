@@ -1,11 +1,11 @@
 {
   "image_search_state": false,
-  "image_watermark_detection": false,
+  "image_watermark_detection": true,
   "image_hashing": false,
   "batch_ids": [
-    "batch_68e712f74b7c81908657fd6e178be425"
+    "batch_68e8b64f21e48190af480babd894b4a7"
   ],
   "_meta": {
-    "last_updated_utc": "2025-10-09T01:42:21Z"
+    "last_updated_utc": "2025-10-10T07:50:20Z"
   }
 }

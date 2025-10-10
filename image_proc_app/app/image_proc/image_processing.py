@@ -2,7 +2,6 @@ import os, sys, re
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import numpy as np
-import cv2
 from skimage.io import imread
 from skimage.transform import resize
 from skimage.metrics import structural_similarity as ssim
@@ -36,24 +35,24 @@ class Img_Proc:
             self.grouped[base_name].append(name)
 
     # ---------- Display helpers ----------
-    def show_image(self, img, title="Image", cmap=None):
-        plt.figure()
-        plt.imshow(img, cmap=cmap)
-        plt.title(title)
-        plt.axis('off')
-        plt.tight_layout()
-        plt.show()
+    # def show_image(self, img, title="Image", cmap=None):
+    #     plt.figure()
+    #     plt.imshow(img, cmap=cmap)
+    #     plt.title(title)
+    #     plt.axis('off')
+    #     plt.tight_layout()
+    #     plt.show()
 
-    def show_images_side_by_side(self, img1, img2, title1="Image 1", title2="Image 2", cmap=None):
-        fig, axes = plt.subplots(1, 2, figsize=(10, 4))
-        axes[0].imshow(img1, cmap=cmap)
-        axes[0].set_title(title1)
-        axes[0].axis('off')
-        axes[1].imshow(img2, cmap=cmap)
-        axes[1].set_title(title2)
-        axes[1].axis('off')
-        plt.tight_layout()
-        plt.show()
+    # def show_images_side_by_side(self, img1, img2, title1="Image 1", title2="Image 2", cmap=None):
+    #     fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+    #     axes[0].imshow(img1, cmap=cmap)
+    #     axes[0].set_title(title1)
+    #     axes[0].axis('off')
+    #     axes[1].imshow(img2, cmap=cmap)
+    #     axes[1].set_title(title2)
+    #     axes[1].axis('off')
+    #     plt.tight_layout()
+    #     plt.show()
 
     # ---------- Image IO / preprocessing ----------
 
@@ -71,37 +70,37 @@ class Img_Proc:
         img = resize(img, size, anti_aliasing=True)
         return img
 
-    def load_and_resize_cv(self, path, where='(unknown)', size=(600,600)):
-        """
-        Load an image from `path` with OpenCV, resize to `size` (w,h),
-        return float32 in [0,1]. Handles gray/RGB/RGBA.
-        """
-        p = Path(path)
-        if not p.exists():
-            raise FileNotFoundError(f"{where}: file not found -> {p}")
+    # def load_and_resize_cv(self, path, where='(unknown)', size=(600,600)):
+    #     """
+    #     Load an image from `path` with OpenCV, resize to `size` (w,h),
+    #     return float32 in [0,1]. Handles gray/RGB/RGBA.
+    #     """
+    #     p = Path(path)
+    #     if not p.exists():
+    #         raise FileNotFoundError(f"{where}: file not found -> {p}")
 
-        # Read image (preserves alpha if present)
-        img = cv2.imread(str(p), cv2.IMREAD_UNCHANGED)
-        if img is None:
-            raise IOError(f"{where}: could not read {p}")
+    #     # Read image (preserves alpha if present)
+    #     img = cv2.imread(str(p), cv2.IMREAD_UNCHANGED)
+    #     if img is None:
+    #         raise IOError(f"{where}: could not read {p}")
 
-        # Drop alpha channel if present
-        if img.ndim == 3 and img.shape[2] == 4:
-            img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+    #     # Drop alpha channel if present
+    #     if img.ndim == 3 and img.shape[2] == 4:
+    #         img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
 
-        # Accept 2-D (grayscale) or 3-D (color) only
-        if img.ndim not in (2, 3):
-            raise ValueError(f"{where}: expected 2-D or 3-D, got {img.shape}")
+    #     # Accept 2-D (grayscale) or 3-D (color) only
+    #     if img.ndim not in (2, 3):
+    #         raise ValueError(f"{where}: expected 2-D or 3-D, got {img.shape}")
 
-        # Resize to fixed dimensions (OpenCV expects size=(w,h))
-        img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
+    #     # Resize to fixed dimensions (OpenCV expects size=(w,h))
+    #     img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
 
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    #     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        # # Convert to float32 [0,1] (matches img_as_float behaviour)
-        # img = img.astype(np.float32) / 255.0
+    #     # # Convert to float32 [0,1] (matches img_as_float behaviour)
+    #     # img = img.astype(np.float32) / 255.0
 
-        return img
+    #     return img
 
     def to_grayscale(self,img, where="(unknown)"):
         """Convert an image to grayscale float32 2D array."""
@@ -288,19 +287,19 @@ class Img_Proc:
                 entries.append((path, h))
 
 
-                if testing and tracker == 0:
-                    # self.show_images_side_by_side(small, oriented,
-                    #     title1=f"{fn} (16×16)", title2=f"{fn} ({desc})", cmap='gray')
-                    self.show_pipeline_with_hash(
-                        orig = imread(path),
-                        gray=gray,
-                        small16=oriented,
-                        hash_int=h,
-                        method=method,
-                        hash_size=hash_size,
-                        title=os.path.basename(path)
-                    )
-                    tracker += 1
+                # if testing and tracker == 0:
+                #     # self.show_images_side_by_side(small, oriented,
+                #     #     title1=f"{fn} (16×16)", title2=f"{fn} ({desc})", cmap='gray')
+                #     self.show_pipeline_with_hash(
+                #         orig = imread(path),
+                #         gray=gray,
+                #         small16=oriented,
+                #         hash_int=h,
+                #         method=method,
+                #         hash_size=hash_size,
+                #         title=os.path.basename(path)
+                #     )
+                #     tracker += 1
 
 
             except Exception as e:
@@ -340,77 +339,77 @@ class Img_Proc:
         arr = np.frombuffer(s.encode('ascii'), dtype='S1').astype(np.uint8) - ord('0')
         return arr.reshape(h, w).astype(bool)
 
-    def show_pipeline_with_hash(
-        self,
-        orig: np.ndarray,
-        gray: np.ndarray,
-        small16: np.ndarray,
-        hash_int: int,
-        method: str = "phash",
-        hash_size: int = 8,
-        title: str | None = None,
-        savepath: str | None = None,
-    ):
-        """
-        Display original, grayscale, 16x16, and a visual bit-grid of the hash.
-        Hash (hex) is printed on the figure as well.
-        """
-        # Prepare the hash grid (phash/ahash/dhash all use hash_size x hash_size bits here)
-        hbits = self._int_to_bits(hash_int, hash_size, hash_size).astype(np.float32)
-        # Make sure arrays are valid for imshow
-        def _to_float01(img):
-            if img.dtype == np.uint8:
-                return img / 255.0
-            return np.clip(img.astype(np.float32), 0.0, 1.0)
+    # def show_pipeline_with_hash(
+    #     self,
+    #     orig: np.ndarray,
+    #     gray: np.ndarray,
+    #     small16: np.ndarray,
+    #     hash_int: int,
+    #     method: str = "phash",
+    #     hash_size: int = 8,
+    #     title: str | None = None,
+    #     savepath: str | None = None,
+    # ):
+    #     """
+    #     Display original, grayscale, 16x16, and a visual bit-grid of the hash.
+    #     Hash (hex) is printed on the figure as well.
+    #     """
+    #     # Prepare the hash grid (phash/ahash/dhash all use hash_size x hash_size bits here)
+    #     hbits = self._int_to_bits(hash_int, hash_size, hash_size).astype(np.float32)
+    #     # Make sure arrays are valid for imshow
+    #     def _to_float01(img):
+    #         if img.dtype == np.uint8:
+    #             return img / 255.0
+    #         return np.clip(img.astype(np.float32), 0.0, 1.0)
 
-        orig_v = _to_float01(orig)
-        gray_v = _to_float01(gray)
-        small_v = _to_float01(small16)
+    #     orig_v = _to_float01(orig)
+    #     gray_v = _to_float01(gray)
+    #     small_v = _to_float01(small16)
 
-        fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+    #     fig, axes = plt.subplots(2, 2, figsize=(10, 8))
 
-        # Original (RGB or gray)
-        if orig_v.ndim == 3:
-            axes[0, 0].imshow(orig_v)
-        else:
-            axes[0, 0].imshow(orig_v, cmap='gray')
-        axes[0, 0].set_title("Original")
-        axes[0, 0].axis('off')
+    #     # Original (RGB or gray)
+    #     if orig_v.ndim == 3:
+    #         axes[0, 0].imshow(orig_v)
+    #     else:
+    #         axes[0, 0].imshow(orig_v, cmap='gray')
+    #     axes[0, 0].set_title("Original")
+    #     axes[0, 0].axis('off')
 
-        # Grayscale
-        axes[0, 1].imshow(gray_v, cmap='gray')
-        axes[0, 1].set_title("Grayscale")
-        axes[0, 1].axis('off')
+    #     # Grayscale
+    #     axes[0, 1].imshow(gray_v, cmap='gray')
+    #     axes[0, 1].set_title("Grayscale")
+    #     axes[0, 1].axis('off')
 
-        # 16x16 (pixelated so you can see cells)
-        axes[1, 0].imshow(small_v, cmap='gray', interpolation='nearest')
-        axes[1, 0].set_title("Resized 16×16")
-        axes[1, 0].axis('off')
+    #     # 16x16 (pixelated so you can see cells)
+    #     axes[1, 0].imshow(small_v, cmap='gray', interpolation='nearest')
+    #     axes[1, 0].set_title("Resized 16×16")
+    #     axes[1, 0].axis('off')
 
-        # Hash bit grid: white=1, black=0
-        axes[1, 1].imshow(hbits, cmap='gray', interpolation='nearest')
-        axes[1, 1].set_title(f"{method} bit grid ({hash_size}×{hash_size})")
-        axes[1, 1].axis('off')
+    #     # Hash bit grid: white=1, black=0
+    #     axes[1, 1].imshow(hbits, cmap='gray', interpolation='nearest')
+    #     axes[1, 1].set_title(f"{method} bit grid ({hash_size}×{hash_size})")
+    #     axes[1, 1].axis('off')
 
-        # Compose hex string (pad to full length)
-        hex_len = (hash_size * hash_size + 3) // 4
-        hex_str = f"0x{hash_int:0{hex_len}X}"
+    #     # Compose hex string (pad to full length)
+    #     hex_len = (hash_size * hash_size + 3) // 4
+    #     hex_str = f"0x{hash_int:0{hex_len}X}"
 
-        # Put hash on the layout: suptitle + annotation on the hash cell
-        if title:
-            fig.suptitle(title, fontsize=12)
-        fig.text(0.5, 0.02, f"{method} = {hex_str}", ha='center', va='bottom', fontsize=11)
+    #     # Put hash on the layout: suptitle + annotation on the hash cell
+    #     if title:
+    #         fig.suptitle(title, fontsize=12)
+    #     fig.text(0.5, 0.02, f"{method} = {hex_str}", ha='center', va='bottom', fontsize=11)
 
-        # Also overlay a small label inside the hash cell
-        axes[1, 1].text(
-            0.5, -0.08, hex_str,
-            ha='center', va='top', transform=axes[1, 1].transAxes, fontsize=9
-        )
+    #     # Also overlay a small label inside the hash cell
+    #     axes[1, 1].text(
+    #         0.5, -0.08, hex_str,
+    #         ha='center', va='top', transform=axes[1, 1].transAxes, fontsize=9
+    #     )
 
-        plt.tight_layout(rect=[0, 0.04, 1, 0.96])
-        if savepath:
-            plt.savefig(savepath, dpi=150, bbox_inches='tight')
-        plt.show()
+    #     plt.tight_layout(rect=[0, 0.04, 1, 0.96])
+    #     if savepath:
+    #         plt.savefig(savepath, dpi=150, bbox_inches='tight')
+    #     plt.show()
 
 
     def retrieve_from_s3_and_run(self, grouped):
@@ -434,10 +433,8 @@ class Img_Proc:
         self.db.save_data_for_deletion_img_proc(grouped_strings, keep)
 
 
-        # 20SRTSB10303
-  
 
-        img= self.grab_image_and_implement_watermark(keep)
+        img= self.grab_image_and_implement_watermark(keep, False)
         hash_key = self.hash_key(keep, self.html_secret)
 
         pil = self.to_pil(img)
@@ -462,10 +459,6 @@ class Img_Proc:
         WHERE [number] = '{number}';
         """)
 
-        ##### right here we need to grab the local image and put a watermark on it
-        ##### then right after upload to final partsbucket hashed
-        ##### need to keep the hashed and send it to the the final_tag
-        ##### ON number = number
         self.db.empty_dir('images')
 
 
@@ -489,17 +482,18 @@ class Img_Proc:
                     return keep                
         return [grouped_strings[0]]
     
-    def grab_image_and_implement_watermark(self, keep):
+    def grab_image_and_implement_watermark(self, keep, watermark=False):
 
         keep_value = keep[0]
 
         keep_path = next((k for k, v in self.group_map.items() if v == keep_value), None)
         img = imread(keep_path)
         watermark = imread('watermark.png')
-
-        out = self.add_watermark_center(img, watermark, scale=0.99, opacity=.60)
-        return out
-
+        if watermark:
+            out = self.add_watermark_center(img, watermark, scale=0.99, opacity=.60)
+            return out
+        else:
+            return img
 
 
     def hash_key(self, keep, secret):

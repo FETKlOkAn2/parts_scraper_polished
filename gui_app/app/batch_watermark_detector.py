@@ -173,47 +173,6 @@ class BatchWatermarkDetector:
         
         return results
     
-    # def process_images_batch(self, bucket: str, prefix: str = 'images/') -> Dict[str, dict]:
-    #     """Main function to process all images in batches"""
-    #     print(f"Getting image URLs from s3://{bucket}/{prefix}")
-    #     urls = self.get_s3_image_urls(bucket, prefix)
-    #     print(f"Found {len(urls)} images")
-        
-    #     if not urls:
-    #         return {}
-        
-    #     # Split into chunks
-    #     batch_ids = []
-    #     for i in range(0, len(urls), self.chunk_size):
-    #         chunk_urls = urls[i:i + self.chunk_size]
-    #         batch_name = f"{i // self.chunk_size:03d}"
-    #         requests = self.create_batch_requests(chunk_urls)
-    #         batch_id = self.submit_batch(requests, batch_name)
-    #         batch_ids.append((batch_id, batch_name))
-        
-    #     # Wait for all batches to complete and collect results
-    #     all_results = {}
-    #     for batch_id, batch_name in batch_ids:
-    #         print(f"Waiting for batch {batch_name} to complete...")
-    #         batch = self.poll_batch_completion(batch_id)
-            
-    #         if batch.status == "completed" and batch.output_file_id:
-    #             output_path = f"batch_{batch_name}_output.jsonl"
-    #             self.download_results(batch.output_file_id, output_path) 
-    #             batch_results = self.parse_results(output_path)
-    #             all_results.update(batch_results)
-    #             print(f"Batch {batch_name} completed: {len(batch_results)} results")
-    #         else:
-    #             print(f"Batch {batch_name} failed with status: {batch.status}")
-        
-    #     # Save consolidated results
-    #     with open("data/watermark_detection_results.json", "w", encoding="utf-8") as f:
-    #         json.dump(all_results, f, indent=2)
-        
-    #     print(f"Processed {len(all_results)} images total")
-    #     self.db.send_delete_request()
-    #     return all_results
-    
     def get_watermark_summary(self, results: Dict[str, dict]) -> dict:
         """Get summary statistics of watermark detection"""
         total = len(results)
