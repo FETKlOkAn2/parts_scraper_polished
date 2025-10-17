@@ -1,0 +1,1752 @@
+{
+  "2260262_SLEEVE-INJEC_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text that reads 'Remove and install Injector Sleeve', which is not part of the product itself."
+  },
+  "2260262_SLEEVE-INJEC_1.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo that appears to be overlaid on the product."
+  },
+  "2260262_SLEEVE-INJEC_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2260262_SLEEVE-INJEC_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2260262_SLEEVE-INJEC_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent overlay with text and a logo."
+  },
+  "2260262_SLEEVE-INJEC_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2260262_SLEEVE-INJEC_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent overlay with the text 'Might have little differences. Only for identity purposes.' and a logo."
+  },
+  "2260262_SLEEVE-INJEC_7.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent overlay with text."
+  },
+  "2260262_SLEEVE-INJEC_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent overlay with the text 'PARTSOUO.COM'."
+  },
+  "2260262_SLEEVE-INJEC_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23515581_DET_ROD_BRG_PAIR_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent overlay text 'KMP BRAND' which is not part of the product itself."
+  },
+  "23515581_DET_ROD_BRG_PAIR_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23515581_DET_ROD_BRG_PAIR_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a semi-transparent logo overlaying the product."
+  },
+  "23515581_DET_ROD_BRG_PAIR_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a brand logo (PAI) which is part of the product packaging."
+  },
+  "23515581_DET_ROD_BRG_PAIR_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23515581_DET_ROD_BRG_PAIR_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23515581_DET_ROD_BRG_PAIR_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23515581_DET_ROD_BRG_PAIR_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23515581_DET_ROD_BRG_PAIR_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a label with text that is not part of the product itself."
+  },
+  "23515581_DET_ROD_BRG_PAIR_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "pattern",
+    "description": "The image contains a repeated pattern of the 'FP Diesel' logo as a watermark."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2590277C1CS_PINION_SEAL_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2590277C1CS_PINION_SEAL_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2590277C1CS_PINION_SEAL_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2590277C1CS_PINION_SEAL_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image appears to be a technical diagram or illustration without any visible watermarks, logos, or overlaid text."
+  },
+  "2590277C1CS_PINION_SEAL_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2590277C1CS_PINION_SEAL_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2590277C1CS_PINION_SEAL_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2590277C1CS_PINION_SEAL_7.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo for 'National' on the product packaging."
+  },
+  "2590277C1CS_PINION_SEAL_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2590277C1CS_PINION_SEAL_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains promotional text overlays such as 'BIG SALE' and 'FREE DELIVERY' which are not part of the product itself."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains handwritten text '(LCE)' which is not part of the product label."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected that are not part of the product itself."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text and a logo that are not part of the product itself."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_7.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The text '2 Pack' is an overlay that is not part of the product itself."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains an overlaid text watermark that reads 'ESDARDAN DISTRIBUTIONS'."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains the text 'IMMAGINE DIMOSTRATIVA' which appears to be an overlay."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text that is not part of the product itself."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent overlay with a logo and text that is not part of the product itself."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent text overlay with the brand name 'AIRSOFT.ch'."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains an overlay with brand information and product descriptions that are not part of the product itself."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "pattern",
+    "description": "The interior of the bag has a repeated pattern of the brand name."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image matches the description of the product."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_1.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a label with a barcode and the text 'A-PREMIUM' which appears to be an overlay."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent overlay text that appears to be a watermark."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo in the bottom left corner."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text that describes the product."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a repeated text watermark 'HOALOI' overlaid on the product."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_1.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains repeated logos of 'BIG RIG WORLD' as a watermark."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent overlay with text."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text that is not part of the product itself, specifically the 'LIFETIME WARRANTY' text."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains multiple overlays including the brand logo 'MACKAY' and additional text such as 'Engine/Transmission Mount' and 'Fast Delivery'."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains repeated logos of 'BIG RIG WORLD' as a watermark."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent overlay with the text 'IMAGE COMING SOON' and a logo in the background."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent overlay with the text 'IMAGE COMING SOON' and a logo in the background."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "pattern",
+    "description": "The image contains a repeated pattern overlay that is not part of the product itself."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_1.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text that describes the product."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains logos and branding for 'Mystik Lubricants' on the product containers."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a text overlay indicating '1st CHOICE FOR ENGINE OILS' which is not part of the product label."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text that describes the product."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a text overlay that appears to be a brand name."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_1.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo for 'ATRO ENGINEERED SYSTEMS' and a watermark for 'BIG RIG WORLD'."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent text overlay with the brand name 'ABOSN'."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_7.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo in the top left corner."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo in the bottom left corner."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent overlay with the brand name 'AUTOMANN'."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text that is not part of the product itself."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent overlay with the website name 'AnythingTruck.com'."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text that reads 'ATRO TORQUE RODS PARTS SPECIAL', which is not part of the product itself."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo overlay from 'Advanced Fluid Solutions'."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_1.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent overlay with the text 'IMAGE COMING SOON' and a logo in the background."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with the text 'INYOPOOLS.COM' overlaid on the product."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2110587_BEARING_-_MA_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2110587_BEARING_-_MA_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2110587_BEARING_-_MA_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2110587_BEARING_-_MA_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2110587_BEARING_-_MA_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo overlay at the bottom."
+  },
+  "2110587_BEARING_-_MA_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text that reads 'MAIN BEARING' and a part number 'C13 211-0587', which are not part of the product itself."
+  },
+  "2110587_BEARING_-_MA_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent overlay with the text 'ANTO' and 'MACHINERY PARTS' repeated in the background."
+  },
+  "2110587_BEARING_-_MA_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2110587_BEARING_-_MA_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo overlay in the top left corner."
+  },
+  "2110587_BEARING_-_MA_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2143061PE_TENSIONER_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo overlay that is not part of the product itself."
+  },
+  "2143061PE_TENSIONER_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2143061PE_TENSIONER_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2143061PE_TENSIONER_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2143061PE_TENSIONER_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2143061PE_TENSIONER_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2143061PE_TENSIONER_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2143061PE_TENSIONER_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2143061PE_TENSIONER_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2143061PE_TENSIONER_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text describing the product and its features."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_1.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a copyright notice and additional text that are not part of the product itself."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text indicating 'NPT' and 'BSP' on the respective products."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image contains a technical drawing and a table of specifications for various items, with no visible watermarks or overlays."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image accurately depicts NPT male and female fittings as described."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains text overlays including the title 'NPT Threaded Connections' and other instructional text."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "216-4781_GSKT_KIT-_CAT_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "216-4781_GSKT_KIT-_CAT_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "216-4781_GSKT_KIT-_CAT_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains an overlay with text and logos that are not part of the product itself."
+  },
+  "216-4781_GSKT_KIT-_CAT_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains the text 'IMAGE COMING SOON', which is an overlay and not part of the product itself."
+  },
+  "216-4781_GSKT_KIT-_CAT_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a prominent logo for 'Kit Cat' with text overlay."
+  },
+  "216-4781_GSKT_KIT-_CAT_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo overlay that is not part of the product itself."
+  },
+  "216-4781_GSKT_KIT-_CAT_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "216-4781_GSKT_KIT-_CAT_7.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent text overlay with the brand name 'ProDieselParts'."
+  },
+  "216-4781_GSKT_KIT-_CAT_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent text overlay that reads 'ProDieselParts'."
+  },
+  "216-4781_GSKT_KIT-_CAT_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a label with text that is part of the product packaging."
+  },
+  "23049200_OIL_FILL_TUBE_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23049200_OIL_FILL_TUBE_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23049200_OIL_FILL_TUBE_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23049200_OIL_FILL_TUBE_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23049200_OIL_FILL_TUBE_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23049200_OIL_FILL_TUBE_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23049200_OIL_FILL_TUBE_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23049200_OIL_FILL_TUBE_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23049200_OIL_FILL_TUBE_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "23049200_OIL_FILL_TUBE_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "22-30-12_2.75X.065_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "22-30-12_2.75X.065_1.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo in the top right corner."
+  },
+  "22-30-12_2.75X.065_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "22-30-12_2.75X.065_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with the text 'Examples.com' in the bottom right corner."
+  },
+  "22-30-12_2.75X.065_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a semi-transparent logo overlay."
+  },
+  "22-30-12_2.75X.065_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "22-30-12_2.75X.065_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "22-30-12_2.75X.065_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "22-30-12_2.75X.065_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a handwritten label with the number '4721' which appears to be overlaid on the product."
+  },
+  "22-30-12_2.75X.065_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text that is not part of the product itself."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a text watermark 'MVF, INC' in the upper left corner."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks or overlays detected."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo that appears to be part of the product."
+  },
+  "24710N608SAL_FITTING_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent overlay text that reads 'Pneumatic Hardware', which is not part of the product itself."
+  },
+  "24710N608SAL_FITTING_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "24710N608SAL_FITTING_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a text logo 'NBPT' which is overlaid on the product."
+  },
+  "24710N608SAL_FITTING_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "24710N608SAL_FITTING_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "24710N608SAL_FITTING_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent text overlay with the brand name 'Friday Parts'."
+  },
+  "24710N608SAL_FITTING_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent overlay with a website URL."
+  },
+  "24710N608SAL_FITTING_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "24710N608SAL_FITTING_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "24710N608SAL_FITTING_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent overlay with the text 'TRANS DYNAMICS'."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo in the top left corner that is not part of the product itself."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent text watermark with the letters 'Psi' overlaid on the product."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo and text overlay that are not part of the product itself."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains overlaid text that is not part of the product itself."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo overlay in the top right corner."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains text printed on the product itself, which includes a website URL and specifications."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "No watermarks, logos, or overlaid text detected."
+  }
+}

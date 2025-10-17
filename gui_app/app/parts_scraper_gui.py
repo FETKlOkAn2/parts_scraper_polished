@@ -32,8 +32,9 @@ class PartsScraperGUI:
         self.process_job_key = os.getenv("PROC_KEY")
         self.search_queue = os.getenv("SEARCH_QUEUE_URL")
         self.process_queue = os.getenv("PROC_QUEUE_URL")
-        self.search_chunk_size = 25
-        self.processing_chunk_size = 200
+        self.search_chunk_size = 5
+        self.processing_chunk_size = 10
+        self.max_rows = 25
 
         # Tests
         self.test_input_key = os.getenv("TEST_KEY")
@@ -73,6 +74,7 @@ class PartsScraperGUI:
         self.db.send_delete_request_watermark()
 
         self.progress_bar.stop()
+        self.log_message("Ready for last step Filter Images")
         self.filter_images_btn.configure(state=tk.NORMAL)
 
 
@@ -157,7 +159,6 @@ class PartsScraperGUI:
 
         self.clear_log()
         self.log_message("All images have been processed")
-        self.ai_watermark_btn.configure(state=tk.NORMAL)
         self.search_images_btn.configure(state=tk.DISABLED)
         self.progress_bar.stop()
 
@@ -165,6 +166,7 @@ class PartsScraperGUI:
         self.db.execute_sql("DELETE FROM part_tags;")
         self.db.empty_prefix(self.bucket, 'images')
         self.status_var.set("COMPLETED: Images are Ready for Deployment")
+        self.state.set(image_watermark_detection=False)
 
     def search_images(self): # this is search
         """Main processing function"""
@@ -177,7 +179,7 @@ class PartsScraperGUI:
         # retriving data from database 
         self.log_message('Gathering all parts without an image...')
         all_data = self.db.read_sql_query("SELECT number, description FROM parts WHERE final_tag IS NULL;")
-        all_data = all_data.iloc[:101]
+        all_data = all_data.iloc[:self.max_rows]
 
         # spliting data into chucks and upload to s3
         self.log_message("splitting data into jobs...")
@@ -189,6 +191,7 @@ class PartsScraperGUI:
             testing=self.testing) 
         
         self.clear_log()
+        self.state.set(image_search_state=False)
         
         start = time.time()   #####################################
         if self.testing:
@@ -211,7 +214,7 @@ class PartsScraperGUI:
         
         all_terminated = False
         count = 0
-        time.sleep(30)
+        time.sleep(40)
         while not all_terminated:
             time.sleep(60)
             all_terminated,state = self.helper.determine_instance_state()

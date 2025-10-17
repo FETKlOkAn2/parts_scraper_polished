@@ -43,10 +43,11 @@ class BatchWatermarkDetector:
                             {
                                 "type": "text", 
                                 "text": (
-                                    "Analyze this image for watermarks, logos, or overlaid text that are NOT part of the product itself. "
-                                    "Look for semi-transparent overlays, repeated patterns, brand logos, or text that appears to be added on top of the product image. "
-                                    "Product labels, part numbers, or text that's physically printed on the product should NOT be considered watermarks. "
-                                    "Return ONLY valid JSON with the specified schema. If uncertain, use false."
+                                        "You are a strict quality-control classifier for product images."
+                                        "Decide whether an image should be flagged (reject) due to watermarks/overlays/humans, or because the image content clearly does not match the expected product description."
+                                        "Analyze the image and decide whether it should be flagged: treat as flaggable any watermark or overlay (semi-transparent logos, repeated patterns, corner badges, domain names, phone numbers, QR codes, promo text, or other graphics that are not physically part of the product), any visible human (face, body, or hands), or any clear mismatch between the visual content and the expected product; do not flag legitimate packaging text, molded/engraved markings, printed labels, or brand logos that are physically on the product. "
+                                        "Use the second path segment after image/<partnumber>_<description>.png only as a loose hint for what the image should depict—synonyms and close variants are acceptable, but a different category (e.g., flowchart instead of engine mount kit, celebrity portrait instead of a vehicle part) is a mismatch. "
+                                        "Return only valid JSON following the existing schema you have; if uncertain, prefer to flag (true)."
                                 )
                             },
                             {

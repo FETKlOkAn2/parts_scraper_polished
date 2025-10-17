@@ -214,15 +214,15 @@ class Database:
             df_urls = pd.DataFrame({"tag_value": temp_delete})
             self.to_delete_df = pd.concat([self.to_delete_df, df_urls], ignore_index=True)
 
-        self.create_table_if_not_exists("dbo.to_delete", self.to_delete_df)
+        self.create_table_if_not_exists("to_delete", self.to_delete_df)
         self.to_sql(self.to_delete_df, 'to_delete', schema='dbo')
         self.execute_sql("""
             DELETE pt
             FROM dbo.part_tags AS pt
-            INNER JOIN dbo.to_delete AS td
+            INNER JOIN to_delete AS td
                 ON td.tag_value = pt.tag_value;
             """)
-        self.execute_sql("DROP TABLE dbo.to_delete;")
+        self.execute_sql("DROP TABLE to_delete;")
     
     def empty_prefix(self, bucket_name, prefix):
         def _chunk_list(items, limit=900):

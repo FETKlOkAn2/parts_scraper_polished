@@ -418,7 +418,7 @@ class Img_Proc:
 
         display_string = grouped_strings[0].split('/')[1:][0]
         display_string = ' '.join(display_string.split('_')[:-1])
-        #print(f'--New Group--->> {display_string}')
+        print(f'--New Group--->> {display_string}')
 
         self.group_map = self.db.download_group(self.bucket, grouped_strings)
 
@@ -436,6 +436,7 @@ class Img_Proc:
 
         img= self.grab_image_and_implement_watermark(keep, False)
         hash_key = self.hash_key(keep, self.html_secret)
+        print(hash_key)
 
         pil = self.to_pil(img)
         buf = io.BytesIO()
@@ -482,14 +483,14 @@ class Img_Proc:
                     return keep                
         return [grouped_strings[0]]
     
-    def grab_image_and_implement_watermark(self, keep, watermark=False):
+    def grab_image_and_implement_watermark(self, keep, to_watermark=False):
 
         keep_value = keep[0]
 
         keep_path = next((k for k, v in self.group_map.items() if v == keep_value), None)
         img = imread(keep_path)
-        watermark = imread('watermark.png')
-        if watermark:
+        watermark = imread('image_proc/watermark.png')
+        if to_watermark:
             out = self.add_watermark_center(img, watermark, scale=0.99, opacity=.60)
             return out
         else:
