@@ -37,6 +37,7 @@ class BatchWatermarkDetector:
                 "url": "/v1/chat/completions",  # Fixed: was "/v1/responses"
                 "body": {
                     "model": "gpt-4o-mini",
+                    "service_tier": "priority",
                     "messages": [{
                         "role": "user",
                         "content": [

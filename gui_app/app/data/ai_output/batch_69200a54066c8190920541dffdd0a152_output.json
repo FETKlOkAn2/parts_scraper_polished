@@ -1,0 +1,1752 @@
+{
+  "2110587_BEARING_-_MA_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with the text 'Hubei Kingland Industrial Co., Ltd.' and a website URL, which are not part of the product."
+  },
+  "2110587_BEARING_-_MA_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image shows two metallic engine parts that appear to match the expected product description."
+  },
+  "2110587_BEARING_-_MA_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a main bearing with its packaging, matching the expected product description."
+  },
+  "2110587_BEARING_-_MA_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two metal engine bearing shells, which matches the expected product description."
+  },
+  "2110587_BEARING_-_MA_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a prominent overlay watermark with a logo and text."
+  },
+  "2110587_BEARING_-_MA_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with a domain name that is not part of the product."
+  },
+  "2110587_BEARING_-_MA_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a part, likely matching the expected description."
+  },
+  "2110587_BEARING_-_MA_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image shows two clear plastic items with a metallic edge, placed on a cardboard background. There are no visible watermarks, overlays, or humans, and the content matches the expected product description."
+  },
+  "2110587_BEARING_-_MA_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent overlay logo, which is not part of the product."
+  },
+  "2110587_BEARING_-_MA_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two metal components that appear to match the expected product description of engine parts. There are no visible watermarks, overlays, or humans."
+  },
+  "2143061PE_TENSIONER_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with the text 'Friday Parts'."
+  },
+  "2143061PE_TENSIONER_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a mechanical part, specifically a tensioner assembly, which matches the expected product description."
+  },
+  "2143061PE_TENSIONER_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two pulleys, which aligns with the expected product description."
+  },
+  "2143061PE_TENSIONER_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a mechanical part that appears to match the expected product description."
+  },
+  "2143061PE_TENSIONER_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a mechanical part that appears to match the expected product description."
+  },
+  "2143061PE_TENSIONER_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a mechanical component that appears to match the expected product description."
+  },
+  "2143061PE_TENSIONER_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a mechanical part that appears to match the expected product description without any visible watermarks, overlays, or humans."
+  },
+  "2143061PE_TENSIONER_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a mechanical component that appears to match the expected product description."
+  },
+  "2143061PE_TENSIONER_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a mechanical part that appears to match the expected product description."
+  },
+  "2143061PE_TENSIONER_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a mechanical component that appears to match the expected product description without any visible watermarks, overlays, or humans."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "pattern",
+    "description": "The image contains a repeated pattern watermark with the brand name 'ICT Billet'."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image contains a table with information about NPT pipe thread identification, including nominal pipe sizes, threads per inch, and approximate caliper measurements. There are no visible watermarks, overlays, or humans, and the content matches the expected product description."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts an exploded view of a gasket assembly with labeled parts and instructions, which matches the expected product description."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two metal pipe fittings and associated seals, which matches the expected product description."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two stainless steel valves with blue handles, matching the expected product description."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a valve, matching the expected product description."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts three black valves with metal fittings, which matches the expected product description."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two types of NPT fittings (Male and Female) without any visible watermarks, overlays, or humans. The content matches the expected product description."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a chart with text and graphics that do not represent a physical product, indicating it is likely a reference or informational graphic rather than a product image."
+  },
+  "216-100-3NPT-C_%22MT_10_GAL_3%22%22%22%22_NPT_2%22%22%22%22_DRAIN%22%22_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a fitting or connector, matching the expected product description."
+  },
+  "216-4781_GSKT_KIT-_CAT_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of gaskets and seals, which matches the expected product description."
+  },
+  "216-4781_GSKT_KIT-_CAT_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of gaskets and seals, which matches the expected product description."
+  },
+  "216-4781_GSKT_KIT-_CAT_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a prominent overlay logo and text that is not part of the product."
+  },
+  "216-4781_GSKT_KIT-_CAT_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent logo overlay and additional text that are not part of the product."
+  },
+  "216-4781_GSKT_KIT-_CAT_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo watermark in the top section, which is not part of the product itself."
+  },
+  "216-4781_GSKT_KIT-_CAT_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with a website URL that is not part of the product."
+  },
+  "216-4781_GSKT_KIT-_CAT_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent logo and website URL overlay, which is not part of the product."
+  },
+  "216-4781_GSKT_KIT-_CAT_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of gaskets, which matches the expected product description."
+  },
+  "216-4781_GSKT_KIT-_CAT_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo overlay at the bottom, which is not part of the product."
+  },
+  "216-4781_GSKT_KIT-_CAT_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains an overlay logo and text that are not part of the product."
+  },
+  "23049200_OIL_FILL_TUBE_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a vehicle part, specifically a hose or pipe, which matches the expected product description."
+  },
+  "23049200_OIL_FILL_TUBE_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal pipe with a yellow and black finish, which appears to match the expected product description."
+  },
+  "23049200_OIL_FILL_TUBE_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a black plastic automotive part, which matches the expected product description."
+  },
+  "23049200_OIL_FILL_TUBE_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a black metal part with a label attached, which appears to match the expected product description."
+  },
+  "23049200_OIL_FILL_TUBE_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a prominent overlay with logos and text that are not part of the product."
+  },
+  "23049200_OIL_FILL_TUBE_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a black product that appears to match the expected description of a vehicle part, with no visible watermarks, overlays, or humans."
+  },
+  "23049200_OIL_FILL_TUBE_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of metal pipes, which aligns with the expected product description."
+  },
+  "23049200_OIL_FILL_TUBE_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a plastic automotive part, consistent with the expected description."
+  },
+  "23049200_OIL_FILL_TUBE_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a black plastic component that appears to match the expected product description."
+  },
+  "23049200_OIL_FILL_TUBE_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a black, curved metal part that appears to be an automotive component. There are no visible watermarks, overlays, or humans present, and the content matches the expected product description."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a bottle of engine oil, which matches the expected product description."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts three containers of Mobil Delvac 1300 Super engine oil and a blue oil filter, which matches the expected product description."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a box of Chevron Delo engine oil, which matches the expected product description."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a bottle of PennGrade synthetic blend motor oil, which matches the expected product description."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a container of diesel engine oil, which matches the expected product description."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a container of engine oil, which matches the expected product description."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a container of engine oil, which matches the expected product description."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a container of heavy-duty diesel engine oil, matching the expected product description."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a container of marine engine oil, which matches the expected product description."
+  },
+  "20SRTSB10303_SYN_BLEND_10W-30_GALLON_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a red barrel labeled with product information for synthetic diesel engine oil, matching the expected product description."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts the interior of a car with a visible human hand and a tool, which does not match the expected product description."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a blue product that appears to match the expected description without any visible watermarks, overlays, or humans."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a visible watermark with the text 'ABOSN'."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with the text 'Taicai Xinxing Machinery Factory'."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a black rectangular object that appears to be a product, likely matching the expected description."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product with clear dimensions and no visible watermarks, overlays, or humans. The content matches the expected product description."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to match the expected description without any visible watermarks, overlays, or humans."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that matches the expected description, with no visible watermarks, overlays, or humans."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a blue machinery component with a metallic base and does not contain any watermarks, overlays, or visible humans. The content matches the expected product description."
+  },
+  "ATRMA37000_LOAD_PAD_(UPPER)_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a container or box with a lid, matching the expected product description."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains text overlay that includes 'The TORQUE ROD PART 2' and a logo in the corner, which are not part of the product."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_1.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with the website URL 'AnythingTruck.com', which is a clear overlay and not part of the product."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a suspension component, matching the expected description."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a part that appears to match the expected product description of a tie rod end or similar automotive component, with no visible watermarks, overlays, or humans."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a suspension component, likely matching the expected description."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a suspension component, likely matching the expected product description."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent logo overlay."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_7.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with a website URL and promotional text."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a steering component, specifically a tie rod or similar part, along with a bolt and nut. There are no visible watermarks, overlays, or humans, and the content matches the expected product description."
+  },
+  "ATRTR5042565_TORQUE_ROD_22_1_4_C-C_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains promotional text and logos that are not part of the product itself."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metallic fitting, which matches the expected product description."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal elbow fitting, which matches the expected product description."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal elbow fitting, which matches the expected product description."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal elbow fitting, which matches the expected product description."
+  },
+  "BD110274_ELB_MALE_90DEG_45DEG_SA_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal elbow fitting, which matches the expected product description."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a brass elbow fitting, which matches the expected product description."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a black metal elbow fitting, which matches the expected product description."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a chrome elbow fitting, which matches the expected product description."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains an overlay text 'IMAGE COMING SOON' and a logo, which are not part of the product."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a label with text that is not part of the product itself."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal elbow fitting, which matches the expected product description."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal pipe fitting, which matches the expected product description."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a 45-degree white PVC elbow fitting, which matches the expected product description."
+  },
+  "BD111011_ELBOW_45DEG_STREET_BRAS_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with a domain name (inyopools.com) which is not part of the product."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a text overlay that provides instructions and tool requirements, which is not part of the product itself."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal spring, which matches the expected product description."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with the text 'AIRSOFT.ch'."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a mechanical component, likely matching the expected product description."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a suspension kit with springs and components, matching the expected product description."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains text overlays labeling parts of the coil spring, which are not part of the product itself."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of automotive parts, including a spring and two other components, which appear to match the expected product description."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of metal springs and a bracket, which matches the expected product description."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent logo overlay in the center, which is not part of the product."
+  },
+  "ATRLP5024902_PROGRESSIVE_LOAD_SPRING_K_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a technical drawing of a spring with dimensions and specifications, which matches the expected product description."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of metal and rubber components, likely related to automotive parts, which matches the expected product description."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of mechanical parts, including bolts, washers, and spacers, which matches the expected product description."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of automotive parts, which matches the expected product description."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of mechanical parts including a metal plate, a rubber component, a bolt, a washer, and a nut, which aligns with the expected product description."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of mechanical parts, likely related to an assembly or kit, with no visible watermarks, overlays, or humans."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image shows two metal parts that appear to be engine mounts or brackets, with no visible watermarks, overlays, or humans. The content matches the expected product description."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with the text 'TRRParts.com'."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two components that appear to be part of a mechanical assembly, matching the expected product description."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts various metal parts that appear to match the expected product description of engine mount kit components."
+  },
+  "ATRMM62622M2HT_ENGINE_MOUNT_KIT_HT_W_HA_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark in the form of promotional text."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a red product that appears to match the expected description of a part, with no visible watermarks, overlays, or humans."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal part that appears to match the expected product description without any visible watermarks, overlays, or humans."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two automotive parts that appear to be engine mounts, matching the expected product description."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of black metal brackets, which matches the expected product description."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with text that is not part of the product."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a red product with accompanying nuts and washers, matching the expected product description."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two components that appear to match the expected product description of a mechanical part, with no visible watermarks or overlays."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts an exploded view of a mechanical assembly, which matches the expected product description."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of red bushings and associated hardware, which matches the expected product description."
+  },
+  "ATRMM9662657HT_ENGINE_MOUNT_HT_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two black metal parts that appear to match the expected product description of engine mount kit components."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent watermark that is not part of the product."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a copper elbow fitting, which matches the expected product description."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains an overlay text stating 'IMAGE COMING SOON' along with a logo, which qualifies as a watermark."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a brass elbow fitting, which matches the expected product description."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal elbow pipe fitting, which matches the expected product description."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent text overlay that is not part of the product."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a copper pipe fitting, which matches the expected product description."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal elbow fitting, which matches the expected product description."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal elbow pipe fitting, which matches the expected product description."
+  },
+  "BD11101_ELBOW_90DEG_STREET_BRAS_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains an overlay text 'IMAGE COMING SOON' and a logo, which are not part of the product."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal hose clamp, which matches the expected product description."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_1.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo watermark in the top left corner."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a set of metal hose clamps, which matches the expected product description."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts multiple stainless steel hose clamps, which matches the expected product description."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo overlay in the top left corner."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal clamp, which matches the expected product description."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a clear view of a container filled with hose clamps, matching the expected product description."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal hose clamp, which matches the expected product description."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal clamp, which matches the expected product description."
+  },
+  "BD24171_SS_CLAMP_HOSE_TUBING_CO_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal hose clamp, which matches the expected product description."
+  },
+  "22-30-12_2.75X.065_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image shows a camera lens with visible branding and model information. There are no watermarks or overlays present, and the content matches the expected product description."
+  },
+  "22-30-12_2.75X.065_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a close-up of a camera lens, which matches the expected product description."
+  },
+  "22-30-12_2.75X.065_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts boxes of shotgun shells labeled as 'TARGET LOAD' and does not contain any watermarks, overlays, or visible humans. The content matches the expected product description."
+  },
+  "22-30-12_2.75X.065_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a handwritten number '4721' which is a watermark."
+  },
+  "22-30-12_2.75X.065_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a brass fitting, which matches the expected product description."
+  },
+  "22-30-12_2.75X.065_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a compressor, which matches the expected product description."
+  },
+  "22-30-12_2.75X.065_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a pump system, which matches the expected product description."
+  },
+  "22-30-12_2.75X.065_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a mechanical part that appears to match the expected product description without any visible watermarks, overlays, or humans."
+  },
+  "22-30-12_2.75X.065_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with the website name 'GunsInternational.com' which is not part of the product."
+  },
+  "22-30-12_2.75X.065_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains text overlays including a website URL and promotional text, which are not part of the product itself."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metallic fitting, which matches the expected product description."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent logo overlay on the product."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a brass fitting, which matches the expected product description."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent logo overlay that is not part of the product."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_7.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent logo overlay that is not part of the product."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metallic fitting, which matches the expected product description."
+  },
+  "2404-06-04_MJ_x_MP_-_Male_Connector_-_Ste_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metallic fitting, which matches the expected product description."
+  },
+  "24710N608SAL_FITTING_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a black plastic component that appears to match the expected product description without any visible watermarks, overlays, or humans."
+  },
+  "24710N608SAL_FITTING_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two metal fittings and several hose clamps, which match the expected product description."
+  },
+  "24710N608SAL_FITTING_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a red hose and a brass fitting, which aligns with the expected product description."
+  },
+  "24710N608SAL_FITTING_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "24710N608SAL_FITTING_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with the text 'NBPT' in the top left corner."
+  },
+  "24710N608SAL_FITTING_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains promotional text that is not part of the product."
+  },
+  "24710N608SAL_FITTING_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metallic component that appears to match the expected product description of a mechanical part."
+  },
+  "24710N608SAL_FITTING_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "24710N608SAL_FITTING_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a blue hose and a brass fitting, which appears to match the expected product description."
+  },
+  "24710N608SAL_FITTING_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains visible text overlays including a phone number and an email address, which are not part of the product."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal component that appears to match the expected product description without any visible watermarks, overlays, or humans."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with the text 'HoseRack' overlaying the product."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal nut, which matches the expected product description."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metallic fitting, which matches the expected product description."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metallic coupling fitting, which matches the expected product description."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal connector, which matches the expected product description."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal fitting, which matches the expected product description."
+  },
+  "24712N612SAL_JIC_FEMALE_SWIVEL_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains text labels indicating part types, which are considered overlays."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a bottle of dietary supplement capsules, which matches the expected product description."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a black hose with printed specifications, which matches the expected product description."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains visible text branding on the product, which is acceptable, but there are also elements that could be considered promotional or branding overlays."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_3.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with text indicating it is a catalog for quick couplings."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "logo",
+    "description": "The image contains a logo watermark that is not part of the product."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a coiled metal conduit, which matches the expected product description."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains an overlay with promotional text and graphics that are not part of the product."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_7.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a text overlay that includes instructions and branding, which is not part of the product itself."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image shows a hose with a label indicating its specifications and origin. There are no visible watermarks, overlays, or humans, and the content matches the expected product description."
+  },
+  "BDKP61524FT_3_16_O.D._PARFLEX-FLEXIBL_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains promotional text and logos that are not part of the product itself."
+  },
+  "2260262_SLEEVE-INJEC_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image shows multiple syringes in sealed packaging, which matches the expected product description."
+  },
+  "2260262_SLEEVE-INJEC_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two electrical connectors, which matches the expected product description."
+  },
+  "2260262_SLEEVE-INJEC_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a semi-transparent text watermark that is not part of the product."
+  },
+  "2260262_SLEEVE-INJEC_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a copper product that matches the expected description without any visible watermarks, overlays, or humans."
+  },
+  "2260262_SLEEVE-INJEC_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a shiny metallic component that appears to match the expected product description of a mechanical part."
+  },
+  "2260262_SLEEVE-INJEC_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains an overlay with the text 'CATERPILLAR' and a logo for 'G&T ENGINE PARTS', which are not part of the product itself."
+  },
+  "2260262_SLEEVE-INJEC_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a prominent watermark with the text 'PARTSOUO.COM' overlaying the product."
+  },
+  "2260262_SLEEVE-INJEC_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metallic component that appears to match the expected product description."
+  },
+  "2260262_SLEEVE-INJEC_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent logo overlay."
+  },
+  "2260262_SLEEVE-INJEC_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metallic component that appears to match the expected product description."
+  },
+  "23515581_DET_ROD_BRG_PAIR_0.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent logo overlay that is not part of the product."
+  },
+  "23515581_DET_ROD_BRG_PAIR_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two metallic parts that appear to be compatible with the expected product description."
+  },
+  "23515581_DET_ROD_BRG_PAIR_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image shows a set of engine bearings in their packaging, which matches the expected product description."
+  },
+  "23515581_DET_ROD_BRG_PAIR_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image shows a product with visible markings that appear to be part of the product itself, with no watermarks, overlays, or humans present."
+  },
+  "23515581_DET_ROD_BRG_PAIR_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two metal components that appear to match the expected product description."
+  },
+  "23515581_DET_ROD_BRG_PAIR_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a metal engine part (bearing) alongside its packaging, which matches the expected product description."
+  },
+  "23515581_DET_ROD_BRG_PAIR_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a visible overlay with branding and promotional text."
+  },
+  "23515581_DET_ROD_BRG_PAIR_7.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a prominent text watermark 'KMP BRAND' across the product."
+  },
+  "23515581_DET_ROD_BRG_PAIR_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent logo overlay in the center."
+  },
+  "23515581_DET_ROD_BRG_PAIR_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains visible text and branding that are not part of the product itself, indicating a watermark."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a monitor and camera system, which aligns with the expected product description."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_1.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a monitor and cameras, which aligns with the expected product description."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_2.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains an overlay of a scenic landscape on the monitor screen, which is not part of the product itself."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image contains product specifications and diagrams related to a camera system, with no visible watermarks, overlays, or humans."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a monitor and multiple cameras, which aligns with the expected product description."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a navigation monitor and a camera, which matches the expected product description."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a monitor and multiple cameras, which aligns with the expected product description."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a rearview camera system with a monitor and cameras, matching the expected product description."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a monitor and camera set, which matches the expected product description."
+  },
+  "250-8160-BSC_BLIND_SPOT_CAMERA_9.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains promotional text and a logo that are not part of the product itself."
+  },
+  "2590277C1CS_PINION_SEAL_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a circular component, likely a seal or gasket, with a box in the background. There are no visible watermarks, overlays, or humans, and the content matches the expected product description."
+  },
+  "2590277C1CS_PINION_SEAL_1.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a visible product label with brand and part number information, which is considered a watermark."
+  },
+  "2590277C1CS_PINION_SEAL_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a seal or gasket, matching the expected product description."
+  },
+  "2590277C1CS_PINION_SEAL_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a seal or gasket, matching the expected product description."
+  },
+  "2590277C1CS_PINION_SEAL_4.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a logo and text overlay that are not part of the product."
+  },
+  "2590277C1CS_PINION_SEAL_5.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a seal or gasket, matching the expected product description."
+  },
+  "2590277C1CS_PINION_SEAL_6.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains a semi-transparent logo and text overlay that are not part of the product."
+  },
+  "2590277C1CS_PINION_SEAL_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a seal or gasket, which matches the expected product description."
+  },
+  "2590277C1CS_PINION_SEAL_8.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a product that appears to be a seal or gasket, which matches the expected product description."
+  },
+  "2590277C1CS_PINION_SEAL_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a mechanical seal, which matches the expected product description."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_0.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts multiple containers of Mobil Delvac 1300 Super motor oil, which matches the expected product description."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_1.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains an overlay of a truck graphic that is not part of the product itself."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_2.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a container of Mobil Delvac 1300 Super engine oil, which matches the expected product description."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_3.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a bottle of Mobil Delvac 1300 Super engine oil, which matches the expected product description."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_4.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts two containers of Mobil Delvac 1300 Super motor oil, which matches the expected product description."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_5.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "text",
+    "description": "The image contains a watermark with the text 'Batangas Auto Parts' which is not part of the product."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_6.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a container of Mobil Delvac engine oil, which matches the expected product description."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_7.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a container of Mobil Delvac 1300 Super motor oil, which matches the expected product description."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_8.png": {
+    "status": "success",
+    "has_watermark": true,
+    "confidence": "high",
+    "watermark_type": "overlay",
+    "description": "The image contains an overlay indicating '3 Pack', which is not part of the product itself."
+  },
+  "261271540000806_MOB_DELVAC_1300_15W40_4_G_CS_9.png": {
+    "status": "success",
+    "has_watermark": false,
+    "confidence": "high",
+    "watermark_type": "none",
+    "description": "The image depicts a bucket of Mobil Delvac 1300 Super motor oil, which matches the expected product description."
+  }
+}

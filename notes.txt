@@ -1,8 +1,5 @@
 need to fix issue with scraper app doubling up and re-instansiating
-messages --gpt already gave solution need to implement
-
-need to make a folder for final image and hash upload them to bucket with
-hashed key as well as add a watermark to all images
+messages
 
 
 HMAC-SHA256

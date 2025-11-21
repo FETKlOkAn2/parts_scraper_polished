@@ -143,7 +143,7 @@ class PartsScraperGUI:
 
         all_terminated = False
         count = 0
-        time.sleep(40)
+        time.sleep(70)
         while not all_terminated:
             time.sleep(60)
             all_terminated,state = self.helper.determine_instance_state()
@@ -214,7 +214,7 @@ class PartsScraperGUI:
         
         all_terminated = False
         count = 0
-        time.sleep(40)
+        time.sleep(70)
         while not all_terminated:
             time.sleep(60)
             all_terminated,state = self.helper.determine_instance_state()
