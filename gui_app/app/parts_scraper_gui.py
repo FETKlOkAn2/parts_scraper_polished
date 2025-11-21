@@ -292,7 +292,7 @@ class PartsScraperGUI:
         
 
         # Title
-        title_label = ttk.Label(main_frame, text="Parts Scraper - Watermark Remover", 
+        title_label = ttk.Label(main_frame, text="Parts Image Scraper", 
                                font=('Arial', 16, 'bold'))
         title_label.grid(row=0, column=0, columnspan=3, pady=(0, 20))
         
