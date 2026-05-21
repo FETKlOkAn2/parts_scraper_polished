@@ -11,8 +11,10 @@ from urllib.parse import quote
 class Helper:
     def __init__(self, db, detector):
         self.db = db
-        self.sqs = boto3.client("sqs", region_name='us-east-1')
-        self.ec2 = boto3.client("ec2")
+        self.region = os.getenv("AWS_REGION", "us-east-1")
+        self.bucket = os.getenv("BUCKET")
+        self.sqs = boto3.client("sqs", region_name=self.region)
+        self.ec2 = boto3.client("ec2", region_name=self.region)
         self.detector = detector
         self.max_batch_size = 40000
 
@@ -165,7 +167,7 @@ class Helper:
         all_urls = self.detector.get_urls_from_db()
         encoded_urls = []
 
-        base = "https://partsbucket0000.s3.us-east-1.amazonaws.com/images/"
+        base = f"https://{self.bucket}.s3.{self.region}.amazonaws.com/images/"
         for url in all_urls:
             splits = url.split(base)[-1]
             key = splits.split('.png')[0]

@@ -4,7 +4,6 @@ from botocore.exceptions import NoCredentialsError
 from sqlalchemy import create_engine, text
 import pandas as pd
 from threading import Lock
-import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 from uuid import uuid4
 
@@ -33,14 +32,18 @@ class Database:
     def change_db(self, new_db):
         self.db = new_db
 
-    def execute_sql(self, sql_text):
+    def execute_sql(self, sql_text, params=None):
         with self.lock, self.engine.begin() as conn:
-            return conn.execute(text(sql_text))
-             
-    def read_sql_query(self, sql_text):
-        """Execute a SQL query and return the result as a pandas DataFrame."""
+            return conn.execute(text(sql_text), params or {})
+
+    def read_sql_query(self, sql_text, params=None):
+        """Execute a SQL query and return the result as a pandas DataFrame.
+
+        Pass user-supplied values via ``params`` (a dict of bound parameters)
+        rather than f-string interpolation, to avoid SQL injection.
+        """
         with self.lock, self.engine.begin() as conn:
-            return pd.read_sql_query(text(sql_text), conn)
+            return pd.read_sql_query(text(sql_text), conn, params=params or {})
     
     def to_sql(self, df, table_name, if_exists='append', index=False, schema=None):
         """Write records stored in a DataFrame to a SQL database."""

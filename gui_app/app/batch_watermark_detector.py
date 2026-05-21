@@ -208,7 +208,7 @@ if __name__ == "__main__":
     detector = BatchWatermarkDetector()
     
     # Process all images in S3 bucket
-    results = detector.process_images_batch("partsbucket0000", "images/")
+    results = detector.process_images_batch(os.environ["BUCKET"], "images/")
     
     # Get summary
     summary = detector.get_watermark_summary(results)
