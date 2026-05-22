@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 
 from obs import get_logger
 from obs.metrics import build_emitter
+from tenancy import TenantPaths
+from tenancy.ids import validate_tenant_id
 
 load_dotenv()
 
@@ -20,10 +22,15 @@ _metrics = build_emitter(stage="image_proc")
 
 
 class Img_Proc:
-    def __init__(self,db, testing=False):
+    def __init__(self, db, tenant_id=None, testing=False):
         self.testing = testing
         self.folder = "images"
         self.db = db
+        # tenant_id may be None for tests / dry runs, but every write
+        # path validates it before touching S3 or SQL.
+        self.tenant_id = validate_tenant_id(tenant_id) if tenant_id else None
+        self.paths = TenantPaths(self.tenant_id) if self.tenant_id else None
+
         self.bucket = os.getenv("BUCKET")
         self.prefix = os.getenv('IMAGE_KEY')
         self.html_secret = os.getenv('HTML_SECRET')
@@ -275,6 +282,12 @@ class Img_Proc:
         pil.save(buf, format='PNG', optimize=True)
         buf.seek(0)
 
+        # Tenant-scope the destination key. hash_key already starts with
+        # "final/"; when running in a tenant context we promote that
+        # under tenants/<tenant_id>/.
+        if self.paths is not None:
+            hash_key = self.paths.normalise(hash_key)
+
         self.db.s3.put_object(
             Bucket=self.bucket,
             Key=hash_key,
@@ -285,18 +298,38 @@ class Img_Proc:
         s = keep[0]
         m = re.search(r'(?<=/)[^_]+(?=_)', s)
         number = m.group(0)
-        self.db.execute_sql(
-            """
-            UPDATE dbo.parts
-            SET final_tag = :final_tag
-            WHERE [number] = :number;
-            """,
-            params={
-                "final_tag": f"{self.final_url}{hash_key}",
-                "number": number,
-            },
+        if self.tenant_id is not None:
+            self.db.execute_sql(
+                """
+                UPDATE dbo.parts
+                SET final_tag = :final_tag
+                WHERE tenant_id = :tenant_id AND [number] = :number;
+                """,
+                params={
+                    "final_tag": f"{self.final_url}{hash_key}",
+                    "tenant_id": self.tenant_id,
+                    "number": number,
+                },
+            )
+        else:
+            # Legacy / pre-cutover code paths only — should not run in production.
+            self.db.execute_sql(
+                """
+                UPDATE dbo.parts
+                SET final_tag = :final_tag
+                WHERE [number] = :number;
+                """,
+                params={
+                    "final_tag": f"{self.final_url}{hash_key}",
+                    "number": number,
+                },
+            )
+        _log.info(
+            "final tag written",
+            tenant_id=self.tenant_id,
+            part_number=number,
+            key=hash_key,
         )
-        _log.info("final tag written", part_number=number, key=hash_key)
 
         self.db.empty_dir('images')
 

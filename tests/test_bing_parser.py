@@ -27,7 +27,7 @@ def parser(monkeypatch):
     monkeypatch.setenv("DECODO_PASSWORD", "p")
     monkeypatch.setenv("BUCKET", "test-bucket")
     db = MagicMock()
-    return Parser(db=db, text="AB123 brake disc")
+    return Parser(db=db, text="AB123 brake disc", tenant_id="acme")
 
 
 def test_extracts_murl_from_iusc(parser):

@@ -11,6 +11,8 @@ from requests.exceptions import ProxyError, ConnectTimeout, ReadTimeout, SSLErro
 
 from obs import get_logger
 from obs.metrics import build_emitter
+from tenancy import TenantPaths
+from tenancy.ids import validate_tenant_id
 
 pd.set_option("display.max_colwidth", None)
 load_dotenv()
@@ -19,7 +21,12 @@ _log = get_logger("scraper.parser")
 _metrics = build_emitter(stage="scraper")
 
 class Parser:
-    def __init__(self, db, text):
+    def __init__(self, db, text, tenant_id):
+        # tenant_id is validated by the caller, but we re-validate here
+        # because Parser is small and gets called per-row.
+        self.tenant_id = validate_tenant_id(tenant_id)
+        self.paths = TenantPaths(self.tenant_id)
+
         username = os.getenv("DECODO_USERNAME")
         password = os.getenv("DECODO_PASSWORD")
         username = quote(username, safe='')
@@ -35,7 +42,7 @@ class Parser:
         }
         self.timeout = 5
 
-        
+
         self.db = db
         self.s3 = boto3.client("s3")
         self.bucket = os.getenv("BUCKET")
@@ -162,18 +169,25 @@ class Parser:
             print(info)
             part_number = info.split(" ")[0]
             part_id = self.db.read_sql_query(
-                "SELECT part_id FROM parts WHERE number = :number",
-                params={"number": part_number},
+                "SELECT part_id FROM dbo.parts "
+                "WHERE tenant_id = :tenant_id AND number = :number",
+                params={"tenant_id": self.tenant_id, "number": part_number},
             )
+            if part_id.empty:
+                _log.warning(
+                    "no part_id for query; skipping row",
+                    tenant_id=self.tenant_id,
+                    part_number=part_number,
+                )
+                return None, []
             part_id = int(part_id["part_id"].iat[0])
 
             while self.images_downloaded < self.max_images:
                 url = self.links.pop()
-                #tag = url.split('.')[-1]
                 file_name = info.replace(" ", "_") + "_" + str(self.images_downloaded) + ".png"
-                file_name = file_name.replace('/',"_")
-                file_name = file_name.replace(',','')
-                s3_key = f"images/{file_name}"
+                file_name = file_name.replace('/', "_")
+                file_name = file_name.replace(',', '')
+                s3_key = self.paths.image_key(file_name)
 
                 session.headers.update({
                     "User-Agent": (
@@ -205,22 +219,24 @@ class Parser:
                         )
                         _log.info(
                             "image uploaded",
+                            tenant_id=self.tenant_id,
                             part_number=part_number,
                             s3_key=s3_key,
                             bucket=self.bucket,
                         )
-                        _metrics.count("ImagesDownloaded")
+                        _metrics.count("ImagesDownloaded", Tenant=self.tenant_id)
                         self.images_downloaded += 1
 
 
                 except Exception as e:
                     _log.warning(
                         "image fetch failed",
+                        tenant_id=self.tenant_id,
                         part_number=part_number,
                         url=url,
                         error=str(e),
                     )
-                    _metrics.count("ImageFetchErrors")
+                    _metrics.count("ImageFetchErrors", Tenant=self.tenant_id)
 
                 else:
                     url_value = f"https://{self.bucket}.s3.{self.region}.amazonaws.com/{s3_key}"

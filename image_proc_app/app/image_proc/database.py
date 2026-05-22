@@ -5,18 +5,23 @@ from sqlalchemy import create_engine, text
 import pandas as pd
 from threading import Lock
 from dotenv import load_dotenv
-import sys
+
+from tenancy.ids import validate_tenant_id
+
 load_dotenv()
+
+
 class Database:
-    def __init__(self):
+    def __init__(self, tenant_id=None):
+        self.tenant_id = validate_tenant_id(tenant_id) if tenant_id else None
         self.user = os.getenv("DB_USER")
         self.password = os.getenv("DB_PASSWORD")
         self.host = os.getenv("DB_HOST")
         self.port = os.getenv("DB_PORT")
         self.db = 'parts_db'
         self.driver = "ODBC+Driver+18+for+SQL+Server"
-        self.engine = self.get_engine() # Initialize engine in the constructor
-        self.lock = Lock() # Thread lock for database access
+        self.engine = self.get_engine()
+        self.lock = Lock()
         self.s3 = boto3.client("s3")
         self.bucket = os.getenv("BUCKET")
         self.delete_keys = []
@@ -158,28 +163,41 @@ class Database:
 
         
     def send_delete_request_img_proc(self):
-        """" Used im image proc Deletes from s3 and also deletes from parts_tags database
-        data insdie self.delete_keys needs to be self.delete_keys.append({'Key': f'images/{key}'})"""
-        # limits to 1000 keys
+        """Delete the staged keys from S3 and the matching rows from part_tags.
+
+        The DELETE is tenant-scoped when this Database was constructed
+        with a tenant_id, so two tenants concurrently running the
+        watermark step cannot wipe each other's rows.
+        """
         def _chunk_list(data, limit=900):
             for i in range(0, len(data), limit):
                 yield data[i:i + limit]
 
         for chunk in _chunk_list(self.delete_keys):
-            
-            deletion_request = {'Objects': chunk,
-                                'Quiet': True}
+            deletion_request = {'Objects': chunk, 'Quiet': True}
             self.s3.delete_objects(
-                Bucket = self.bucket, 
-                Delete= deletion_request
+                Bucket=self.bucket,
+                Delete=deletion_request,
             )
 
-        self.execute_sql("""
-            DELETE pt
-            FROM [dbo].[part_tags] AS pt
-            INNER JOIN [dbo].[to_delete] AS td
-                ON td.tag_value = pt.tag_value;
-            """)
+        if self.tenant_id:
+            self.execute_sql(
+                """
+                DELETE pt
+                FROM [dbo].[part_tags] AS pt
+                INNER JOIN [dbo].[to_delete] AS td
+                    ON td.tag_value = pt.tag_value
+                WHERE pt.tenant_id = :tenant_id;
+                """,
+                params={"tenant_id": self.tenant_id},
+            )
+        else:
+            self.execute_sql("""
+                DELETE pt
+                FROM [dbo].[part_tags] AS pt
+                INNER JOIN [dbo].[to_delete] AS td
+                    ON td.tag_value = pt.tag_value;
+                """)
         self.execute_sql("DROP TABLE dbo.to_delete;")
 
 
