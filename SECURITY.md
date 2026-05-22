@@ -35,6 +35,7 @@ The variables consumed by the apps are:
 | `CUSTOMER`         | all apps (optional)  | Short identifier injected into log lines and metric dimensions; defaults to `unknown` |
 | `METRICS_DISABLED` | all apps (optional)  | Set to `1` to skip CloudWatch `PutMetricData` calls (tests, dev) |
 | `LOG_LEVEL`        | all apps (optional)  | Defaults to `INFO`                                     |
+| `DEFAULT_TENANT_ID`| all apps (optional)  | Tenant id used when an in-flight SQS message has no `tenant_id` field. See [TENANCY.md](TENANCY.md). Required during a single-tenant → multi-tenant cutover; can stay set indefinitely for single-tenant deployments. |
 
 Each app ships a `.env.example` file enumerating its required keys.
 The operator copies that to `.env` (which is git-ignored) and fills in
