@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from tkinter.scrolledtext import ScrolledText
+import datetime as dt
 import threading
 import pandas as pd
 import math
@@ -13,8 +14,12 @@ import os
 import sys
 from helpers import Helper
 from batch_watermark_detector import BatchWatermarkDetector
+from report_builder import ReportBuilder, RunSummary, new_job_id
+from obs import get_logger
 from dotenv import load_dotenv
 load_dotenv()
+
+_log = get_logger("operator.gui")
 
 
 class PartsScraperGUI:
@@ -55,9 +60,49 @@ class PartsScraperGUI:
         self.detector = BatchWatermarkDetector(self.db, self.open_ai_key)
         self.helper = Helper(self.db, self.detector)
         self.state = StateDB()
+        self.reporter = ReportBuilder(bucket=self.bucket) if self.bucket else None
 
+        # Restore any in-flight run summary from disk so a GUI restart
+        # doesn't lose the audit trail mid-pipeline.
+        self.run_summary = self._restore_or_init_summary()
 
         self.determine_state()
+
+    # ----- run summary plumbing -----------------------------------------
+    def _restore_or_init_summary(self):
+        current = self.state.read()
+        raw = current.get("run_summary") if isinstance(current, dict) else None
+        if raw and isinstance(raw, dict) and raw.get("job_id"):
+            return RunSummary(
+                job_id=raw["job_id"],
+                customer=raw.get("customer") or os.getenv("CUSTOMER", "unknown"),
+                started_at=dt.datetime.fromisoformat(raw["started_at"]),
+                finished_at=(
+                    dt.datetime.fromisoformat(raw["finished_at"])
+                    if raw.get("finished_at") else None
+                ),
+                csv_rows=raw.get("csv_rows", 0),
+                parts_with_existing_image=raw.get("parts_with_existing_image", 0),
+                parts_searched=raw.get("parts_searched", 0),
+                candidates_downloaded=raw.get("candidates_downloaded", 0),
+                candidates_flagged=raw.get("candidates_flagged", 0),
+                candidates_accepted=raw.get("candidates_accepted", 0),
+                final_images_written=raw.get("final_images_written", 0),
+                batches_total=raw.get("batches_total", 0),
+                batches_unusable=list(raw.get("batches_unusable", [])),
+                notes=list(raw.get("notes", [])),
+            )
+        # Fresh summary; not yet persisted.
+        return RunSummary(
+            job_id=new_job_id(),
+            customer=os.getenv("CUSTOMER", "unknown"),
+            started_at=dt.datetime.utcnow(),
+        )
+
+    def _persist_summary(self):
+        d = self.run_summary.as_dict()
+        # _persist_summary stores in state.json next to other run flags.
+        self.state.set(run_summary=d)
 
 
     def perform_watermark(self):
@@ -68,9 +113,22 @@ class PartsScraperGUI:
         self.ai_watermark_btn.configure(state=tk.DISABLED)
 
         ids = self.helper.organize_and_submit_batch()
+        self.run_summary.batches_total += len(ids or [])
+        self._persist_summary()
         self.log_message("Data has been sent to AI - waiting for response")
         self.state.set(batch_ids=ids)
         self.poll_open_ai()
+
+        # Count flagged candidates from staged delete keys before they get cleared.
+        flagged_now = len(getattr(self.db, "delete_keys", []) or [])
+        self.run_summary.candidates_flagged += flagged_now
+        # Accepted = downloaded - flagged so far. Bounded at 0 in case of drift.
+        self.run_summary.candidates_accepted = max(
+            0,
+            self.run_summary.candidates_downloaded - self.run_summary.candidates_flagged,
+        )
+        self._persist_summary()
+
         self.db.send_delete_request_watermark()
 
         self.progress_bar.stop()
@@ -104,7 +162,32 @@ class PartsScraperGUI:
         
         self.log_message("AI has determined which images have watermarks and they are being deleted...")
 
-        self.helper.parse_ai_results(batch_ids)
+        try:
+            self.helper.parse_ai_results(batch_ids)
+        except Exception as e:
+            # Failed/expired batches are now surfaced explicitly. Capture
+            # them on the run summary so the report makes the gap visible
+            # to the operator and the customer.
+            from batch_watermark_detector import BatchUnusableError
+            if isinstance(e, BatchUnusableError):
+                _log.error("openai batches unusable", error=str(e))
+                # Re-derive the list of (batch_id, status) from the message.
+                for token in str(e).split(":", 1)[-1].split(","):
+                    token = token.strip()
+                    if "(" in token and token.endswith(")"):
+                        bid, status = token[:-1].split("(", 1)
+                        self.run_summary.batches_unusable.append(
+                            {"batch_id": bid.strip(), "status": status.strip()}
+                        )
+                self.run_summary.notes.append(
+                    "Some OpenAI batches finished unusable; classifier did not run for those candidates."
+                )
+                self._persist_summary()
+                # Don't auto-advance to the filter stage; the operator
+                # decides whether to re-submit or accept the gap.
+                self.log_message(str(e))
+                raise
+            raise
         self.state.set(image_watermark_detection=True)
     def perform_filter(self): # this is process
         self.progress_bar.start(30)
@@ -162,11 +245,55 @@ class PartsScraperGUI:
         self.search_images_btn.configure(state=tk.DISABLED)
         self.progress_bar.stop()
 
+        # Count final images written during this run window.
+        try:
+            row = self.db.read_sql_query(
+                "SELECT COUNT(*) AS n FROM parts WHERE final_tag IS NOT NULL;"
+            )
+            self.run_summary.final_images_written = int(row["n"].iat[0])
+        except Exception as e:
+            _log.warning("could not count final images", error=str(e))
+
+        # Build a small sample of representative results for the HTML.
+        samples = []
+        try:
+            sample_rows = self.db.read_sql_query(
+                "SELECT TOP 12 number, description, final_tag "
+                "FROM parts WHERE final_tag IS NOT NULL "
+                "ORDER BY part_id DESC;"
+            )
+            samples = [
+                {
+                    "part_number": str(r["number"]),
+                    "description": str(r.get("description", "") or ""),
+                    "final_url": str(r["final_tag"]),
+                }
+                for _, r in sample_rows.iterrows()
+            ]
+        except Exception as e:
+            _log.warning("could not pull report samples", error=str(e))
+
+        # Ship the report. Don't block completion on a report failure.
+        if self.reporter is not None:
+            try:
+                import datetime as _dt
+                self.run_summary.finished_at = _dt.datetime.utcnow()
+                refs = self.reporter.write(self.run_summary, samples=samples)
+                self._persist_summary()
+                self.log_message(f"Run report: {refs['html_url']}")
+                _log.info("run report written", **refs, job_id=self.run_summary.job_id)
+            except Exception as e:
+                _log.warning("report generation failed", error=str(e))
+                self.log_message(f"Report generation failed: {e}")
+
         # self.db.update_all_final_tags() handling this in image process class
         self.db.execute_sql("DELETE FROM part_tags;")
         self.db.empty_prefix(self.bucket, 'images')
         self.status_var.set("COMPLETED: Images are Ready for Deployment")
         self.state.set(image_watermark_detection=False)
+        # Clear the run_summary so the next CSV starts a fresh job_id.
+        self.state.set(run_summary=None)
+        self.run_summary = self._restore_or_init_summary()
 
     def search_images(self): # this is search
         """Main processing function"""
@@ -176,10 +303,24 @@ class PartsScraperGUI:
         self.log_message('Uploading CSV to Database...')
         self.db.upsert_append_new_only(self.dataframe)
 
-        # retriving data from database 
+        # Stamp this run.
+        self.run_summary.csv_rows = int(len(self.dataframe))
+        self._persist_summary()
+        _log.info(
+            "search stage starting",
+            job_id=self.run_summary.job_id,
+            csv_rows=self.run_summary.csv_rows,
+        )
+
+        # retriving data from database
         self.log_message('Gathering all parts without an image...')
         all_data = self.db.read_sql_query("SELECT number, description FROM parts WHERE final_tag IS NULL;")
         all_data = all_data.iloc[:self.max_rows]
+        self.run_summary.parts_searched = int(len(all_data))
+        self.run_summary.parts_with_existing_image = max(
+            0, self.run_summary.csv_rows - self.run_summary.parts_searched
+        )
+        self._persist_summary()
 
         # spliting data into chucks and upload to s3
         self.log_message("splitting data into jobs...")
@@ -227,7 +368,17 @@ class PartsScraperGUI:
 
         end = time.time()
         self.state.set(image_search_state=True)
-        print(f"Time Elapsed for image search: {end - start}")
+        _log.info("search stage complete", elapsed_seconds=int(end - start))
+
+        # Count the candidates the workers actually persisted, so we have
+        # a real number on the report even if a metric publish failed.
+        try:
+            row = self.db.read_sql_query("SELECT COUNT(*) AS n FROM part_tags;")
+            self.run_summary.candidates_downloaded = int(row["n"].iat[0])
+            self._persist_summary()
+        except Exception as e:
+            _log.warning("could not count downloaded candidates", error=str(e))
+
         # Deletes the CSV files from search_jobs
         self.db.empty_prefix(self.bucket, self.search_job_key)
 

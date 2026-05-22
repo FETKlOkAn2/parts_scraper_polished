@@ -26,7 +26,12 @@ DECODO_PASSWORD="$(echo "$DECODO_JSON" | python3 -c 'import json,sys;print(json.
 
 # --- Run worker (one-shot) ---
 docker run --rm \
+  --log-driver=awslogs \
+  --log-opt awslogs-region="$REGION" \
+  --log-opt awslogs-group="${log_group}" \
+  --log-opt awslogs-stream="$(curl -s -H "X-aws-ec2-metadata-token: $(curl -s -X PUT 'http://169.254.169.254/latest/api/token' -H 'X-aws-ec2-metadata-token-ttl-seconds: 60')" http://169.254.169.254/latest/meta-data/instance-id)" \
   -e AWS_REGION="$REGION" \
+  -e CUSTOMER="${customer}" \
   -e BUCKET="${bucket}" \
   -e QUEUE_URL="${queue_url}" \
   -e DB_HOST="${db_host}" \

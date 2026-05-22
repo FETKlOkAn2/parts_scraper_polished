@@ -8,6 +8,14 @@ from dotenv import load_dotenv
 load_dotenv()
 from urllib.parse import quote
 
+from obs import get_logger
+from obs.metrics import build_emitter
+from batch_watermark_detector import BatchUnusableError, _NON_OK_TERMINAL
+
+
+_log = get_logger("operator.helper")
+_metrics = build_emitter(stage="operator")
+
 class Helper:
     def __init__(self, db, detector):
         self.db = db
@@ -192,27 +200,88 @@ class Helper:
         return all_batch_ids
     
     def parse_ai_results(self, batch_ids):
+        """Pull results from each completed OpenAI batch.
+
+        A batch can finish in a non-OK terminal status (``failed``,
+        ``expired``, ``cancelled``). The previous version logged that and
+        moved on, silently dropping every image in that batch — watermarked
+        candidates could ship to the customer without ever being classified.
+
+        We now refuse to silently skip those batches. The operator gets a
+        ``BatchUnusableError`` per affected batch with the batch_id and
+        terminal status; the caller can choose to re-submit only those
+        batches without redoing the whole watermark stage.
+        """
+        unusable: list[tuple[str, str]] = []  # (batch_id, status)
+
         for batch_id in batch_ids:
             batch = self.detector.client.batches.retrieve(batch_id)
-            if not getattr(batch, "output_file_id", None):
-                print("Batch completed but no output_file_id present.")
+            status = getattr(batch, "status", "unknown")
+            _metrics.count("BatchesProcessed", Status=status)
+
+            if status in _NON_OK_TERMINAL:
+                _log.error(
+                    "openai batch ended in non-ok terminal state",
+                    batch_id=batch_id,
+                    status=status,
+                )
+                # Pull the error file if there is one so we can include it
+                # in the report and so the operator can post-mortem.
                 if getattr(batch, "error_file_id", None):
-                    print(f"Errors were generated. Downloading error file: {batch.error_file_id}")
-                    err_path = "data/test_batch_errors.jsonl"
-                    self.detector.download_results(batch.error_file_id, err_path)
-                    print(f"Saved errors to {err_path}")
-                raise RuntimeError("No output_file_id on completed batch—check error file and individual request statuses.")   
-            
-            output_path = f'data/raw_ai_output/{batch_id}_output.jsonl'
+                    err_path = f"data/raw_ai_output/{batch_id}_errors.jsonl"
+                    os.makedirs(os.path.dirname(err_path), exist_ok=True)
+                    try:
+                        self.detector.download_results(batch.error_file_id, err_path)
+                        _log.info(
+                            "saved batch error file",
+                            batch_id=batch_id,
+                            path=err_path,
+                        )
+                    except Exception as e:
+                        _log.warning(
+                            "could not download batch error file",
+                            batch_id=batch_id,
+                            error=str(e),
+                        )
+                unusable.append((batch_id, status))
+                continue
 
+            if not getattr(batch, "output_file_id", None):
+                # Completed but somehow no output. Treat as unusable too.
+                _log.error(
+                    "completed batch has no output_file_id",
+                    batch_id=batch_id,
+                )
+                unusable.append((batch_id, "no_output"))
+                continue
+
+            output_path = f"data/raw_ai_output/{batch_id}_output.jsonl"
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
             self.detector.download_results(
-                output_file_id = batch.output_file_id,
-                output_path = output_path)
-            
-            results = self.detector.parse_results(output_path) # appends key to delete in the database
+                output_file_id=batch.output_file_id,
+                output_path=output_path,
+            )
 
-            with open(f"data/ai_output/{batch_id}_output.json", "w", encoding="utf-8") as f:
+            results = self.detector.parse_results(output_path)
+
+            json_dir = "data/ai_output"
+            os.makedirs(json_dir, exist_ok=True)
+            with open(f"{json_dir}/{batch_id}_output.json", "w", encoding="utf-8") as f:
                 json.dump(results, f, indent=2)
+
+            _log.info(
+                "openai batch parsed",
+                batch_id=batch_id,
+                items=len(results),
+            )
+
+        if unusable:
+            for batch_id, status in unusable:
+                _metrics.count("BatchesUnusable", Status=status)
+            raise BatchUnusableError(
+                "OpenAI batches finished unusable; re-submit before proceeding: "
+                + ", ".join(f"{bid}({status})" for bid, status in unusable)
+            )
 
 
 

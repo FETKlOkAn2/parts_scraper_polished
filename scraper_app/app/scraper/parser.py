@@ -9,8 +9,14 @@ from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from requests.exceptions import ProxyError, ConnectTimeout, ReadTimeout, SSLError, RequestException
 
+from obs import get_logger
+from obs.metrics import build_emitter
+
 pd.set_option("display.max_colwidth", None)
 load_dotenv()
+
+_log = get_logger("scraper.parser")
+_metrics = build_emitter(stage="scraper")
 
 class Parser:
     def __init__(self, db, text):
@@ -197,12 +203,24 @@ class Parser:
                             Body=buf.getvalue(),
                             ContentType='image/png'
                         )
-                        print(f'uploaded to s3://{self.bucket}/{s3_key}')
+                        _log.info(
+                            "image uploaded",
+                            part_number=part_number,
+                            s3_key=s3_key,
+                            bucket=self.bucket,
+                        )
+                        _metrics.count("ImagesDownloaded")
                         self.images_downloaded += 1
 
 
                 except Exception as e:
-                    print('ERROR', e)
+                    _log.warning(
+                        "image fetch failed",
+                        part_number=part_number,
+                        url=url,
+                        error=str(e),
+                    )
+                    _metrics.count("ImageFetchErrors")
 
                 else:
                     url_value = f"https://{self.bucket}.s3.{self.region}.amazonaws.com/{s3_key}"

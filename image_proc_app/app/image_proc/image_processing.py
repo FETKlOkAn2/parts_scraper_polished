@@ -9,7 +9,14 @@ from PIL import Image
 import hmac, hashlib, base64
 import io
 from dotenv import load_dotenv
+
+from obs import get_logger
+from obs.metrics import build_emitter
+
 load_dotenv()
+
+_log = get_logger("image_proc.processing")
+_metrics = build_emitter(stage="image_proc")
 
 
 class Img_Proc:
@@ -237,31 +244,36 @@ class Img_Proc:
 
         display_string = grouped_strings[0].split('/')[1:][0]
         display_string = ' '.join(display_string.split('_')[:-1])
-        print(f'--New Group--->> {display_string}')
 
         self.group_map = self.db.download_group(self.bucket, grouped_strings)
 
+        keep = self.try_mulitiple_hashes(grouped_strings)
+        keep = [keep[0]]  # only grabs the first one to keep
 
-        keep =  self.try_mulitiple_hashes(grouped_strings)
-        keep = [keep[0]] # only grabs the first one to keep
-
-        if len(keep[0]) ==18:
+        if len(keep[0]) == 18:
             keep = [self.group_map[keep[0]]]
 
- 
         self.db.save_data_for_deletion_img_proc(grouped_strings, keep)
 
+        # Metric: dedup discarded (group_size - 1) candidates per part.
+        discarded = max(0, len(grouped_strings) - 1)
+        _metrics.count("ImagesDiscardedByDedup", discarded)
+        _metrics.count("ImagesKept", 1)
+        _log.info(
+            "group reduced",
+            group=display_string,
+            candidates=len(grouped_strings),
+            discarded=discarded,
+            kept=1,
+        )
 
-
-        img= self.grab_image_and_implement_watermark(keep, False)
+        img = self.grab_image_and_implement_watermark(keep, False)
         hash_key = self.hash_key(keep, self.html_secret)
-        print(hash_key)
 
         pil = self.to_pil(img)
         buf = io.BytesIO()
         pil.save(buf, format='PNG', optimize=True)
         buf.seek(0)
-        
 
         self.db.s3.put_object(
             Bucket=self.bucket,
@@ -284,6 +296,7 @@ class Img_Proc:
                 "number": number,
             },
         )
+        _log.info("final tag written", part_number=number, key=hash_key)
 
         self.db.empty_dir('images')
 

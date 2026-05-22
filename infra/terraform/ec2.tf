@@ -28,8 +28,10 @@ resource "aws_security_group" "worker" {
 locals {
   scraper_user_data = templatefile("${path.module}/templates/scraper_user_data.sh.tpl", {
     region          = var.region
+    customer        = var.customer
     bucket          = aws_s3_bucket.pipeline.id
     queue_url       = aws_sqs_queue.scraper.url
+    log_group       = aws_cloudwatch_log_group.scraper.name
     db_host         = var.db_host
     db_port         = var.db_port
     db_user         = var.db_user
@@ -40,9 +42,11 @@ locals {
 
   image_proc_user_data = templatefile("${path.module}/templates/image_proc_user_data.sh.tpl", {
     region          = var.region
+    customer        = var.customer
     bucket          = aws_s3_bucket.pipeline.id
     image_key       = local.s3_images_prefix
     queue_url       = aws_sqs_queue.proc.url
+    log_group       = aws_cloudwatch_log_group.image_proc.name
     db_host         = var.db_host
     db_port         = var.db_port
     db_user         = var.db_user

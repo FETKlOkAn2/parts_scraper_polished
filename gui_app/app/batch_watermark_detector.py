@@ -1,13 +1,31 @@
 # batch_watermark_detector.py
 import json
-import time
 import os
 import urllib.parse
 from openai import OpenAI
 import boto3
 from typing import Dict, List
-import pandas as pd
-import sys
+
+from obs import get_logger
+from obs.metrics import build_emitter
+
+
+_log = get_logger("operator.watermark")
+_metrics = build_emitter(stage="operator")
+
+
+# Terminal OpenAI batch statuses that mean "no usable output for this batch".
+_NON_OK_TERMINAL = {"failed", "expired", "cancelled", "cancelling"}
+
+
+class BatchUnusableError(RuntimeError):
+    """Raised when an OpenAI batch finished in a state that produced no output.
+
+    Previously the operator console logged this and moved on, silently
+    dropping every candidate image in the batch. That meant a watermarked
+    image could ship to the customer without the classifier ever running.
+    Surface it instead so the operator can re-submit.
+    """
 
 
 class BatchWatermarkDetector:
@@ -160,19 +178,28 @@ class BatchWatermarkDetector:
 
                         if watermark_data.get('has_watermark'):
                             self.db.delete_keys.append({'Key': f'images/{filename}'})
-                    
+                            _metrics.count("ImagesFlagged")
+                        else:
+                            _metrics.count("ImagesAccepted")
+
                     else:
-                        # Handle errors
+                        # Per-item error inside an otherwise OK batch.
                         results[filename] = {
                             "status": "error",
                             "has_watermark": False,  # Default to no watermark on error
                             "error": obj.get("response", {}).get("body", {}).get("error", {}).get("message", "Unknown error")
                         }
-                        
+                        _metrics.count("ClassifierItemErrors")
+                        _log.warning(
+                            "classifier item error",
+                            filename=filename,
+                            error=results[filename]["error"],
+                        )
+
                 except Exception as e:
-                    print(f"Error parsing result: {e}")
+                    _log.warning("could not parse classifier result line", error=str(e))
                     continue
-        
+
         return results
     
     def get_watermark_summary(self, results: Dict[str, dict]) -> dict:

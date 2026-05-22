@@ -23,3 +23,7 @@ for sub in (
 os.environ.setdefault("BUCKET", "test-bucket")
 os.environ.setdefault("HTML_SECRET", "test-secret-do-not-use-in-prod")
 os.environ.setdefault("AWS_REGION", "us-east-1")
+os.environ.setdefault("CUSTOMER", "test-customer")
+# Workers build a real boto3.cloudwatch client at import time unless told
+# otherwise. Tests should never hit AWS implicitly.
+os.environ.setdefault("METRICS_DISABLED", "1")

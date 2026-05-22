@@ -1,10 +1,12 @@
 # app/worker.py
-import os, time, json, boto3, tempfile, pathlib, traceback
+import os, json, boto3, tempfile, pathlib, traceback
 from scraper.run import process_shard
+from obs import get_logger
+from obs.metrics import build_emitter
 
 
-REGION        = os.getenv("AWS_REGION")
-QUEUE_URL     = os.getenv("QUEUE_URL")
+REGION  = os.getenv("AWS_REGION")
+QUEUE_URL = os.getenv("QUEUE_URL")
 BUCKET  = os.getenv("BUCKET")
 
 # choose a temp dir that works everywhere (Windows/Mac/Linux)
@@ -15,6 +17,10 @@ pathlib.Path(LOCAL_TMP_DIR).mkdir(parents=True, exist_ok=True)
 sqs = boto3.client("sqs", region_name=REGION)
 s3  = boto3.client("s3",  region_name=REGION)
 
+log = get_logger("scraper.worker")
+metrics = build_emitter(stage="scraper")
+
+
 def output_exists(basename: str) -> bool:
     try:
         s3.head_object(Bucket=BUCKET, Key=f"search_jobs/{basename}.done")
@@ -22,31 +28,41 @@ def output_exists(basename: str) -> bool:
     except s3.exceptions.ClientError:
         return False
 
+
 def mark_done(basename: str):
     s3.put_object(Bucket=BUCKET, Key=f"search_jobs/{basename}.done", Body=b"ok")
+
 
 def handle_message(m):
     body = json.loads(m["Body"])
     key  = body["s3_key"]
     basename = os.path.basename(key)
-    local_in = f"/tmp/{basename}"
+    local_in = os.path.join(LOCAL_TMP_DIR, basename)
+
+    bound = log.bind(shard=basename, s3_key=key)
 
     if output_exists(basename):
-        print(f"[worker] already done for {basename}; skipping")
+        bound.info("shard already complete, skipping")
+        metrics.count("ShardsSkipped")
         return
 
-    print(f"[worker] downloading s3://{BUCKET}/{key} -> {local_in}")
+    bound.info("shard download starting", local_path=local_in)
     s3.download_file(BUCKET, key, local_in)
 
-    print(f"[worker] processing shard {local_in}")
-    process_shard(local_in)          # raise on failure
-    mark_done(basename)  
+    bound.info("shard processing")
+    with metrics.timer("Shard", shard=basename):
+        process_shard(local_in)
+    mark_done(basename)
+    bound.info("shard complete")
+
 
 def main():
-
-    print(f"[worker] starting in {REGION}")
-    print(f"[worker] queue={QUEUE_URL}")
-    print(f"[worker] input_bucket={BUCKET}")
+    log.info(
+        "worker starting",
+        region=REGION,
+        queue=QUEUE_URL,
+        bucket=BUCKET,
+    )
 
     resp = sqs.receive_message(
         QueueUrl=QUEUE_URL,
@@ -57,19 +73,20 @@ def main():
     )
     msgs = resp.get("Messages", [])
     if not msgs:
-        print("[worker] no work; exiting")
+        log.info("no work; exiting")
+        metrics.flush()
         return 0
 
     m = msgs[0]
     tries = int(m.get("Attributes", {}).get("ApproximateReceiveCount", "1"))
 
     try:
-        handle_message(m)  # must raise if anything fails
+        handle_message(m)
         sqs.delete_message(QueueUrl=QUEUE_URL, ReceiptHandle=m["ReceiptHandle"])
-        print("[worker] message processed & deleted; exiting one-and-done")
+        log.info("message processed & deleted; exiting one-and-done", tries=tries)
         return 0
     except Exception as e:
-        print(f"[worker] ERROR processing message: {e}")
+        log.exception("error processing message", tries=tries, error=str(e))
         traceback.print_exc()
 
         # make the next retry happen sooner; DLQ handles maxReceiveCount
@@ -77,11 +94,14 @@ def main():
             sqs.change_message_visibility(
                 QueueUrl=QUEUE_URL,
                 ReceiptHandle=m["ReceiptHandle"],
-                VisibilityTimeout=60 if tries < 3 else 0  # next retry quickly; let DLQ take over after N tries
+                VisibilityTimeout=60 if tries < 3 else 0,
             )
         except Exception as e2:
-            print(f"[worker] change_message_visibility failed: {e2}")
+            log.warning("change_message_visibility failed", error=str(e2))
         return 2
+    finally:
+        metrics.flush()
+
 
 if __name__ == "__main__":
     main()

@@ -32,6 +32,9 @@ The variables consumed by the apps are:
 | `OPENAI_API_KEY`   | gui_app              | OpenAI API key (Batch tier)                            |
 | `HTML_SECRET`      | image_proc_app       | HMAC-SHA256 key used to derive `final/<digest>.png`    |
 | `TOR_PATH`         | scraper_app          | Optional path to the Tor binary                        |
+| `CUSTOMER`         | all apps (optional)  | Short identifier injected into log lines and metric dimensions; defaults to `unknown` |
+| `METRICS_DISABLED` | all apps (optional)  | Set to `1` to skip CloudWatch `PutMetricData` calls (tests, dev) |
+| `LOG_LEVEL`        | all apps (optional)  | Defaults to `INFO`                                     |
 
 Each app ships a `.env.example` file enumerating its required keys.
 The operator copies that to `.env` (which is git-ignored) and fills in

@@ -15,7 +15,9 @@ isolated environment in the same account.
 | ECR `<customer>-parts-scraper`, `<customer>-parts-image-proc` | Container registries for the two workers. |
 | Launch template + ASG (one per worker) | Workers scale on `ApproximateNumberOfMessagesVisible`. Each instance pulls the image, runs one shard, exits, and asks the ASG to terminate it. |
 | Secrets Manager entries | `HTML_SECRET`, DB password, OpenAI API key, Decodo credentials. The Terraform run seeds `HTML_SECRET` with a freshly generated 64-byte random value; the other three are created empty and must be populated by the operator. |
-| CloudWatch alarms + dashboard | DLQ depth, queue stuck, basic worker fleet visibility. |
+| CloudWatch alarms + dashboard | DLQ depth, queue stuck, basic worker fleet visibility, and pipeline-specific dashboards on `PartsImagePipeline/*` (shards, images, p50/p95 durations). |
+| CloudWatch log groups `/parts-pipeline/<customer>/{scraper,image-proc,operator}` | Worker containers ship JSON logs here via the Docker `awslogs` driver. |
+| CloudWatch alarm `<customer>-openai-batches-unusable` | Pages when a `BatchesUnusable` metric tick > 0; replaces the previous silent-skip on failed/expired OpenAI batches. |
 | SNS topic | Sink for alarms; optionally subscribed to `alerts_email`. |
 | IAM | A least-privilege instance profile for the workers, plus a managed policy you can attach to whatever identity the operator uses on their workstation. |
 

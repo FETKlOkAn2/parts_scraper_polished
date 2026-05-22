@@ -129,6 +129,90 @@ resource "aws_cloudwatch_dashboard" "pipeline" {
           ]
         }
       },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 6
+        width  = 12
+        height = 6
+        properties = {
+          title  = "Shard outcomes"
+          region = var.region
+          view   = "timeSeries"
+          stat   = "Sum"
+          period = 300
+          metrics = [
+            ["PartsImagePipeline", "ShardDone", "Customer", var.customer, "Stage", "scraper"],
+            [".", "ShardFailed", ".", ".", ".", "."],
+            [".", "ShardsSkipped", ".", ".", ".", "."],
+            [".", "ShardDone", ".", ".", "Stage", "image_proc"],
+            [".", "ShardFailed", ".", ".", ".", "."],
+            [".", "ShardsSkipped", ".", ".", ".", "."],
+          ]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 12
+        width  = 12
+        height = 6
+        properties = {
+          title  = "Images flowing through the pipeline"
+          region = var.region
+          view   = "timeSeries"
+          stat   = "Sum"
+          period = 300
+          metrics = [
+            ["PartsImagePipeline", "ImagesDownloaded", "Customer", var.customer, "Stage", "scraper"],
+            ["PartsImagePipeline", "ImagesFlagged", "Customer", var.customer, "Stage", "operator"],
+            ["PartsImagePipeline", "ImagesAccepted", "Customer", var.customer, "Stage", "operator"],
+            ["PartsImagePipeline", "ImagesKept", "Customer", var.customer, "Stage", "image_proc"],
+            ["PartsImagePipeline", "ImagesDiscardedByDedup", "Customer", var.customer, "Stage", "image_proc"],
+          ]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 12
+        width  = 12
+        height = 6
+        properties = {
+          title  = "Shard wall-clock seconds (p50/p95)"
+          region = var.region
+          view   = "timeSeries"
+          period = 300
+          metrics = [
+            ["PartsImagePipeline", "ShardSeconds", "Customer", var.customer, "Stage", "scraper", { "stat" : "p50" }],
+            ["...", { "stat" : "p95" }],
+            ["PartsImagePipeline", "ShardSeconds", "Customer", var.customer, "Stage", "image_proc", { "stat" : "p50" }],
+            ["...", { "stat" : "p95" }],
+          ]
+        }
+      },
     ]
   })
+}
+
+# Alert if the classifier ever returns a non-OK terminal batch.
+resource "aws_cloudwatch_metric_alarm" "unusable_batches" {
+  alarm_name          = "${local.prefix}-openai-batches-unusable"
+  alarm_description   = "An OpenAI batch finished in failed/expired/cancelled state. The classifier did not run for those candidates."
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  threshold           = 1
+  metric_name         = "BatchesUnusable"
+  namespace           = "PartsImagePipeline"
+  period              = 60
+  statistic           = "Sum"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    Customer = var.customer
+    Stage    = "operator"
+  }
+
+  alarm_actions = [aws_sns_topic.alerts.arn]
+  ok_actions    = [aws_sns_topic.alerts.arn]
 }
