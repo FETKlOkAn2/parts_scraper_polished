@@ -36,8 +36,23 @@ class BatchWatermarkDetector:
         self.backoff_max = 300
         self.db = db
 
-    def get_urls_from_db(self):
-        return self.db.read_sql_query("SELECT tag_value FROM part_tags;")['tag_value']
+    def get_urls_from_db(self, tenant_id=None):
+        """Return every candidate URL for ``tenant_id``.
+
+        ``tenant_id`` is required in the multi-tenant pipeline; an
+        unscoped call returns every tenant's URLs, which we never want
+        to feed into one OpenAI batch. We keep the unscoped form
+        available for legacy single-tenant scripts but log loudly.
+        """
+        if tenant_id:
+            df = self.db.read_sql_query(
+                "SELECT tag_value FROM dbo.part_tags WHERE tenant_id = :tenant_id;",
+                params={"tenant_id": tenant_id},
+            )
+        else:
+            _log.warning("get_urls_from_db called without tenant_id; returning all rows")
+            df = self.db.read_sql_query("SELECT tag_value FROM dbo.part_tags;")
+        return df['tag_value']
 
     
     def basename_from_url(self, url: str) -> str:
@@ -101,27 +116,40 @@ class BatchWatermarkDetector:
         
         return requests
     
-    def submit_batch(self, requests: List[dict], batch_num: str) -> str:
-        """Submit batch to OpenAI API"""
-        # Create JSONL file
-        jsonl_path = f"data/ai_sent_data/batch_{batch_num}.jsonl"
+    def submit_batch(self, requests: List[dict], batch_num: str, tenant_id: str = None) -> str:
+        """Submit batch to OpenAI API.
+
+        ``tenant_id`` is stamped into the OpenAI batch metadata so a
+        later operator (or a post-mortem on a leaked batch id) can
+        attribute the batch to a customer.
+        """
+        jsonl_dir = "data/ai_sent_data"
+        os.makedirs(jsonl_dir, exist_ok=True)
+        jsonl_path = f"{jsonl_dir}/batch_{batch_num}.jsonl"
         with open(jsonl_path, "w", encoding="utf-8") as f:
             for request in requests:
                 f.write(json.dumps(request) + "\n")
-        
-        # Upload file
+
         with open(jsonl_path, "rb") as f:
             upload_file = self.client.files.create(file=f, purpose="batch")
-        
-        # Create batch
+
+        metadata = {"description": f"Watermark detection batch {batch_num}"}
+        if tenant_id:
+            metadata["tenant_id"] = tenant_id
+
         batch = self.client.batches.create(
             input_file_id=upload_file.id,
             endpoint="/v1/chat/completions",
             completion_window="24h",
-            metadata={"description": f"Watermark detection batch {batch_num}"}
+            metadata=metadata,
         )
-        
-        print(f"Submitted batch {batch_num}: {batch.id} ({len(requests)} requests)")
+
+        _log.info(
+            "openai batch submitted",
+            batch_id=batch.id,
+            tenant_id=tenant_id,
+            requests=len(requests),
+        )
         return batch.id
     
 
@@ -150,23 +178,30 @@ class BatchWatermarkDetector:
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(data)
     
-    def parse_results(self, jsonl_path: str) -> Dict[str, dict]:
-        """Parse batch results into dictionary"""
+    def parse_results(self, jsonl_path: str, tenant_id: str = None) -> Dict[str, dict]:
+        """Parse batch results into dictionary.
+
+        ``tenant_id`` is required when the calling pipeline is
+        multi-tenant: the flagged-image S3 keys are stamped with the
+        tenant prefix so the deletion at the end of the watermark stage
+        cannot accidentally delete another tenant's image.
+        """
+        from tenancy import TenantPaths
+        paths = TenantPaths(tenant_id) if tenant_id else None
         results = {}
-        
+
         with open(jsonl_path, "r", encoding="utf-8") as f:
             for line in f:
                 if not line.strip():
                     continue
-                
+
                 try:
                     obj = json.loads(line)
                     filename = obj["custom_id"]
-                    
+
                     # Handle successful responses
                     if obj.get("response", {}).get("status_code") == 200:
                         content = obj["response"]["body"]["choices"][0]["message"]["content"]
-                        usage = obj["response"]["body"]["usage"]
                         watermark_data = json.loads(content)
                         results[filename] = {
                             "status": "success",
@@ -177,8 +212,12 @@ class BatchWatermarkDetector:
                         }
 
                         if watermark_data.get('has_watermark'):
-                            self.db.delete_keys.append({'Key': f'images/{filename}'})
-                            _metrics.count("ImagesFlagged")
+                            if paths is not None:
+                                delete_key = paths.image_key(filename)
+                            else:
+                                delete_key = f"images/{filename}"
+                            self.db.delete_keys.append({'Key': delete_key})
+                            _metrics.count("ImagesFlagged", Tenant=tenant_id or "unknown")
                         else:
                             _metrics.count("ImagesAccepted")
 

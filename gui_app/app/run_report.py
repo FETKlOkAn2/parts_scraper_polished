@@ -34,6 +34,11 @@ def main(argv: list[str] | None = None) -> int:
         help="S3 bucket to write the report into (defaults to BUCKET).",
     )
     parser.add_argument(
+        "--tenant",
+        default=os.getenv("DEFAULT_TENANT_ID"),
+        help="Tenant id to attribute the run to. Defaults to DEFAULT_TENANT_ID.",
+    )
+    parser.add_argument(
         "--samples",
         type=int,
         default=12,
@@ -48,6 +53,13 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.bucket:
         print("error: --bucket or BUCKET env var is required", file=sys.stderr)
+        return 2
+
+    if not args.tenant:
+        print(
+            "error: --tenant or DEFAULT_TENANT_ID env var is required",
+            file=sys.stderr,
+        )
         return 2
 
     if not os.path.exists(args.state):
@@ -69,10 +81,11 @@ def main(argv: list[str] | None = None) -> int:
     summary = RunSummary(
         job_id=raw["job_id"],
         customer=raw.get("customer") or os.getenv("CUSTOMER", "unknown"),
+        tenant_id=args.tenant,
         started_at=dt.datetime.fromisoformat(raw["started_at"]),
         finished_at=(
             dt.datetime.fromisoformat(raw["finished_at"])
-            if raw.get("finished_at") else dt.datetime.utcnow()
+            if raw.get("finished_at") else dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
         ),
         csv_rows=raw.get("csv_rows", 0),
         parts_with_existing_image=raw.get("parts_with_existing_image", 0),
@@ -88,11 +101,13 @@ def main(argv: list[str] | None = None) -> int:
 
     samples = []
     try:
-        db = Database()
+        db = Database(tenant_id=args.tenant)
         rows = db.read_sql_query(
             "SELECT TOP " + str(int(args.samples)) +
-            " number, description, final_tag FROM parts "
-            "WHERE final_tag IS NOT NULL ORDER BY part_id DESC;"
+            " number, description, final_tag FROM dbo.parts "
+            "WHERE tenant_id = :tenant_id AND final_tag IS NOT NULL "
+            "ORDER BY part_id DESC;",
+            params={"tenant_id": args.tenant},
         )
         samples = [
             {

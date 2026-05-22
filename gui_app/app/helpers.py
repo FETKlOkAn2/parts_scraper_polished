@@ -10,14 +10,17 @@ from urllib.parse import quote
 
 from obs import get_logger
 from obs.metrics import build_emitter
+from tenancy import TenantPaths, envelope
+from tenancy.ids import validate_tenant_id
 from batch_watermark_detector import BatchUnusableError, _NON_OK_TERMINAL
 
 
 _log = get_logger("operator.helper")
 _metrics = build_emitter(stage="operator")
 
+
 class Helper:
-    def __init__(self, db, detector):
+    def __init__(self, db, detector, tenant_id=None):
         self.db = db
         self.region = os.getenv("AWS_REGION", "us-east-1")
         self.bucket = os.getenv("BUCKET")
@@ -25,18 +28,43 @@ class Helper:
         self.ec2 = boto3.client("ec2", region_name=self.region)
         self.detector = detector
         self.max_batch_size = 40000
+        self.tenant_id = validate_tenant_id(tenant_id) if tenant_id else None
+        self.paths = TenantPaths(self.tenant_id) if self.tenant_id else None
+
+    def set_tenant(self, tenant_id):
+        """Switch the operator's active tenant. GUI calls this when the
+        user picks a different value from the tenant dropdown."""
+        self.tenant_id = validate_tenant_id(tenant_id)
+        self.paths = TenantPaths(self.tenant_id)
+        return self.tenant_id
+
+    def _require_tenant(self):
+        if not self.tenant_id:
+            raise RuntimeError(
+                "Helper has no active tenant_id; call set_tenant() before submitting work"
+            )
 
 
-    def split_data_and_upload_jobs(self,df, bucket, prefix, chunk_size, testing=False):
+    def _chunk_key(self, logical_prefix, i):
+        """Build the tenant-scoped S3 key for chunk ``i`` under ``logical_prefix``.
+
+        ``logical_prefix`` is the bare prefix used historically
+        (``search_jobs`` / ``proc_jobs``); we route it through
+        :class:`TenantPaths` so the key sits under tenants/<id>/.
+        """
+        self._require_tenant()
+        base = self.paths.prefix(logical_prefix.strip('/'))
+        return f"{base}/chunk_{i}.csv"
+
+    def split_data_and_upload_jobs(self, df, bucket, prefix, chunk_size, testing=False):
         """Function for Image Search"""
+        self._require_tenant()
         n = len(df)
-        num_chunks = ceil(n /chunk_size) if n else 0
-        if num_chunks ==0:
-            print("Dataframe is empty, nothing to upload.")
+        num_chunks = ceil(n / chunk_size) if n else 0
+        if num_chunks == 0:
+            _log.info("dataframe empty, nothing to upload")
             return
-        
-        base_prefix = prefix.rstrip('/')
-        
+
         for i in range(num_chunks):
             start = i * chunk_size
             stop = min(start + chunk_size, n)
@@ -44,42 +72,36 @@ class Helper:
             if testing:
                 chunk.to_csv('data/test_data/test_upload.csv', header=False, index=False)
                 sys.exit()
-                
-            else:
-                csv_buf = io.StringIO()
-                chunk.to_csv(csv_buf, index=False, header=False)
-                data_bytes = csv_buf.getvalue().encode("utf-8")
 
-                chunk_key = f"{base_prefix}/chunk_{i+1}.csv"
-                
-
-                self.db.s3.put_object(
-                    Body=data_bytes,
-                    Bucket=bucket,
-                    Key=chunk_key,
-                    ContentType='text/csv'
-                )
-
-        return num_chunks
-    
-    def split_group_upload(self, df, bucket, prefix, chunk_size):
-        """Function for Image Proc"""
-
-        def _process_dataframe(df, bucket, prefix, iteration):
-            base_prefix = prefix.rstrip('/')
-
-            chunk = df
             csv_buf = io.StringIO()
             chunk.to_csv(csv_buf, index=False, header=False)
-            data_bytes = csv_buf.getvalue().encode('utf-8')
+            data_bytes = csv_buf.getvalue().encode("utf-8")
 
-            chunk_key = f"{base_prefix}/chunk_{iteration+1}.csv"
-
+            chunk_key = self._chunk_key(prefix, i + 1)
             self.db.s3.put_object(
                 Body=data_bytes,
                 Bucket=bucket,
                 Key=chunk_key,
-                ContentType='text/csv'
+                ContentType='text/csv',
+            )
+
+        return num_chunks
+
+    def split_group_upload(self, df, bucket, prefix, chunk_size):
+        """Function for Image Proc"""
+        self._require_tenant()
+
+        def _process_dataframe(df, iteration):
+            csv_buf = io.StringIO()
+            df.to_csv(csv_buf, index=False, header=False)
+            data_bytes = csv_buf.getvalue().encode('utf-8')
+
+            chunk_key = self._chunk_key(prefix, iteration + 1)
+            self.db.s3.put_object(
+                Body=data_bytes,
+                Bucket=bucket,
+                Key=chunk_key,
+                ContentType='text/csv',
             )
             return 1
         
@@ -99,52 +121,54 @@ class Helper:
                 start = i
                 continue
 
-            elif stop is None: # first chunk
+            elif stop is None:  # first chunk
                 if idx >= chunk_size:
                     stop = idx
                     chunk = df.iloc[start:stop+1]
-                    start = stop +1
+                    start = stop + 1
                     displacement = stop
-                    num_chunks += _process_dataframe(chunk, bucket, prefix, num_chunks)
+                    num_chunks += _process_dataframe(chunk, num_chunks)
                 continue
 
-            else: 
+            else:
                 displaced_idx = idx - displacement
-                if end_idxs[-1] == idx: # last chunk
+                if end_idxs[-1] == idx:  # last chunk
                     chunk = df.iloc[start: idx+1]
-                    num_chunks += _process_dataframe(chunk, bucket, prefix, num_chunks)
+                    num_chunks += _process_dataframe(chunk, num_chunks)
                     return num_chunks
 
-                elif displaced_idx >= chunk_size: # all middle chunks
+                elif displaced_idx >= chunk_size:  # all middle chunks
                     stop = idx
                     chunk = df.iloc[start:stop+1]
-                    start = stop +1
+                    start = stop + 1
                     displacement = stop
-                    num_chunks +=_process_dataframe(chunk, bucket, prefix, num_chunks)
+                    num_chunks += _process_dataframe(chunk, num_chunks)
     
 
 
     def send_chunk_messages(self, job_id: str, queue_url: str, num_chunks: int, key: str):
-        """
-        Send SQS messages for each chunk file.
+        """Send SQS messages for each chunk file as a tenancy envelope.
 
-        :param job_id: Unique job ID (e.g., "dazetest-run-001")
-        :param queue_url: SQS queue URL
-        :param num_chunks: Number of chunk files to send
-        :param prefix: S3 key prefix (default "jobs")
+        ``key`` is the logical prefix (``search_jobs`` / ``proc_jobs``);
+        the helper resolves it to the tenant-scoped S3 path so we never
+        send a worker a non-scoped key.
         """
+        self._require_tenant()
         for i in range(1, num_chunks + 1):
-            s3_key = f"{key}/chunk_{i}.csv"
-            message_body = {
-                "job_id": job_id,
-                "s3_key": s3_key
-            }
-
-            print(f"Sending message for {s3_key}")
-            self.sqs.send_message(
-                QueueUrl=queue_url,
-                MessageBody=json.dumps(message_body)  # must be a string
+            s3_key = self._chunk_key(key, i)
+            body = envelope(
+                tenant_id=self.tenant_id,
+                s3_key=s3_key,
+                job_id=job_id,
             )
+            _log.info(
+                "enqueuing shard",
+                tenant_id=self.tenant_id,
+                job_id=job_id,
+                s3_key=s3_key,
+                queue_url=queue_url,
+            )
+            self.sqs.send_message(QueueUrl=queue_url, MessageBody=body)
 
 
 
@@ -172,20 +196,23 @@ class Helper:
 
 
     def organize_and_submit_batch(self):
-        all_urls = self.detector.get_urls_from_db()
+        self._require_tenant()
+        all_urls = self.detector.get_urls_from_db(tenant_id=self.tenant_id)
         encoded_urls = []
 
-        base = f"https://{self.bucket}.s3.{self.region}.amazonaws.com/images/"
+        base = (
+            f"https://{self.bucket}.s3.{self.region}.amazonaws.com/"
+            f"{self.paths.prefix('images')}/"
+        )
         for url in all_urls:
             splits = url.split(base)[-1]
             key = splits.split('.png')[0]
             encoded_urls.append(f"{base}{quote(key, safe='/%-_.()~')}.png")
 
-
         n = len(encoded_urls)
-        num_chunks = ceil(n /self.max_batch_size) if n else 0
-        if num_chunks ==0:
-            print("Dataframe is empty, nothing to upload.")
+        num_chunks = ceil(n / self.max_batch_size) if n else 0
+        if num_chunks == 0:
+            _log.info("no candidate images for tenant", tenant_id=self.tenant_id)
             return
         all_batch_ids = []
         for i in range(num_chunks):
@@ -194,7 +221,11 @@ class Helper:
             batch = encoded_urls[start:stop]
 
             request = self.detector.create_batch_requests(batch)
-            batch_id = self.detector.submit_batch(requests=request, batch_num=i)
+            batch_id = self.detector.submit_batch(
+                requests=request,
+                batch_num=i,
+                tenant_id=self.tenant_id,
+            )
             all_batch_ids.append(batch_id)
 
         return all_batch_ids
@@ -262,7 +293,7 @@ class Helper:
                 output_path=output_path,
             )
 
-            results = self.detector.parse_results(output_path)
+            results = self.detector.parse_results(output_path, tenant_id=self.tenant_id)
 
             json_dir = "data/ai_output"
             os.makedirs(json_dir, exist_ok=True)

@@ -18,6 +18,7 @@ def summary():
     return RunSummary(
         job_id="20260101T120000-deadbeef",
         customer="acme-parts",
+        tenant_id="acme-parts",
         started_at=dt.datetime(2026, 1, 1, 12, 0, 0),
         finished_at=dt.datetime(2026, 1, 1, 12, 42, 17),
         csv_rows=1000,
@@ -50,12 +51,13 @@ def test_new_job_id_is_sortable_and_unique():
     assert "T" in a
 
 
-def test_writes_json_and_html_at_expected_keys(summary, s3):
+def test_writes_json_and_html_under_tenant_prefix(summary, s3):
     rb = ReportBuilder(bucket="acme-bucket", s3=s3)
     refs = rb.write(summary, samples=[])
 
-    assert refs["json_key"] == f"reports/{summary.job_id}/report.json"
-    assert refs["html_key"] == f"reports/{summary.job_id}/index.html"
+    # Report lives under the tenant prefix, never at the bucket root.
+    assert refs["json_key"] == f"tenants/{summary.tenant_id}/reports/{summary.job_id}/report.json"
+    assert refs["html_key"] == f"tenants/{summary.tenant_id}/reports/{summary.job_id}/index.html"
     assert refs["json_url"].endswith(refs["json_key"])
     assert refs["html_url"].endswith(refs["html_key"])
 
@@ -135,6 +137,7 @@ def test_html_escapes_user_input(s3):
     summary = RunSummary(
         job_id="20260101T120000-deadbeef",
         customer="<script>alert(1)</script>",
+        tenant_id="acme-parts",
         started_at=dt.datetime(2026, 1, 1, 12, 0, 0),
         finished_at=dt.datetime(2026, 1, 1, 12, 1, 0),
     )

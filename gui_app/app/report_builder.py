@@ -30,7 +30,6 @@ from __future__ import annotations
 import dataclasses
 import datetime as dt
 import html
-import io
 import json
 import os
 import uuid
@@ -39,6 +38,7 @@ from typing import Any
 import boto3
 
 from obs import get_logger
+from tenancy import TenantPaths
 
 _log = get_logger("operator.report")
 
@@ -49,6 +49,7 @@ class RunSummary:
 
     job_id: str
     customer: str
+    tenant_id: str
     started_at: dt.datetime
     finished_at: dt.datetime | None = None
     csv_rows: int = 0
@@ -95,18 +96,16 @@ class ReportBuilder:
     ) -> dict[str, str]:
         """Upload ``report.json`` and ``index.html`` for the run.
 
-        ``samples`` is a list of ``{"part_number", "description",
-        "final_url"}`` dicts to show in the HTML.
-
-        Returns a dict with the S3 keys and pre-signed URLs (5-day
-        expiry) for both artefacts.
+        The report lands under the tenant prefix (``tenants/<id>/reports/<job_id>/``)
+        so a customer-facing pre-signed URL never leaks the existence
+        of other tenants' artefacts.
         """
         if summary.finished_at is None:
             summary.finished_at = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
 
-        prefix = f"reports/{summary.job_id}"
-        json_key = f"{prefix}/report.json"
-        html_key = f"{prefix}/index.html"
+        paths = TenantPaths(summary.tenant_id)
+        json_key = paths.report_json_key(summary.job_id)
+        html_key = paths.report_html_key(summary.job_id)
 
         json_body = json.dumps(summary.as_dict(), indent=2, ensure_ascii=False).encode("utf-8")
         self.s3.put_object(
@@ -224,6 +223,7 @@ class ReportBuilder:
 
         return _HTML_TEMPLATE.format(
             customer=html.escape(s.customer),
+            tenant_id=html.escape(s.tenant_id),
             job_id=html.escape(s.job_id),
             started_at=html.escape(s.started_at.strftime("%Y-%m-%d %H:%M UTC")),
             finished_at=html.escape(
@@ -285,7 +285,7 @@ _HTML_TEMPLATE = """<!doctype html>
 <main>
   <header>
     <h1>Parts pipeline · run report</h1>
-    <p>Customer <strong>{customer}</strong> · job <code>{job_id}</code></p>
+    <p>Customer <strong>{customer}</strong> · tenant <code>{tenant_id}</code> · job <code>{job_id}</code></p>
   </header>
 
   <section>

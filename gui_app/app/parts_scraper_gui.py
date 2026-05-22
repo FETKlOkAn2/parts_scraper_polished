@@ -16,6 +16,7 @@ from helpers import Helper
 from batch_watermark_detector import BatchWatermarkDetector
 from report_builder import ReportBuilder, RunSummary, new_job_id
 from obs import get_logger
+from tenancy.ids import validate_tenant_id, InvalidTenantError, MissingTenantError
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -52,21 +53,50 @@ class PartsScraperGUI:
         self.total_rows = 0
         self.dataframe = None
 
-        
+        # Tenant id for the current run. Defaults to $DEFAULT_TENANT_ID
+        # so single-tenant deployments don't need to think about it.
+        self.tenant_id = tk.StringVar(value=os.getenv("DEFAULT_TENANT_ID", ""))
+
         # Setup GUI
         self.create_widgets()
 
-        self.db = Database()
-        self.detector = BatchWatermarkDetector(self.db, self.open_ai_key)
-        self.helper = Helper(self.db, self.detector)
         self.state = StateDB()
-        self.reporter = ReportBuilder(bucket=self.bucket) if self.bucket else None
-
-        # Restore any in-flight run summary from disk so a GUI restart
-        # doesn't lose the audit trail mid-pipeline.
         self.run_summary = self._restore_or_init_summary()
 
+        # Build db/detector/helper bound to the current tenant. If the
+        # operator changes the tenant via the dropdown, we rebuild them.
+        self.db = None
+        self.detector = None
+        self.helper = None
+        self.reporter = ReportBuilder(bucket=self.bucket) if self.bucket else None
+        self._rebind_tenant(self.tenant_id.get())
+
         self.determine_state()
+
+    # ----- tenant binding ----------------------------------------------
+    def _rebind_tenant(self, tenant_id):
+        """(Re-)build tenant-bound clients (db, detector, helper).
+
+        Called once at init and again whenever the operator switches
+        tenant from the GUI. Safe to call with an empty string — the
+        detector/helper are simply left as None and the search /
+        watermark / filter buttons remain disabled.
+        """
+        try:
+            tenant_id = validate_tenant_id(tenant_id) if tenant_id else None
+        except (InvalidTenantError, MissingTenantError) as e:
+            self.log_message(f"Invalid tenant id: {e}")
+            return
+
+        self.db = Database(tenant_id=tenant_id)
+        self.detector = BatchWatermarkDetector(self.db, self.open_ai_key)
+        self.helper = Helper(self.db, self.detector, tenant_id=tenant_id)
+        if tenant_id:
+            self.run_summary.tenant_id = tenant_id
+            self._persist_summary()
+            self.log_message(f"Active tenant: {tenant_id}")
+        else:
+            self.log_message("No tenant selected. Pick one before submitting work.")
 
     # ----- run summary plumbing -----------------------------------------
     def _restore_or_init_summary(self):
@@ -76,6 +106,7 @@ class PartsScraperGUI:
             return RunSummary(
                 job_id=raw["job_id"],
                 customer=raw.get("customer") or os.getenv("CUSTOMER", "unknown"),
+                tenant_id=raw.get("tenant_id") or os.getenv("DEFAULT_TENANT_ID", "unknown"),
                 started_at=dt.datetime.fromisoformat(raw["started_at"]),
                 finished_at=(
                     dt.datetime.fromisoformat(raw["finished_at"])
@@ -96,7 +127,8 @@ class PartsScraperGUI:
         return RunSummary(
             job_id=new_job_id(),
             customer=os.getenv("CUSTOMER", "unknown"),
-            started_at=dt.datetime.utcnow(),
+            tenant_id=os.getenv("DEFAULT_TENANT_ID", "unknown"),
+            started_at=dt.datetime.now(dt.timezone.utc).replace(tzinfo=None),
         )
 
     def _persist_summary(self):
@@ -196,7 +228,11 @@ class PartsScraperGUI:
 
         self.log_message("Gathering Remaining Images...")
         
-        all_data = self.db.read_sql_query("SELECT tag_value FROM part_tags ORDER BY tag_value ASC;")
+        all_data = self.db.read_sql_query(
+            "SELECT tag_value FROM dbo.part_tags "
+            "WHERE tenant_id = :tenant_id ORDER BY tag_value ASC;",
+            params={"tenant_id": self.run_summary.tenant_id},
+        )
 
         self.log_message("Splitting groups into jobs...")
         num_chunks = self.helper.split_group_upload(
@@ -245,10 +281,12 @@ class PartsScraperGUI:
         self.search_images_btn.configure(state=tk.DISABLED)
         self.progress_bar.stop()
 
-        # Count final images written during this run window.
+        # Count final images written during this run window, scoped to the active tenant.
         try:
             row = self.db.read_sql_query(
-                "SELECT COUNT(*) AS n FROM parts WHERE final_tag IS NOT NULL;"
+                "SELECT COUNT(*) AS n FROM dbo.parts "
+                "WHERE tenant_id = :tenant_id AND final_tag IS NOT NULL;",
+                params={"tenant_id": self.run_summary.tenant_id},
             )
             self.run_summary.final_images_written = int(row["n"].iat[0])
         except Exception as e:
@@ -259,8 +297,9 @@ class PartsScraperGUI:
         try:
             sample_rows = self.db.read_sql_query(
                 "SELECT TOP 12 number, description, final_tag "
-                "FROM parts WHERE final_tag IS NOT NULL "
-                "ORDER BY part_id DESC;"
+                "FROM dbo.parts WHERE tenant_id = :tenant_id AND final_tag IS NOT NULL "
+                "ORDER BY part_id DESC;",
+                params={"tenant_id": self.run_summary.tenant_id},
             )
             samples = [
                 {
@@ -287,7 +326,10 @@ class PartsScraperGUI:
                 self.log_message(f"Report generation failed: {e}")
 
         # self.db.update_all_final_tags() handling this in image process class
-        self.db.execute_sql("DELETE FROM part_tags;")
+        self.db.execute_sql(
+            "DELETE FROM dbo.part_tags WHERE tenant_id = :tenant_id;",
+            params={"tenant_id": self.run_summary.tenant_id},
+        )
         self.db.empty_prefix(self.bucket, 'images')
         self.status_var.set("COMPLETED: Images are Ready for Deployment")
         self.state.set(image_watermark_detection=False)
@@ -295,13 +337,21 @@ class PartsScraperGUI:
         self.state.set(run_summary=None)
         self.run_summary = self._restore_or_init_summary()
 
-    def search_images(self): # this is search
-        """Main processing function"""
-        # uploading to database
+    def search_images(self):
+        """Main processing function."""
+        if not self.helper or not self.helper.tenant_id:
+            messagebox.showerror(
+                "Tenant required",
+                "Set a tenant id and click Apply before starting an image search.",
+            )
+            return
+
         self.status_var.set("Performing Image Search...")
         self.progress_bar.start(30)
-        self.log_message('Uploading CSV to Database...')
-        self.db.upsert_append_new_only(self.dataframe)
+        self.log_message(f"Uploading CSV to Database for tenant {self.helper.tenant_id}...")
+        # Database.upsert_append_new_only auto-stamps tenant_id from
+        # the Database's tenant when the DataFrame lacks the column.
+        self.db.upsert_append_new_only(self.dataframe, target="dbo.parts")
 
         # Stamp this run.
         self.run_summary.csv_rows = int(len(self.dataframe))
@@ -312,9 +362,13 @@ class PartsScraperGUI:
             csv_rows=self.run_summary.csv_rows,
         )
 
-        # retriving data from database
+        # retrieving data from database (tenant-scoped)
         self.log_message('Gathering all parts without an image...')
-        all_data = self.db.read_sql_query("SELECT number, description FROM parts WHERE final_tag IS NULL;")
+        all_data = self.db.read_sql_query(
+            "SELECT number, description FROM dbo.parts "
+            "WHERE tenant_id = :tenant_id AND final_tag IS NULL;",
+            params={"tenant_id": self.run_summary.tenant_id},
+        )
         all_data = all_data.iloc[:self.max_rows]
         self.run_summary.parts_searched = int(len(all_data))
         self.run_summary.parts_with_existing_image = max(
@@ -370,10 +424,12 @@ class PartsScraperGUI:
         self.state.set(image_search_state=True)
         _log.info("search stage complete", elapsed_seconds=int(end - start))
 
-        # Count the candidates the workers actually persisted, so we have
-        # a real number on the report even if a metric publish failed.
+        # Count the candidates the workers actually persisted, scoped to tenant.
         try:
-            row = self.db.read_sql_query("SELECT COUNT(*) AS n FROM part_tags;")
+            row = self.db.read_sql_query(
+                "SELECT COUNT(*) AS n FROM dbo.part_tags WHERE tenant_id = :tenant_id;",
+                params={"tenant_id": self.run_summary.tenant_id},
+            )
             self.run_summary.candidates_downloaded = int(row["n"].iat[0])
             self._persist_summary()
         except Exception as e:
@@ -464,9 +520,22 @@ class PartsScraperGUI:
 
         # CSV Info Label
         self.csv_info_var = tk.StringVar(value="No CSV file loaded")
-        self.csv_info_label = ttk.Label(main_frame, textvariable=self.csv_info_var, 
+        self.csv_info_label = ttk.Label(main_frame, textvariable=self.csv_info_var,
                                        font=('Arial', 9), foreground='gray')
         self.csv_info_label.grid(row=2, column=0, columnspan=3, sticky=tk.W, pady=(0, 10))
+
+        # Tenant selector. Free-form entry so the operator can switch to a
+        # tenant that the dropdown doesn't list yet.
+        tenant_frame = ttk.Frame(main_frame)
+        tenant_frame.grid(row=3, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 8))
+        ttk.Label(tenant_frame, text="Tenant:").grid(row=0, column=0, padx=(0, 5))
+        self.tenant_entry = ttk.Entry(tenant_frame, textvariable=self.tenant_id, width=24)
+        self.tenant_entry.grid(row=0, column=1, sticky=tk.W)
+        self.tenant_apply_btn = ttk.Button(
+            tenant_frame, text="Apply",
+            command=lambda: self._rebind_tenant(self.tenant_id.get().strip()),
+        )
+        self.tenant_apply_btn.grid(row=0, column=2, padx=(8, 0))
           
 
         # Processing Options
