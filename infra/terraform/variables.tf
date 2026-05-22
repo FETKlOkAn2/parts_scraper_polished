@@ -103,3 +103,23 @@ variable "alerts_email" {
   type        = string
   default     = ""
 }
+
+variable "tenants" {
+  description = "List of tenant ids served by this deployment. When non-empty, each tenant gets its own HMAC signing key in Secrets Manager and its own CloudWatch alarms. When empty, the deployment runs single-tenant against the shared HTML_SECRET (legacy behaviour). Tenant ids must match the validation rule in app/tenancy/ids.py: lowercase, 2-32 chars, [a-z][a-z0-9-]*."
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for t in var.tenants :
+      can(regex("^[a-z][a-z0-9](?:[a-z0-9-]{0,29}[a-z0-9])?$", t))
+    ])
+    error_message = "Each tenant id must be lowercase, 2-32 chars, [a-z][a-z0-9-]* with no leading/trailing hyphen."
+  }
+}
+
+variable "default_tenant_id" {
+  description = "Fallback tenant id workers use when an in-flight SQS message has no tenant_id field. Required during a single-tenant → multi-tenant cutover. Leave empty to refuse legacy messages entirely."
+  type        = string
+  default     = ""
+}

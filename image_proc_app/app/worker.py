@@ -1,4 +1,5 @@
 # app/worker.py
+import json
 import os, boto3, tempfile, pathlib, traceback
 from image_proc.run import process_shard
 from obs import get_logger
@@ -18,9 +19,50 @@ pathlib.Path(LOCAL_TMP_DIR).mkdir(parents=True, exist_ok=True)
 
 sqs = boto3.client("sqs", region_name=REGION)
 s3  = boto3.client("s3",  region_name=REGION)
+sm  = boto3.client("secretsmanager", region_name=REGION)
 
 log = get_logger("image_proc.worker")
 metrics = build_emitter(stage="image_proc")
+
+
+# Per-tenant HMAC secret arns are passed in as a JSON env var by the
+# Terraform user_data. Empty (or missing) means single-tenant: every
+# tenant shares the deployment-wide HTML_SECRET.
+def _load_tenant_secret_arns():
+    raw = os.getenv("TENANT_HTML_SECRET_ARNS", "").strip()
+    if not raw or raw == "{}":
+        return {}
+    try:
+        m = json.loads(raw)
+        return m if isinstance(m, dict) else {}
+    except json.JSONDecodeError:
+        log.warning("TENANT_HTML_SECRET_ARNS is not valid JSON; ignoring")
+        return {}
+
+
+TENANT_SECRET_ARNS = _load_tenant_secret_arns()
+
+
+def _set_html_secret_for_tenant(tenant_id):
+    """Override $HTML_SECRET for the lifetime of this shard.
+
+    Looks up the per-tenant secret arn from TENANT_HTML_SECRET_ARNS. If
+    no per-tenant arn is registered, leaves the env unchanged so the
+    deployment-wide HTML_SECRET still works (single-tenant / cutover).
+    """
+    arn = TENANT_SECRET_ARNS.get(tenant_id)
+    if not arn:
+        return
+    try:
+        resp = sm.get_secret_value(SecretId=arn)
+        os.environ["HTML_SECRET"] = resp["SecretString"]
+        log.info("html_secret overridden for tenant", tenant_id=tenant_id)
+    except Exception as e:
+        log.warning(
+            "could not fetch per-tenant html_secret; falling back to deployment-wide",
+            tenant_id=tenant_id,
+            error=str(e),
+        )
 
 
 def _output_exists(paths: TenantPaths, basename: str) -> bool:
@@ -53,6 +95,8 @@ def handle_message(m):
 
     bound.info("shard download starting", local_path=local_in)
     s3.download_file(BUCKET, key, local_in)
+
+    _set_html_secret_for_tenant(tenant_id)
 
     bound.info("shard processing")
     with metrics.timer("Shard", shard=basename, Tenant=tenant_id):

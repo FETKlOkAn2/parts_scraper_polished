@@ -216,3 +216,89 @@ resource "aws_cloudwatch_metric_alarm" "unusable_batches" {
   alarm_actions = [aws_sns_topic.alerts.arn]
   ok_actions    = [aws_sns_topic.alerts.arn]
 }
+
+# ---------- Per-tenant alarms ----------
+# When ``var.tenants`` is set, every tenant gets its own
+# BatchesUnusable alarm. The deployment-wide alarm above stays in
+# place so the operator still pages on traffic that arrives without
+# a tenant (legacy messages).
+resource "aws_cloudwatch_metric_alarm" "unusable_batches_per_tenant" {
+  for_each = toset(var.tenants)
+
+  alarm_name          = "${local.prefix}-${each.key}-openai-batches-unusable"
+  alarm_description   = "Tenant ${each.key}: an OpenAI batch finished in failed/expired/cancelled state."
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  threshold           = 1
+  metric_name         = "BatchesUnusable"
+  namespace           = "PartsImagePipeline"
+  period              = 60
+  statistic           = "Sum"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    Customer = var.customer
+    Stage    = "operator"
+    Tenant   = each.key
+  }
+
+  alarm_actions = [aws_sns_topic.alerts.arn]
+  ok_actions    = [aws_sns_topic.alerts.arn]
+}
+
+# Per-tenant dashboard. Created when var.tenants is non-empty; mirrors
+# the deployment-wide dashboard but filters every metric by the Tenant
+# dimension. One dashboard per tenant keeps the per-customer view
+# uncluttered, which matters when you're sharing a link with that
+# customer.
+resource "aws_cloudwatch_dashboard" "per_tenant" {
+  for_each = toset(var.tenants)
+
+  dashboard_name = "${local.prefix}-tenant-${each.key}"
+
+  dashboard_body = jsonencode({
+    widgets = [
+      {
+        type   = "metric"
+        x      = 0
+        y      = 0
+        width  = 12
+        height = 6
+        properties = {
+          title  = "Shard outcomes (tenant ${each.key})"
+          region = var.region
+          view   = "timeSeries"
+          stat   = "Sum"
+          period = 300
+          metrics = [
+            ["PartsImagePipeline", "ShardDone", "Customer", var.customer, "Stage", "scraper", "Tenant", each.key],
+            [".", "ShardFailed", ".", ".", ".", ".", ".", "."],
+            [".", "ShardDone", ".", ".", "Stage", "image_proc", ".", "."],
+            [".", "ShardFailed", ".", ".", ".", ".", ".", "."],
+          ]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 0
+        width  = 12
+        height = 6
+        properties = {
+          title  = "Image flow (tenant ${each.key})"
+          region = var.region
+          view   = "timeSeries"
+          stat   = "Sum"
+          period = 300
+          metrics = [
+            ["PartsImagePipeline", "ImagesDownloaded", "Customer", var.customer, "Stage", "scraper", "Tenant", each.key],
+            ["PartsImagePipeline", "ImagesFlagged", "Customer", var.customer, "Stage", "operator", "Tenant", each.key],
+            ["PartsImagePipeline", "ImagesAccepted", "Customer", var.customer, "Stage", "operator", "Tenant", each.key],
+            ["PartsImagePipeline", "ImagesKept", "Customer", var.customer, "Stage", "image_proc", "Tenant", each.key],
+            ["PartsImagePipeline", "ImagesDiscardedByDedup", "Customer", var.customer, "Stage", "image_proc", "Tenant", each.key],
+          ]
+        }
+      },
+    ]
+  })
+}

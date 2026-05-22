@@ -31,6 +31,14 @@ module "pipeline" {
   db_user = "parts_app"
 
   alerts_email = "ops@example.com"
+
+  # Multi-tenancy. Leave the list empty for a single-tenant deployment;
+  # add ids to onboard new tenants in a re-apply. ``default_tenant_id``
+  # is the fallback workers use when a legacy in-flight SQS message
+  # has no tenant_id field — set it to the value you used as
+  # LEGACY_TENANT when running db/migrations/002_tenant_id.sql.
+  tenants           = [] # e.g. ["acme-parts", "zenith-industrial"]
+  default_tenant_id = "acme-parts"
 }
 
 output "bucket" { value = module.pipeline.bucket }
@@ -39,6 +47,8 @@ output "proc_queue_url" { value = module.pipeline.proc_queue_url }
 output "scraper_ecr_repo_url" { value = module.pipeline.scraper_ecr_repo_url }
 output "image_proc_ecr_repo_url" { value = module.pipeline.image_proc_ecr_repo_url }
 output "operator_policy_arn" { value = module.pipeline.operator_policy_arn }
+output "tenant_html_secret_arns" { value = module.pipeline.tenant_html_secret_arns }
+output "tenant_dashboards" { value = module.pipeline.tenant_dashboards }
 
 terraform {
   required_version = ">= 1.6.0"

@@ -23,6 +23,7 @@ docker run --rm \
   --log-opt awslogs-stream="$(curl -s -H "X-aws-ec2-metadata-token: $(curl -s -X PUT 'http://169.254.169.254/latest/api/token' -H 'X-aws-ec2-metadata-token-ttl-seconds: 60')" http://169.254.169.254/latest/meta-data/instance-id)" \
   -e AWS_REGION="$REGION" \
   -e CUSTOMER="${customer}" \
+  -e DEFAULT_TENANT_ID="${default_tenant_id}" \
   -e BUCKET="${bucket}" \
   -e IMAGE_KEY="${image_key}" \
   -e QUEUE_URL="${queue_url}" \
@@ -31,6 +32,7 @@ docker run --rm \
   -e DB_USER="${db_user}" \
   -e DB_PASSWORD="$DB_PASSWORD" \
   -e HTML_SECRET="$HTML_SECRET" \
+  -e TENANT_HTML_SECRET_ARNS='${tenant_html_secret_arns}' \
   "$IMAGE"
 
 TOKEN="$(curl -s -X PUT 'http://169.254.169.254/latest/api/token' -H 'X-aws-ec2-metadata-token-ttl-seconds: 60')"

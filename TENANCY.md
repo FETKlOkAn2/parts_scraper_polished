@@ -12,7 +12,7 @@ later phases land in their own commits.
 | 1 | Foundation: `tenancy/` package (ids, paths, envelope), SQL migration, tests, docs. No production code path moves yet. | done |
 | 2 | Workers read `tenant_id` from the SQS envelope, use `TenantPaths` for every S3 key, query SQL with `tenant_id` in the predicate. | pending |
 | 3 | Operator GUI picks a tenant per run; helpers stamp `tenant_id` on every SQS message; the run report lives under the tenant prefix; OpenAI batches carry the tenant id in metadata. | pending |
-| 4 | Terraform: per-tenant Secrets Manager entries (so a leaked HMAC key is bounded to one tenant); per-tenant CloudWatch dashboards / alarms; an "onboard a tenant" workflow. | pending |
+| 4 | Terraform: per-tenant Secrets Manager entries (so a leaked HMAC key is bounded to one tenant); per-tenant CloudWatch dashboards / alarms; an "onboard a tenant" workflow. | done |
 
 ## Tenant identifier
 
@@ -102,23 +102,58 @@ mechanism can stay in place indefinitely; it just becomes
 
 ## Isolation guarantees today
 
-In phase 1 these are the isolation properties **after** workers and
-operator catch up in phases 2 and 3:
+With phases 1–4 in place:
 
-- **S3:** each tenant's keys live under a distinct prefix. IAM can
-  scope a worker's `s3:GetObject`/`PutObject` to one tenant using a
-  resource pattern like `arn:aws:s3:::<bucket>/tenants/<id>/*`.
-  Today the worker policy is broader (the whole bucket) because all
-  tenants run on the same fleet; tightening it is a phase-4 option.
-- **SQL:** every read and write filters by `tenant_id`. A bug that
-  forgets the predicate on `part_tags` is caught by the trigger.
-  Cross-tenant reads on `parts` are not enforced at the database
-  layer; that's an application invariant.
-- **Secrets:** phase 1 still uses a single shared `HTML_SECRET`. Phase
-  4 introduces per-tenant secrets so a leak is bounded.
-- **CloudWatch:** every custom metric already carries a `Customer`
-  dimension. After phase 3 that dimension takes the tenant id, so the
-  dashboard slices cleanly per tenant.
+- **S3:** each tenant's keys live under `tenants/<tenant_id>/`. The
+  worker IAM policy still grants `GetObject`/`PutObject` on the whole
+  pipeline bucket because a single fleet serves all tenants;
+  tightening to per-tenant resource ARNs is straightforward when you
+  want one workload per tenant (run the module twice with different
+  `customer` values).
+- **SQL:** every read and write filters by `tenant_id`. The trigger
+  on `dbo.part_tags` rejects any row whose tenant_id doesn't match
+  its parent `parts` row. The `gui_app` `Database.upsert_append_new_only`
+  also refuses to insert rows whose `tenant_id` differs from the
+  active Database tenant — defence-in-depth against a programming
+  error in the operator console.
+- **Secrets:** when `var.tenants` is non-empty, every tenant gets its
+  own `html_secret` in Secrets Manager at
+  `${customer}/parts-pipeline/tenants/${tenant}/html-secret`. The
+  image-processing worker looks up the right secret per shard via
+  the `TENANT_HTML_SECRET_ARNS` env var (a JSON map injected by
+  Terraform user_data). A leaked HMAC signing key now compromises
+  one tenant's final-image filenames, not all of them.
+- **CloudWatch:** every custom metric carries `Customer` and
+  (after phase 3) `Tenant` dimensions. The Terraform stack ships
+  one CloudWatch dashboard per declared tenant
+  (`<customer>-tenant-<tenant_id>`) plus the deployment-wide one,
+  and a per-tenant `BatchesUnusable` alarm so an OpenAI batch
+  failure pages with the affected tenant clearly named.
+
+## Onboarding a new tenant
+
+The end-to-end checklist for adding a new customer (tenant) to a
+running deployment:
+
+1. **Validate the id.** Lowercase, 2–32 chars, `[a-z][a-z0-9-]*`,
+   no leading/trailing hyphen. Same shape Terraform enforces.
+2. **Terraform:** add the id to the `tenants` list in the
+   per-customer env wrapper (`infra/terraform/envs/<customer>/main.tf`)
+   and re-apply. This creates the per-tenant HMAC secret, the per-tenant
+   CloudWatch dashboard, and the per-tenant `BatchesUnusable` alarm.
+3. **SQL:** no schema change. New rows just carry the new
+   `tenant_id` value.
+4. **Operator:** type the tenant id into the GUI's Tenant field
+   and click Apply. The GUI rebuilds its Database / Helper /
+   BatchWatermarkDetector for the new tenant and you can load that
+   tenant's CSV.
+
+Offboarding is the reverse: remove the id from `tenants`,
+`terraform apply` (which drops the per-tenant secret after a 7-day
+recovery window), then run a one-off SQL `DELETE FROM dbo.parts
+WHERE tenant_id = '<id>'` (cascade via `dbo.part_tags`) and an S3
+`aws s3 rm s3://<bucket>/tenants/<id>/ --recursive` to remove the
+data.
 
 ## What you don't get yet
 

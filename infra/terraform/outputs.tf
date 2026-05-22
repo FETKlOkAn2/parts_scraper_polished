@@ -60,3 +60,17 @@ output "alerts_topic_arn" {
   description = "SNS topic that receives CloudWatch alarms for this deployment."
   value       = aws_sns_topic.alerts.arn
 }
+
+output "tenant_html_secret_arns" {
+  description = "Map of tenant_id -> Secrets Manager ARN of that tenant's HMAC signing key. Empty when var.tenants is empty (single-tenant deployment uses the shared html_secret)."
+  value = {
+    for k, s in aws_secretsmanager_secret.tenant_html_secret : k => s.arn
+  }
+}
+
+output "tenant_dashboards" {
+  description = "Names of the per-tenant CloudWatch dashboards. Hand each link to the corresponding customer."
+  value = {
+    for k, d in aws_cloudwatch_dashboard.per_tenant : k => d.dashboard_name
+  }
+}

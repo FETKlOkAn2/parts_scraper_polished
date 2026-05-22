@@ -26,33 +26,43 @@ resource "aws_security_group" "worker" {
 
 # ---------- Scraper ASG ----------
 locals {
+  # JSON map of tenant_id -> per-tenant html_secret ARN. The worker
+  # entrypoint exports this as TENANT_HTML_SECRET_ARNS so the image
+  # processing app can look up the right key per message.
+  tenant_html_secret_arns_json = jsonencode({
+    for k, s in aws_secretsmanager_secret.tenant_html_secret : k => s.arn
+  })
+
   scraper_user_data = templatefile("${path.module}/templates/scraper_user_data.sh.tpl", {
-    region          = var.region
-    customer        = var.customer
-    bucket          = aws_s3_bucket.pipeline.id
-    queue_url       = aws_sqs_queue.scraper.url
-    log_group       = aws_cloudwatch_log_group.scraper.name
-    db_host         = var.db_host
-    db_port         = var.db_port
-    db_user         = var.db_user
-    db_password_arn = aws_secretsmanager_secret.db_password.arn
-    decodo_arn      = aws_secretsmanager_secret.decodo_credentials.arn
-    image_uri       = var.scraper_image_uri
+    region            = var.region
+    customer          = var.customer
+    default_tenant_id = var.default_tenant_id
+    bucket            = aws_s3_bucket.pipeline.id
+    queue_url         = aws_sqs_queue.scraper.url
+    log_group         = aws_cloudwatch_log_group.scraper.name
+    db_host           = var.db_host
+    db_port           = var.db_port
+    db_user           = var.db_user
+    db_password_arn   = aws_secretsmanager_secret.db_password.arn
+    decodo_arn        = aws_secretsmanager_secret.decodo_credentials.arn
+    image_uri         = var.scraper_image_uri
   })
 
   image_proc_user_data = templatefile("${path.module}/templates/image_proc_user_data.sh.tpl", {
-    region          = var.region
-    customer        = var.customer
-    bucket          = aws_s3_bucket.pipeline.id
-    image_key       = local.s3_images_prefix
-    queue_url       = aws_sqs_queue.proc.url
-    log_group       = aws_cloudwatch_log_group.image_proc.name
-    db_host         = var.db_host
-    db_port         = var.db_port
-    db_user         = var.db_user
-    db_password_arn = aws_secretsmanager_secret.db_password.arn
-    html_secret_arn = aws_secretsmanager_secret.html_secret.arn
-    image_uri       = var.image_proc_image_uri
+    region                  = var.region
+    customer                = var.customer
+    default_tenant_id       = var.default_tenant_id
+    bucket                  = aws_s3_bucket.pipeline.id
+    image_key               = local.s3_images_prefix
+    queue_url               = aws_sqs_queue.proc.url
+    log_group               = aws_cloudwatch_log_group.image_proc.name
+    db_host                 = var.db_host
+    db_port                 = var.db_port
+    db_user                 = var.db_user
+    db_password_arn         = aws_secretsmanager_secret.db_password.arn
+    html_secret_arn         = aws_secretsmanager_secret.html_secret.arn
+    tenant_html_secret_arns = local.tenant_html_secret_arns_json
+    image_uri               = var.image_proc_image_uri
   })
 }
 

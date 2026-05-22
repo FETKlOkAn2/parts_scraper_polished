@@ -73,12 +73,15 @@ data "aws_iam_policy_document" "worker_inline" {
   statement {
     sid     = "ReadDeploymentSecrets"
     actions = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"]
-    resources = [
-      aws_secretsmanager_secret.html_secret.arn,
-      aws_secretsmanager_secret.db_password.arn,
-      aws_secretsmanager_secret.openai_api_key.arn,
-      aws_secretsmanager_secret.decodo_credentials.arn,
-    ]
+    resources = concat(
+      [
+        aws_secretsmanager_secret.html_secret.arn,
+        aws_secretsmanager_secret.db_password.arn,
+        aws_secretsmanager_secret.openai_api_key.arn,
+        aws_secretsmanager_secret.decodo_credentials.arn,
+      ],
+      [for s in aws_secretsmanager_secret.tenant_html_secret : s.arn],
+    )
   }
 }
 

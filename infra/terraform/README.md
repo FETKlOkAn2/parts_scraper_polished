@@ -15,6 +15,8 @@ isolated environment in the same account.
 | ECR `<customer>-parts-scraper`, `<customer>-parts-image-proc` | Container registries for the two workers. |
 | Launch template + ASG (one per worker) | Workers scale on `ApproximateNumberOfMessagesVisible`. Each instance pulls the image, runs one shard, exits, and asks the ASG to terminate it. |
 | Secrets Manager entries | `HTML_SECRET`, DB password, OpenAI API key, Decodo credentials. The Terraform run seeds `HTML_SECRET` with a freshly generated 64-byte random value; the other three are created empty and must be populated by the operator. |
+| Per-tenant Secrets Manager entries | When `var.tenants` is non-empty, each tenant gets its own `html-secret` under `${customer}/parts-pipeline/tenants/${tenant}/`. The image-proc worker honours `TENANT_HTML_SECRET_ARNS` injected via user_data to pick the right key per shard. |
+| Per-tenant CloudWatch dashboard + `BatchesUnusable` alarm | One dashboard and one alarm per declared tenant. Use the per-tenant dashboard link as the artefact you share with that customer. |
 | CloudWatch alarms + dashboard | DLQ depth, queue stuck, basic worker fleet visibility, and pipeline-specific dashboards on `PartsImagePipeline/*` (shards, images, p50/p95 durations). |
 | CloudWatch log groups `/parts-pipeline/<customer>/{scraper,image-proc,operator}` | Worker containers ship JSON logs here via the Docker `awslogs` driver. |
 | CloudWatch alarm `<customer>-openai-batches-unusable` | Pages when a `BatchesUnusable` metric tick > 0; replaces the previous silent-skip on failed/expired OpenAI batches. |
@@ -81,6 +83,24 @@ To rotate `HTML_SECRET`, change the value in Secrets Manager directly
 and trigger a managed re-run of the filter step (see
 `SECURITY.md`). Do not delete the secret resource through Terraform
 unless you intend to lose history.
+
+## Adding a tenant
+
+Add the new id to `tenants` in `envs/<customer>/main.tf` and re-apply.
+That single step:
+
+- creates a 64-byte random HMAC secret in Secrets Manager at
+  `${customer}/parts-pipeline/tenants/${tenant}/html-secret`,
+- grants the worker instance profile read access on it,
+- updates the image-proc launch template so freshly-launched workers
+  pick up the new entry in `TENANT_HTML_SECRET_ARNS`,
+- creates a CloudWatch dashboard `${customer}-tenant-${tenant}`,
+- creates a `${customer}-${tenant}-openai-batches-unusable` alarm.
+
+In-flight workers keep using the snapshot they were launched with,
+which is fine because they were launched against a different tenant.
+New shards for the new tenant get a fresh worker per the existing
+one-and-done model.
 
 ## Destroy
 
