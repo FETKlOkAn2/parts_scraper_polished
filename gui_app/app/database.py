@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from uuid import uuid4
 
 from tenancy.ids import validate_tenant_id
+from tenancy import attach_tenant_to_engine
 
 load_dotenv()
 
@@ -22,6 +23,7 @@ class Database:
         self.db = 'parts_db'
         self.driver = "ODBC+Driver+18+for+SQL+Server"
         self.engine = self.get_engine()
+        attach_tenant_to_engine(self.engine, self.tenant_id)
         self.lock = Lock()
         self.s3 = boto3.client("s3")
         self.bucket = os.getenv("BUCKET")
@@ -30,6 +32,7 @@ class Database:
 
     def set_tenant(self, tenant_id):
         self.tenant_id = validate_tenant_id(tenant_id)
+        attach_tenant_to_engine(self.engine, self.tenant_id)
         return self.tenant_id
 
     def get_engine(self):

@@ -20,3 +20,5 @@ writing to the wrong tenant's S3 prefix or SQL row.
 from .ids import validate_tenant_id, MissingTenantError, InvalidTenantError  # noqa: F401
 from .paths import TenantPaths  # noqa: F401
 from .envelope import envelope, parse_envelope, ENVELOPE_VERSION  # noqa: F401
+from .session import attach_tenant_to_engine  # noqa: F401
+from .registry import TenantRegistry, TenantRecord, VALID_STATUSES  # noqa: F401

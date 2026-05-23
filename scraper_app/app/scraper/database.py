@@ -8,16 +8,13 @@ from dotenv import load_dotenv
 from uuid import uuid4
 
 from tenancy.ids import validate_tenant_id
+from tenancy import attach_tenant_to_engine
 
 load_dotenv()
 
 
 class Database:
     def __init__(self, tenant_id=None):
-        # tenant_id is required for any write path. We accept None at
-        # construction so legacy callers that only use read_sql_query
-        # don't break, but every write goes through a tenant-scoped
-        # method that validates it.
         self.tenant_id = validate_tenant_id(tenant_id) if tenant_id else None
 
         self.user = os.getenv("DB_USER")
@@ -27,6 +24,11 @@ class Database:
         self.db = 'parts_db'
         self.driver = "ODBC+Driver+18+for+SQL+Server"
         self.engine = self.get_engine()
+        # Set SESSION_CONTEXT('tenant_id') on every checked-out
+        # connection so SQL Server's row-level-security policy
+        # (migration 003) sees the right tenant. No-op when tenant_id
+        # is None.
+        attach_tenant_to_engine(self.engine, self.tenant_id)
         self.lock = Lock()
         self.s3 = boto3.client("s3")
         self.bucket = os.getenv("BUCKET")
