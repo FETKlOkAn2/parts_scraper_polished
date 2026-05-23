@@ -83,21 +83,58 @@ def test_set_tenant_validates(helper):
 
 def test_organize_and_submit_batch_passes_tenant_through(helper, monkeypatch):
     helper.detector.get_urls_from_db.return_value = pd.Series([])
-    helper.organize_and_submit_batch()
+    ids, batch_map = helper.organize_and_submit_batch()
     helper.detector.get_urls_from_db.assert_called_once_with(tenant_id="acme-parts")
+    assert ids == []
+    assert batch_map == {}
 
 
 def test_organize_and_submit_batch_uses_tenant_scoped_base(helper):
-    # The detector receives a URL list whose base path is the tenant's
-    # images prefix on s3.
     helper.detector.get_urls_from_db.return_value = pd.Series([
         f"https://acme-bucket.s3.us-east-1.amazonaws.com/tenants/acme-parts/images/AB123_disc_0.png"
     ])
     helper.detector.create_batch_requests.return_value = [{"custom_id": "x"}]
     helper.detector.submit_batch.return_value = "batch_abc"
 
-    helper.organize_and_submit_batch()
+    ids, batch_map = helper.organize_and_submit_batch()
 
     helper.detector.submit_batch.assert_called_once()
     kwargs = helper.detector.submit_batch.call_args.kwargs
     assert kwargs["tenant_id"] == "acme-parts"
+    assert ids == ["batch_abc"]
+    # batch_map ties the OpenAI batch id back to the on-disk jsonl
+    # so the resubmit-failed flow can re-upload it later.
+    assert batch_map == {"batch_abc": "data/ai_sent_data/batch_0.jsonl"}
+
+
+def test_resubmit_failed_batches_reuploads_each_jsonl(helper):
+    helper.detector.resubmit_batch_from_disk.side_effect = ["new_1", "new_2"]
+    failed_map = {
+        "old_1": "data/ai_sent_data/batch_0.jsonl",
+        "old_2": "data/ai_sent_data/batch_1.jsonl",
+    }
+    new_ids, new_map = helper.resubmit_failed_batches(failed_map)
+    assert sorted(new_ids) == ["new_1", "new_2"]
+    assert "data/ai_sent_data/batch_0.jsonl" in new_map.values()
+    assert "data/ai_sent_data/batch_1.jsonl" in new_map.values()
+    assert helper.detector.resubmit_batch_from_disk.call_count == 2
+
+
+def test_resubmit_failed_batches_skips_missing_input_files(helper):
+    helper.detector.resubmit_batch_from_disk.side_effect = [
+        FileNotFoundError("gone"),
+        "new_2",
+    ]
+    failed_map = {
+        "old_1": "data/ai_sent_data/batch_0.jsonl",
+        "old_2": "data/ai_sent_data/batch_1.jsonl",
+    }
+    new_ids, new_map = helper.resubmit_failed_batches(failed_map)
+    assert new_ids == ["new_2"]
+    assert "new_2" in new_map
+
+
+def test_resubmit_failed_batches_requires_tenant(helper):
+    helper.tenant_id = None
+    with pytest.raises(RuntimeError, match="no active tenant_id"):
+        helper.resubmit_failed_batches({"x": "y.jsonl"})

@@ -196,6 +196,14 @@ class Helper:
 
 
     def organize_and_submit_batch(self):
+        """Submit one OpenAI batch per chunk of candidate URLs.
+
+        Returns ``(batch_ids, batch_map)`` where ``batch_map`` is
+        ``{batch_id: jsonl_path}``. The map lets the resubmit-only-
+        failed flow re-upload exactly the original request set without
+        rebuilding it from SQL/S3 (the candidate set could drift
+        between submissions).
+        """
         self._require_tenant()
         all_urls = self.detector.get_urls_from_db(tenant_id=self.tenant_id)
         encoded_urls = []
@@ -213,8 +221,9 @@ class Helper:
         num_chunks = ceil(n / self.max_batch_size) if n else 0
         if num_chunks == 0:
             _log.info("no candidate images for tenant", tenant_id=self.tenant_id)
-            return
+            return [], {}
         all_batch_ids = []
+        batch_map: dict[str, str] = {}
         for i in range(num_chunks):
             start = i * self.max_batch_size
             stop = min(start + self.max_batch_size, n)
@@ -227,10 +236,48 @@ class Helper:
                 tenant_id=self.tenant_id,
             )
             all_batch_ids.append(batch_id)
+            batch_map[batch_id] = f"data/ai_sent_data/batch_{i}.jsonl"
 
-        return all_batch_ids
+        return all_batch_ids, batch_map
+
+    def resubmit_failed_batches(self, failed_batch_map):
+        """Re-upload saved JSONL files for a subset of batch ids.
+
+        ``failed_batch_map`` is ``{old_batch_id: jsonl_path}``. We
+        ignore the old batch ids (they're already terminal); only the
+        jsonl_path matters because that's the original request set.
+        Returns ``(new_batch_ids, new_batch_map)`` for the resubmits,
+        same shape as :meth:`organize_and_submit_batch`.
+        """
+        self._require_tenant()
+        new_batch_ids: list[str] = []
+        new_batch_map: dict[str, str] = {}
+
+        for old_batch_id, jsonl_path in failed_batch_map.items():
+            try:
+                new_id = self.detector.resubmit_batch_from_disk(
+                    jsonl_path=jsonl_path,
+                    tenant_id=self.tenant_id,
+                )
+            except FileNotFoundError as e:
+                _log.error(
+                    "saved batch input missing; cannot resubmit",
+                    old_batch_id=old_batch_id,
+                    jsonl_path=jsonl_path,
+                    error=str(e),
+                )
+                continue
+            new_batch_ids.append(new_id)
+            new_batch_map[new_id] = jsonl_path
+            _log.info(
+                "batch resubmitted",
+                old_batch_id=old_batch_id,
+                new_batch_id=new_id,
+            )
+
+        return new_batch_ids, new_batch_map
     
-    def parse_ai_results(self, batch_ids):
+    def parse_ai_results(self, batch_ids, batch_map=None):
         """Pull results from each completed OpenAI batch.
 
         A batch can finish in a non-OK terminal status (``failed``,
@@ -309,10 +356,18 @@ class Helper:
         if unusable:
             for batch_id, status in unusable:
                 _metrics.count("BatchesUnusable", Status=status)
-            raise BatchUnusableError(
+            err = BatchUnusableError(
                 "OpenAI batches finished unusable; re-submit before proceeding: "
                 + ", ".join(f"{bid}({status})" for bid, status in unusable)
             )
+            # Attach the resubmit map so the GUI can offer a one-click
+            # "resubmit failed only" without re-deriving paths.
+            err.unusable = list(unusable)
+            err.resubmit_map = {
+                bid: (batch_map or {}).get(bid)
+                for bid, _status in unusable
+            }
+            raise err
 
 
 

@@ -144,11 +144,14 @@ class PartsScraperGUI:
         self.log_message("Performing AI watermark detection")
         self.ai_watermark_btn.configure(state=tk.DISABLED)
 
-        ids = self.helper.organize_and_submit_batch()
+        ids, batch_map = self.helper.organize_and_submit_batch()
         self.run_summary.batches_total += len(ids or [])
         self._persist_summary()
         self.log_message("Data has been sent to AI - waiting for response")
-        self.state.set(batch_ids=ids)
+        # Persist both the id list and the id→jsonl-path map so the
+        # resubmit-failed-only flow can find the input files even
+        # after a GUI restart.
+        self.state.set(batch_ids=ids, batch_map=batch_map)
         self.poll_open_ai()
 
         # Count flagged candidates from staged delete keys before they get cleared.
@@ -171,6 +174,7 @@ class PartsScraperGUI:
     def poll_open_ai(self):
         current = self.state.read()
         batch_ids = current.get("batch_ids")
+        batch_map = current.get("batch_map") or {}
 
         completed = False
         count = 0
@@ -195,32 +199,100 @@ class PartsScraperGUI:
         self.log_message("AI has determined which images have watermarks and they are being deleted...")
 
         try:
-            self.helper.parse_ai_results(batch_ids)
+            self.helper.parse_ai_results(batch_ids, batch_map=batch_map)
         except Exception as e:
-            # Failed/expired batches are now surfaced explicitly. Capture
-            # them on the run summary so the report makes the gap visible
-            # to the operator and the customer.
             from batch_watermark_detector import BatchUnusableError
             if isinstance(e, BatchUnusableError):
                 _log.error("openai batches unusable", error=str(e))
-                # Re-derive the list of (batch_id, status) from the message.
-                for token in str(e).split(":", 1)[-1].split(","):
-                    token = token.strip()
-                    if "(" in token and token.endswith(")"):
-                        bid, status = token[:-1].split("(", 1)
-                        self.run_summary.batches_unusable.append(
-                            {"batch_id": bid.strip(), "status": status.strip()}
-                        )
+                # The exception now carries the resubmit map directly.
+                for bid, status in getattr(e, "unusable", []):
+                    self.run_summary.batches_unusable.append(
+                        {"batch_id": bid, "status": status}
+                    )
                 self.run_summary.notes.append(
                     "Some OpenAI batches finished unusable; classifier did not run for those candidates."
                 )
                 self._persist_summary()
-                # Don't auto-advance to the filter stage; the operator
-                # decides whether to re-submit or accept the gap.
+                # Persist the resubmit map so the GUI's "Resubmit Failed
+                # Batches" button has something to work with even after
+                # a restart.
+                self.state.set(
+                    failed_batch_resubmit_map=getattr(e, "resubmit_map", {}) or {}
+                )
                 self.log_message(str(e))
+                self.log_message(
+                    "Click 'Resubmit Failed Batches' to send only the failed ones to OpenAI again."
+                )
+                if hasattr(self, "resubmit_btn"):
+                    self.resubmit_btn.configure(state=tk.NORMAL)
                 raise
             raise
         self.state.set(image_watermark_detection=True)
+        # Clear the resubmit map; nothing is failed anymore.
+        self.state.set(failed_batch_resubmit_map={})
+        if hasattr(self, "resubmit_btn"):
+            self.resubmit_btn.configure(state=tk.DISABLED)
+
+    def resubmit_failed_batches(self):
+        """Resubmit only the OpenAI batches that finished failed/expired.
+
+        Uses the JSONL files saved on disk at submission time so the
+        request set is identical to the first attempt — no drift from
+        re-deriving URLs from SQL/S3.
+        """
+        if not self.helper or not self.helper.tenant_id:
+            messagebox.showerror(
+                "Tenant required",
+                "Set a tenant id and click Apply before resubmitting.",
+            )
+            return
+
+        current = self.state.read()
+        failed_map = current.get("failed_batch_resubmit_map") or {}
+        if not failed_map:
+            messagebox.showinfo(
+                "Nothing to do",
+                "No failed batches recorded; nothing to resubmit.",
+            )
+            return
+
+        self.progress_bar.start(30)
+        self.status_var.set("Resubmitting failed batches...")
+        self.log_message(f"Resubmitting {len(failed_map)} failed batch(es)...")
+
+        try:
+            new_ids, new_map = self.helper.resubmit_failed_batches(failed_map)
+        except Exception as e:
+            _log.exception("resubmit failed", error=str(e))
+            self.log_message(f"Resubmit failed: {e}")
+            self.progress_bar.stop()
+            return
+
+        if not new_ids:
+            self.log_message("No batches were resubmitted (input files missing).")
+            self.progress_bar.stop()
+            return
+
+        # Update state so poll_open_ai picks up the new batch ids and
+        # the resubmit button is disabled while we wait.
+        self.state.set(batch_ids=new_ids, batch_map=new_map)
+        self.run_summary.batches_total += len(new_ids)
+        self.run_summary.notes.append(
+            f"Resubmitted {len(new_ids)} previously-failed batches."
+        )
+        self._persist_summary()
+        self.state.set(failed_batch_resubmit_map={})
+        if hasattr(self, "resubmit_btn"):
+            self.resubmit_btn.configure(state=tk.DISABLED)
+
+        self.log_message(
+            "Resubmitted. Polling will resume — keep this window open."
+        )
+        self.poll_open_ai()
+        self.db.send_delete_request_watermark()
+        self.progress_bar.stop()
+        self.log_message("Ready for last step Filter Images")
+        self.filter_images_btn.configure(state=tk.NORMAL)
     def perform_filter(self): # this is process
         self.progress_bar.start(30)
         self.filter_images_btn.configure(state=tk.DISABLED)
@@ -481,6 +553,16 @@ class PartsScraperGUI:
             self.log_message("No jobs yet performed")
             self.toggle_controls(False)
 
+        # Restore the Resubmit Failed Batches button if state.json
+        # carries a pending resubmit map (the operator restarted the
+        # GUI mid-error).
+        if current.get("failed_batch_resubmit_map") and hasattr(self, "resubmit_btn"):
+            self.resubmit_btn.configure(state=tk.NORMAL)
+            self.log_message(
+                "Previous run left failed OpenAI batches — "
+                "'Resubmit Failed Batches' is available."
+            )
+
 
 
     def toggle_controls(self, enabled, full_lock=False):
@@ -595,7 +677,19 @@ class PartsScraperGUI:
                                             command=self.start_filter, style='Accent.TButton', state=tk.DISABLED)
         self.filter_images_btn.pack(side=tk.LEFT, padx=5)
 
-        self.stop_btn = ttk.Button(button_frame, text="Stop", 
+        # Becomes enabled when parse_ai_results raises BatchUnusableError.
+        # One-click resubmit of only the failed/expired OpenAI batches.
+        self.resubmit_btn = ttk.Button(
+            button_frame,
+            text="Resubmit Failed Batches",
+            command=lambda: threading.Thread(
+                target=self.resubmit_failed_batches, daemon=True
+            ).start(),
+            state=tk.DISABLED,
+        )
+        self.resubmit_btn.pack(side=tk.LEFT, padx=5)
+
+        self.stop_btn = ttk.Button(button_frame, text="Stop",
                                   command=self.stop_processing, state=tk.DISABLED)
         self.stop_btn.pack(side=tk.RIGHT, padx=5)
         

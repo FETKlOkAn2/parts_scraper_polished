@@ -116,6 +116,50 @@ def cmd_check(args) -> int:
     return 0 if ok else 1
 
 
+def cmd_provenance(args) -> int:
+    """Dump every provenance row for one part. Customer-shareable."""
+    from database import Database
+    db = Database(tenant_id=args.tenant) if args.tenant else Database()
+
+    if args.part_number:
+        df = db.read_sql_query(
+            """
+            SELECT provenance_id, part_number, job_id, source_url, candidate_count,
+                   discarded_by_dedup, hash_method, hash_size, hash_threshold,
+                   final_key, final_url, classifier_verdict, created_at
+            FROM dbo.image_provenance
+            WHERE part_number = :p
+            ORDER BY created_at DESC;
+            """,
+            params={"p": args.part_number},
+        )
+    elif args.job_id:
+        df = db.read_sql_query(
+            """
+            SELECT provenance_id, part_number, job_id, source_url, candidate_count,
+                   discarded_by_dedup, hash_method, hash_size, hash_threshold,
+                   final_key, final_url, classifier_verdict, created_at
+            FROM dbo.image_provenance
+            WHERE job_id = :j
+            ORDER BY part_number ASC;
+            """,
+            params={"j": args.job_id},
+        )
+    else:
+        print("error: provide --part-number or --job-id", file=sys.stderr)
+        return 2
+
+    if df.empty:
+        print("[]")
+        return 0
+
+    # Pandas handles datetimes; convert to ISO strings for cleaner JSON.
+    if "created_at" in df.columns:
+        df["created_at"] = df["created_at"].astype(str)
+    print(df.to_json(orient="records", indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Admin CLI for the tenant registry.")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -161,6 +205,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_check.add_argument("tenant")
     p_check.add_argument("--would-add", type=int, default=0)
     p_check.set_defaults(func=cmd_check)
+
+    p_prov = sub.add_parser(
+        "provenance",
+        help="Dump the audit trail for one part (or every part in one job).",
+    )
+    p_prov.add_argument("--tenant", default=None, help="Tenant id (sets SESSION_CONTEXT).")
+    g_target = p_prov.add_mutually_exclusive_group(required=True)
+    g_target.add_argument("--part-number", help="Show every provenance row for this part.")
+    g_target.add_argument("--job-id", help="Show every provenance row from this job.")
+    p_prov.set_defaults(func=cmd_provenance)
 
     return parser
 
