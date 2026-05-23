@@ -2,6 +2,11 @@ attrs==25.3.0
 awscrt==0.27.6
 beautifulsoup4==4.13.4
 boto3==1.40.16
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+jinja2>=3.1,<4.0
+python-multipart>=0.0.9,<1.0
+itsdangerous>=2.2,<3.0
 botocore==1.40.16
 certifi==2025.6.15
 cffi==1.17.1

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Parts pipeline{% endblock %} · operator console</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <!-- HTMX 1.9.12, pinned with SRI. Vendor a copy into /static/ if
+       the operator workstation is air-gapped; see web/README.md. -->
+  <script src="https://unpkg.com/htmx.org@1.9.12"
+          integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
+          crossorigin="anonymous"
+          defer></script>
+</head>
+<body>
+  <header class="appbar">
+    <a class="brand" href="/">Parts pipeline</a>
+    <nav>
+      <a href="/">Run</a>
+      <a href="/tenants">Tenants</a>
+      <a href="/runs">Runs</a>
+      <a href="/reports">Reports</a>
+      <a href="/provenance">Provenance</a>
+    </nav>
+    <div class="tenant-indicator">
+      {% if active_tenant %}
+        <span class="tenant-label">Tenant</span>
+        <code>{{ active_tenant }}</code>
+      {% else %}
+        <a href="/" class="tenant-empty">No tenant selected</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <small>Parts pipeline operator console.</small>
+  </footer>
+</body>
+</html>

@@ -218,10 +218,25 @@ python -m offboard_tenant --tenant acme-parts --apply --yes  # CI / runbook
 The script does not touch Secrets Manager or Terraform-managed
 resources; remove the tenant from `var.tenants` and re-apply for that.
 
+## Operator UIs
+
+Two surfaces are shipped:
+
+- **Tkinter desktop GUI** (`gui_app/app/parts_scraper_gui.py`) — the
+  original. Still works unchanged.
+- **Web console** (`gui_app/app/web/`) — FastAPI + HTMX. Tenant
+  picker, admin pages, live run status with HTMX polling, reports
+  and provenance lookup. See [gui_app/app/web/README.md](gui_app/app/web/README.md)
+  for the deployment + surface reference.
+
+Both call into the same `Helper` / `Database` /
+`BatchWatermarkDetector` underneath. Adopting the web console is a
+deployment swap, not a rewrite.
+
 ## What you don't get yet
 
-This isn't a SaaS control plane. There is no admin UI (the CLI is the
-admin surface), no per-tenant billing meter, no rate limiting. The
-expectation is that the operator (you, or the agency reseller)
-maintains the tenant registry by hand and feeds tenant ids into the
-GUI at run-start.
+This isn't a full SaaS control plane. There is no per-tenant billing
+meter, no rate limiting, no per-tenant customisation of the
+classifier prompt. The web console handles the day-to-day operator
+workflow and the registry admin; everything beyond that is a
+followup once a customer asks.

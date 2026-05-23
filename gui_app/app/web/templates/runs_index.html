@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Runs · operator console{% endblock %}
+
+{% block content %}
+{% if error %}<div class="alert warn">Runs table unavailable: <code>{{ error }}</code>.
+Have you applied migration <code>006_runs.sql</code>?</div>{% endif %}
+
+<h1>Recent runs</h1>
+<p style="color:#5d6571;">
+  {% if active_tenant %}
+    Showing runs for <code>{{ active_tenant }}</code>.
+  {% else %}
+    No active tenant — showing every tenant's runs (admin view).
+  {% endif %}
+</p>
+
+{% if not runs %}
+  <div class="empty-state">No runs yet.</div>
+{% else %}
+<section class="card" style="margin-top: 16px;">
+  <table>
+    <thead>
+      <tr>
+        <th>Job</th>
+        <th>Tenant</th>
+        <th>Stage</th>
+        <th>CSV rows</th>
+        <th>Created</th>
+        <th>Updated</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in runs %}
+      <tr>
+        <td><code>{{ r.job_id }}</code></td>
+        <td><code>{{ r.tenant_id }}</code></td>
+        <td><span class="status-pill {{ r.stage }}">{{ r.stage }}</span></td>
+        <td>{{ r.csv_rows if r.csv_rows is not none else '' }}</td>
+        <td>{{ r.created_at }}</td>
+        <td>{{ r.updated_at }}</td>
+        <td><a class="btn" href="/runs/{{ r.job_id }}">Open</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}
