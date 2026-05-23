@@ -31,6 +31,7 @@ def _run_row(stage="search", **overrides):
         "error": None,
         "report_html_url": None,
         "report_json_url": None,
+        "manifest_url": None,
         "created_at": dt.datetime(2026, 5, 23, 12, 0, 0),
         "updated_at": dt.datetime(2026, 5, 23, 12, 5, 0),
         "completed_at": None,

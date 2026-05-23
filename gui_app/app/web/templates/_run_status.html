@@ -47,12 +47,24 @@
     {% endif %}
   </div>
 
-  {% if run.report_html_url %}
-    <h2 style="margin-top: 24px;">Report</h2>
+  {% if run.report_html_url or run.manifest_url %}
+    <h2 style="margin-top: 24px;">Deliverables</h2>
     <p>
-      <a class="btn primary" href="{{ run.report_html_url }}" target="_blank">Open HTML report</a>
-      <a class="btn" href="{{ run.report_json_url }}" target="_blank">JSON</a>
+      {% if run.report_html_url %}
+        <a class="btn primary" href="{{ run.report_html_url }}" target="_blank">Open HTML report</a>
+        <a class="btn" href="{{ run.report_json_url }}" target="_blank">JSON</a>
+      {% endif %}
+      {% if run.manifest_url %}
+        <a class="btn primary" href="{{ run.manifest_url }}" target="_blank">Download manifest CSV</a>
+      {% endif %}
     </p>
+    {% if run.manifest_url %}
+      <p style="color:#5d6571; font-size:13px;">
+        Manifest is one row per delivered SKU with the final image URL,
+        source URL, and a deep link to the provenance audit trail.
+        Customer-shareable — paste directly into PIM / ERP.
+      </p>
+    {% endif %}
   {% endif %}
 
   <h2 style="margin-top: 24px;">Timing</h2>

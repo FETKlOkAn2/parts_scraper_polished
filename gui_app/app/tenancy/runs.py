@@ -37,6 +37,7 @@ class RunRecord:
     error: Optional[str]
     report_html_url: Optional[str]
     report_json_url: Optional[str]
+    manifest_url: Optional[str]
     created_at: Optional[dt.datetime]
     updated_at: Optional[dt.datetime]
     completed_at: Optional[dt.datetime]
@@ -126,6 +127,23 @@ class RunsRepository:
             params={"job_id": job_id, "html_url": html_url, "json_url": json_url},
         )
 
+    def set_manifest_url(self, job_id: str, manifest_url: str) -> None:
+        """Stamp the manifest.csv pre-signed URL onto the run row.
+
+        Best-effort — if the column doesn't exist yet (migration 007
+        not applied) the caller catches and logs. We don't make the
+        run fail just because the manifest URL couldn't be persisted.
+        """
+        self.db.execute_sql(
+            """
+            UPDATE dbo.runs
+            SET manifest_url = :manifest_url,
+                updated_at = SYSUTCDATETIME()
+            WHERE job_id = :job_id;
+            """,
+            params={"job_id": job_id, "manifest_url": manifest_url},
+        )
+
     # ---- read --------------------------------------------------------
 
     def get(self, job_id: str) -> Optional[RunRecord]:
@@ -133,7 +151,7 @@ class RunsRepository:
             """
             SELECT job_id, tenant_id, operator, stage, csv_rows,
                    progress_note, error, report_html_url, report_json_url,
-                   created_at, updated_at, completed_at
+                   manifest_url, created_at, updated_at, completed_at
             FROM dbo.runs
             WHERE job_id = :job_id;
             """,
@@ -149,7 +167,7 @@ class RunsRepository:
                 """
                 SELECT TOP (:n) job_id, tenant_id, operator, stage, csv_rows,
                        progress_note, error, report_html_url, report_json_url,
-                       created_at, updated_at, completed_at
+                       manifest_url, created_at, updated_at, completed_at
                 FROM dbo.runs
                 WHERE tenant_id = :tenant_id
                 ORDER BY created_at DESC;
@@ -161,7 +179,7 @@ class RunsRepository:
                 """
                 SELECT TOP (:n) job_id, tenant_id, operator, stage, csv_rows,
                        progress_note, error, report_html_url, report_json_url,
-                       created_at, updated_at, completed_at
+                       manifest_url, created_at, updated_at, completed_at
                 FROM dbo.runs
                 ORDER BY created_at DESC;
                 """,
@@ -184,6 +202,7 @@ class RunsRepository:
             error=_opt(row.get("error")),
             report_html_url=_opt(row.get("report_html_url")),
             report_json_url=_opt(row.get("report_json_url")),
+            manifest_url=_opt(row.get("manifest_url")),
             created_at=row.get("created_at"),
             updated_at=row.get("updated_at"),
             completed_at=row.get("completed_at"),
