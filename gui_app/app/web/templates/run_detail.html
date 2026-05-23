@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Run {{ run.job_id }} · operator console{% endblock %}
+
+{% block content %}
+<h1>Run <code>{{ run.job_id }}</code></h1>
+<p style="color:#5d6571;">
+  Tenant <code>{{ run.tenant_id }}</code> ·
+  Operator {{ run.operator or '—' }} ·
+  Started {{ run.created_at }}
+</p>
+
+<!-- Live status block. HTMX polls every 5s; HX-Trigger from the
+     partial stops polling once the run hits a terminal state. -->
+<section id="status-block"
+         hx-get="/runs/{{ run.job_id }}/status"
+         hx-trigger="every 5s"
+         hx-swap="outerHTML">
+  {% include "_run_status.html" %}
+</section>
+{% endblock %}

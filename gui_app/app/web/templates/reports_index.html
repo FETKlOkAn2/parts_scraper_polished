@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Reports · operator console{% endblock %}
+
+{% block content %}
+{% if error %}<div class="alert warn">Runs table unavailable: <code>{{ error }}</code>.</div>{% endif %}
+
+<h1>Reports</h1>
+<p style="color:#5d6571;">
+  Reports are written to <code>tenants/&lt;id&gt;/reports/&lt;job_id&gt;/index.html</code> when a run completes.
+  Links expire after 5 days.
+</p>
+
+{% if not runs %}
+  <div class="empty-state">No reports yet.</div>
+{% else %}
+<section class="card" style="margin-top: 16px;">
+  <table>
+    <thead>
+      <tr>
+        <th>Job</th>
+        <th>Tenant</th>
+        <th>Completed</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in runs %}
+      <tr>
+        <td><code>{{ r.job_id }}</code></td>
+        <td><code>{{ r.tenant_id }}</code></td>
+        <td>{{ r.completed_at }}</td>
+        <td>
+          <a class="btn primary" href="{{ r.report_html_url }}" target="_blank">HTML</a>
+          <a class="btn" href="{{ r.report_json_url }}" target="_blank">JSON</a>
+          <a class="btn" href="/runs/{{ r.job_id }}">Run page</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}

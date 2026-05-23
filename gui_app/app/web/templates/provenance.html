@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Provenance · operator console{% endblock %}
+
+{% block content %}
+<h1>Provenance</h1>
+<p style="color:#5d6571;">
+  Audit trail for every delivered image. Search by part number or job id.
+  Customer-shareable — only rows for the active tenant are visible via RLS.
+</p>
+
+<section class="card" style="margin-top: 16px;">
+  <form method="get" action="/provenance">
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+      <div class="row" style="flex: 1; min-width: 200px;">
+        <label for="p_part">Part number</label>
+        <input type="text" name="part_number" id="p_part" value="{{ part_number }}">
+      </div>
+      <div class="row" style="flex: 1; min-width: 200px;">
+        <label for="p_job">Job id</label>
+        <input type="text" name="job_id" id="p_job" value="{{ job_id }}">
+      </div>
+      <button type="submit" class="primary">Search</button>
+    </div>
+  </form>
+</section>
+
+{% if error %}
+  <div class="alert warn">{{ error }}</div>
+{% endif %}
+
+{% if rows %}
+<section class="card" style="margin-top: 24px;">
+  <h2>{{ rows|length }} row(s)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Part</th>
+        <th>Job</th>
+        <th>Source URL</th>
+        <th>Candidates</th>
+        <th>Discarded</th>
+        <th>Hash</th>
+        <th>Final</th>
+        <th>When</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td><code>{{ r.part_number }}</code></td>
+        <td><code>{{ r.job_id or '' }}</code></td>
+        <td style="max-width: 320px; overflow: hidden; text-overflow: ellipsis;"><code>{{ r.source_url or '' }}</code></td>
+        <td>{{ r.candidate_count if r.candidate_count is not none else '' }}</td>
+        <td>{{ r.discarded_by_dedup if r.discarded_by_dedup is not none else '' }}</td>
+        <td>
+          {% if r.hash_method %}
+            <code>{{ r.hash_method }} (size={{ r.hash_size }}, t={{ r.hash_threshold }})</code>
+          {% else %}
+            <span style="color:#5d6571;">no-match fallback</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if r.final_url %}
+            <a href="{{ r.final_url }}" target="_blank">image</a>
+          {% endif %}
+        </td>
+        <td>{{ r.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% elif part_number or job_id %}
+  <div class="empty-state" style="margin-top: 24px;">No provenance rows found.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,67 @@
+<section id="status-block" class="card"
+         {% if run.is_terminal %}
+           {# HTMX stops polling when the response header HX-Trigger
+              fires the run-terminal event. We also remove the polling
+              attribute defensively. #}
+         {% else %}
+           hx-get="/runs/{{ run.job_id }}/status"
+           hx-trigger="every 5s"
+           hx-swap="outerHTML"
+         {% endif %}>
+  <h2>Current stage</h2>
+  <p style="font-size: 18px;">
+    <span class="status-pill {{ run.stage }}">{{ run.stage }}</span>
+    {% if run.progress_note %}
+      <span style="color:#5d6571; margin-left: 8px;">{{ run.progress_note }}</span>
+    {% endif %}
+  </p>
+
+  {% if run.error %}
+    <div class="alert err" style="margin-top: 12px;">
+      <strong>Error:</strong> {{ run.error }}
+    </div>
+  {% endif %}
+
+  <h2 style="margin-top: 24px;">Actions</h2>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    {% if run.stage == 'search' and run.progress_note and 'click \'AI watermark\'' in run.progress_note %}
+      <form method="post" action="/runs/{{ run.job_id }}/watermark">
+        <button type="submit" class="primary">AI watermark →</button>
+      </form>
+    {% endif %}
+
+    {% if run.stage == 'watermark' and run.progress_note and 'click \'Filter\'' in run.progress_note %}
+      <form method="post" action="/runs/{{ run.job_id }}/filter">
+        <button type="submit" class="primary">Filter →</button>
+      </form>
+    {% endif %}
+
+    {% if run.stage == 'failed' and run.error and 'Resubmit failed batches' in run.error %}
+      <form method="post" action="/runs/{{ run.job_id }}/resubmit-failed">
+        <button type="submit" class="primary">Resubmit failed batches</button>
+      </form>
+    {% endif %}
+
+    {% if run.is_terminal %}
+      <a class="btn" href="/">Start another run</a>
+    {% endif %}
+  </div>
+
+  {% if run.report_html_url %}
+    <h2 style="margin-top: 24px;">Report</h2>
+    <p>
+      <a class="btn primary" href="{{ run.report_html_url }}" target="_blank">Open HTML report</a>
+      <a class="btn" href="{{ run.report_json_url }}" target="_blank">JSON</a>
+    </p>
+  {% endif %}
+
+  <h2 style="margin-top: 24px;">Timing</h2>
+  <dl style="display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 14px;">
+    <dt style="color:#5d6571;">Created</dt><dd>{{ run.created_at }}</dd>
+    <dt style="color:#5d6571;">Updated</dt><dd>{{ run.updated_at }}</dd>
+    {% if run.completed_at %}
+      <dt style="color:#5d6571;">Completed</dt><dd>{{ run.completed_at }}</dd>
+    {% endif %}
+    <dt style="color:#5d6571;">CSV rows</dt><dd>{{ run.csv_rows if run.csv_rows is not none else '—' }}</dd>
+  </dl>
+</section>
