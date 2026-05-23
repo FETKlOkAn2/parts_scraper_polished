@@ -30,6 +30,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from obs import get_logger
 
 from .auth import BasicAuthMiddleware
+from .jobs import JobRunner, adopt_orphaned_runs
 from .routes import health, tenants, runs, workflow, reports
 
 _log = get_logger("web.app")
@@ -94,12 +95,26 @@ def create_app() -> FastAPI:
     templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
     app.state.templates = templates
 
+    # Background job runner. One instance per app.
+    app.state.jobs = JobRunner()
+
     # Routers — one per logical surface.
     app.include_router(health.router)
     app.include_router(tenants.router)
     app.include_router(runs.router)
     app.include_router(workflow.router)
     app.include_router(reports.router)
+
+    @app.on_event("startup")
+    def _on_startup():
+        # Mark non-terminal runs as failed — we can't track their
+        # underlying AWS work across a process restart. The operator
+        # can resubmit from a clean state.
+        try:
+            from database import Database
+            adopt_orphaned_runs(Database())
+        except Exception as e:
+            _log.warning("startup adopt skipped", error=str(e))
 
     _log.info("web app initialised", auth_user=auth_user)
     return app

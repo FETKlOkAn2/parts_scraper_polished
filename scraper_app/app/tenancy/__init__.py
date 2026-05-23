@@ -22,3 +22,4 @@ from .paths import TenantPaths  # noqa: F401
 from .envelope import envelope, parse_envelope, ENVELOPE_VERSION  # noqa: F401
 from .session import attach_tenant_to_engine  # noqa: F401
 from .registry import TenantRegistry, TenantRecord, VALID_STATUSES  # noqa: F401
+from .runs import RunsRepository, RunRecord, VALID_STAGES, TERMINAL_STAGES  # noqa: F401
