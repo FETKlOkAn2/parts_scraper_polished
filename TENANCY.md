@@ -114,8 +114,14 @@ With phases 1–4 in place:
   on `dbo.part_tags` rejects any row whose tenant_id doesn't match
   its parent `parts` row. The `gui_app` `Database.upsert_append_new_only`
   also refuses to insert rows whose `tenant_id` differs from the
-  active Database tenant — defence-in-depth against a programming
-  error in the operator console.
+  active Database tenant. **Row-level security** (migration 003)
+  attaches a `SECURITY POLICY` to both tables that hides rows whose
+  `tenant_id` doesn't match `SESSION_CONTEXT('tenant_id')`. The
+  application sets that session context once per connection via
+  `attach_tenant_to_engine` in `tenancy/session.py`; an ad-hoc SQL
+  query that forgets the predicate now returns zero rows instead of
+  the wrong tenant's data. The `parts_admin` role bypasses RLS for
+  offboarding and migrations.
 - **Secrets:** when `var.tenants` is non-empty, every tenant gets its
   own `html_secret` in Secrets Manager at
   `${customer}/parts-pipeline/tenants/${tenant}/html-secret`. The
@@ -155,9 +161,67 @@ WHERE tenant_id = '<id>'` (cascade via `dbo.part_tags`) and an S3
 `aws s3 rm s3://<bucket>/tenants/<id>/ --recursive` to remove the
 data.
 
+## Tenant registry
+
+The `dbo.tenants` table (migration 004) is a small application-owned
+registry of who's currently provisioned. Each row carries:
+
+| Column | Purpose |
+| --- | --- |
+| `tenant_id` | Canonical id; matches the regex used by `validate_tenant_id`. |
+| `display_name` | Free-form. What we'd show in a UI. |
+| `created_at` | UTC timestamp set by the default. |
+| `status` | `active` / `suspended` / `archived`. Only `active` accepts new work. |
+| `monthly_image_quota` | Optional cap. NULL means no quota. |
+| `notes` | Free-form. |
+
+Reads and writes go through `tenancy.TenantRegistry`, which the
+operator GUI consults at the start of `search_images`: if the tenant
+is suspended/archived, or if the run would push the monthly image
+count past `monthly_image_quota`, the GUI refuses to start and logs
+the reason. Tenants that don't have a registry row are treated as
+active with no quota — fail-open so single-tenant deployments that
+haven't run migration 004 keep working.
+
+The `admin_cli` module is a small operations tool:
+
+```
+python -m admin_cli list
+python -m admin_cli add acme-parts --display-name "Acme Parts s.r.o." --quota 5000
+python -m admin_cli set-status acme-parts --status suspended
+python -m admin_cli usage acme-parts
+python -m admin_cli check acme-parts --would-add 800
+```
+
+The CLI returns exit code 1 when `check` reports the tenant blocked,
+so it can be wired into a pre-run hook in a CI pipeline.
+
+Quotas are enforced at the application layer, not in SQL. A
+production-grade quota would need a per-month counter table and a
+trigger; we'll do that once a customer actually asks. For now,
+`monthly_image_quota` is a soft cap measured against the count of
+`parts.final_tag IS NOT NULL` for this tenant.
+
+## Offboarding
+
+`offboard_tenant.py` is the destructive counterpart. By default it
+dry-runs and prints a JSON summary; with `--apply` it deletes
+`dbo.part_tags` then `dbo.parts` rows for the tenant and removes the
+S3 prefix in batches of 900 keys (under AWS's DeleteObjects limit).
+
+```
+python -m offboard_tenant --tenant acme-parts             # dry run
+python -m offboard_tenant --tenant acme-parts --apply     # interactive prompt
+python -m offboard_tenant --tenant acme-parts --apply --yes  # CI / runbook
+```
+
+The script does not touch Secrets Manager or Terraform-managed
+resources; remove the tenant from `var.tenants` and re-apply for that.
+
 ## What you don't get yet
 
-This isn't a SaaS control plane. There is no admin UI, no per-tenant
-billing meter, no quota or rate limiting. The expectation is that the
-operator (you, or the agency reseller) maintains a short tenant list
-out of band and feeds tenant ids into the GUI at run-start.
+This isn't a SaaS control plane. There is no admin UI (the CLI is the
+admin surface), no per-tenant billing meter, no rate limiting. The
+expectation is that the operator (you, or the agency reseller)
+maintains the tenant registry by hand and feeds tenant ids into the
+GUI at run-start.

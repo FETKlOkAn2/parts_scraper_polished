@@ -346,6 +346,24 @@ class PartsScraperGUI:
             )
             return
 
+        # Tenant-registry gate: refuses to start a run if the tenant
+        # is suspended/archived or would blow its monthly quota.
+        try:
+            from tenancy import TenantRegistry
+            registry = TenantRegistry(self.db)
+            would_add = int(len(self.dataframe))
+            ok, reason = registry.check_quota(self.helper.tenant_id, would_add=would_add)
+            if not ok:
+                messagebox.showerror("Tenant gate", f"Refusing to start: {reason}")
+                _log.error("tenant gate refused run", tenant_id=self.helper.tenant_id, reason=reason)
+                return
+            self.log_message(f"Tenant gate: {reason}")
+        except Exception as e:
+            # Registry table is optional (migration 004); a missing table
+            # shouldn't break single-tenant deployments that haven't run
+            # it yet.
+            _log.warning("tenant registry check skipped", error=str(e))
+
         self.status_var.set("Performing Image Search...")
         self.progress_bar.start(30)
         self.log_message(f"Uploading CSV to Database for tenant {self.helper.tenant_id}...")
