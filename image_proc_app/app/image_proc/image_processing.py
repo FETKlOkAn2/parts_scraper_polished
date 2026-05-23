@@ -254,7 +254,7 @@ class Img_Proc:
 
         self.group_map = self.db.download_group(self.bucket, grouped_strings)
 
-        keep = self.try_mulitiple_hashes(grouped_strings)
+        keep, matched_cfg = self.try_mulitiple_hashes(grouped_strings)
         keep = [keep[0]]  # only grabs the first one to keep
 
         if len(keep[0]) == 18:
@@ -331,10 +331,35 @@ class Img_Proc:
             key=hash_key,
         )
 
+        # Audit trail: one row per delivered image, recording where it
+        # came from and which dedup config picked it. Best-effort —
+        # see Database.record_provenance for the safety contract.
+        if hasattr(self.db, "record_provenance"):
+            kept_source = keep[0]
+            self.db.record_provenance(
+                part_number=number,
+                source_url=kept_source,
+                candidate_count=len(grouped_strings),
+                discarded_by_dedup=discarded,
+                hash_method=(matched_cfg or {}).get("method"),
+                hash_size=(matched_cfg or {}).get("hash_size"),
+                hash_threshold=(matched_cfg or {}).get("threshold"),
+                final_key=hash_key,
+                final_url=f"{self.final_url}{hash_key}",
+                job_id=getattr(self, "job_id", None),
+            )
+
         self.db.empty_dir('images')
 
 
     def try_mulitiple_hashes(self, grouped_strings):
+        """Return ``(keep_list, matched_config)``.
+
+        ``matched_config`` is the dict ``{method, hash_size, threshold}``
+        for the configuration that produced a non-empty similar set;
+        ``None`` when no method matched and we fell back to the first
+        candidate. The caller writes this into the provenance row.
+        """
         configs = [
             {"method": "phash", "hash_size": 8, "thresholds": [10, 14, 20]},
             {"method": "ahash", "hash_size": 16, "thresholds": [12, 18]},
@@ -351,8 +376,12 @@ class Img_Proc:
                     testing=False,
                 )
                 if keep:
-                    return keep                
-        return [grouped_strings[0]]
+                    return keep, {
+                        "method": cfg["method"],
+                        "hash_size": cfg["hash_size"],
+                        "threshold": t,
+                    }
+        return [grouped_strings[0]], None
     
     def grab_image_and_implement_watermark(self, keep, to_watermark=False):
 

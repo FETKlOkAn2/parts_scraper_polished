@@ -39,6 +39,59 @@ class Database:
     def change_db(self, new_db):
         self.db = new_db
 
+    def record_provenance(
+        self,
+        *,
+        part_number,
+        source_url,
+        candidate_count,
+        discarded_by_dedup,
+        hash_method,
+        hash_size,
+        hash_threshold,
+        final_key,
+        final_url,
+        job_id=None,
+    ):
+        """Append one row to dbo.image_provenance for the kept image.
+
+        Best-effort: if the table doesn't exist yet (migration 005 not
+        applied) or the insert fails for any other reason, we log and
+        return False rather than aborting the shard. The image has
+        already shipped to S3 and the parts.final_tag row is already
+        updated; an audit-trail failure must not undo that.
+        """
+        try:
+            self.execute_sql(
+                """
+                INSERT INTO dbo.image_provenance
+                    (tenant_id, part_number, job_id, source_url, candidate_count,
+                     discarded_by_dedup, hash_method, hash_size, hash_threshold,
+                     final_key, final_url)
+                VALUES
+                    (:tenant_id, :part_number, :job_id, :source_url, :candidate_count,
+                     :discarded_by_dedup, :hash_method, :hash_size, :hash_threshold,
+                     :final_key, :final_url);
+                """,
+                params={
+                    "tenant_id": self.tenant_id,
+                    "part_number": part_number,
+                    "job_id": job_id,
+                    "source_url": source_url,
+                    "candidate_count": candidate_count,
+                    "discarded_by_dedup": discarded_by_dedup,
+                    "hash_method": hash_method,
+                    "hash_size": hash_size,
+                    "hash_threshold": hash_threshold,
+                    "final_key": final_key,
+                    "final_url": final_url,
+                },
+            )
+            return True
+        except Exception as e:
+            print(f"provenance write failed for {part_number}: {e}")
+            return False
+
     def execute_sql(self, sql_text, params=None):
         with self.lock, self.engine.begin() as conn:
             return conn.execute(text(sql_text), params or {})
