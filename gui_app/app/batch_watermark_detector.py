@@ -122,6 +122,10 @@ class BatchWatermarkDetector:
         ``tenant_id`` is stamped into the OpenAI batch metadata so a
         later operator (or a post-mortem on a leaked batch id) can
         attribute the batch to a customer.
+
+        The JSONL is saved to disk so :meth:`resubmit_batch_from_disk`
+        can re-upload it later — needed for the resubmit-only-failed
+        workflow when an OpenAI batch ends in failed/expired/cancelled.
         """
         jsonl_dir = "data/ai_sent_data"
         os.makedirs(jsonl_dir, exist_ok=True)
@@ -149,6 +153,40 @@ class BatchWatermarkDetector:
             batch_id=batch.id,
             tenant_id=tenant_id,
             requests=len(requests),
+            jsonl_path=jsonl_path,
+        )
+        return batch.id
+
+    def resubmit_batch_from_disk(self, jsonl_path: str, tenant_id: str = None) -> str:
+        """Re-upload a saved JSONL and create a new OpenAI batch.
+
+        Used when an earlier batch finished in failed/expired/cancelled
+        — we re-submit exactly the same request set without rebuilding
+        it from SQL/S3, which avoids drift (e.g. the candidate set
+        might have changed since the first submission).
+        """
+        if not os.path.exists(jsonl_path):
+            raise FileNotFoundError(f"saved batch input not found at {jsonl_path}")
+
+        with open(jsonl_path, "rb") as f:
+            upload_file = self.client.files.create(file=f, purpose="batch")
+
+        metadata = {"description": f"Watermark detection retry of {os.path.basename(jsonl_path)}"}
+        if tenant_id:
+            metadata["tenant_id"] = tenant_id
+
+        batch = self.client.batches.create(
+            input_file_id=upload_file.id,
+            endpoint="/v1/chat/completions",
+            completion_window="24h",
+            metadata=metadata,
+        )
+
+        _log.info(
+            "openai batch resubmitted",
+            batch_id=batch.id,
+            tenant_id=tenant_id,
+            jsonl_path=jsonl_path,
         )
         return batch.id
     
