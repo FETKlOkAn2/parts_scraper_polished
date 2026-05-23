@@ -397,6 +397,25 @@ class PartsScraperGUI:
                 _log.warning("report generation failed", error=str(e))
                 self.log_message(f"Report generation failed: {e}")
 
+        # Customer-shareable manifest CSV. Independent from the HTML
+        # report — even if the HTML generation fails we want the
+        # spreadsheet, and vice versa.
+        try:
+            from manifest_builder import write_manifest
+            manifest_refs = write_manifest(
+                self.db,
+                tenant_id=self.run_summary.tenant_id,
+                job_id=self.run_summary.job_id,
+                bucket=self.bucket,
+            )
+            self.log_message(
+                f"Manifest CSV: {manifest_refs['url']} ({manifest_refs['rows']} rows)"
+            )
+            _log.info("manifest written", **manifest_refs)
+        except Exception as e:
+            _log.warning("manifest generation failed", error=str(e))
+            self.log_message(f"Manifest generation failed: {e}")
+
         # self.db.update_all_final_tags() handling this in image process class
         self.db.execute_sql(
             "DELETE FROM dbo.part_tags WHERE tenant_id = :tenant_id;",

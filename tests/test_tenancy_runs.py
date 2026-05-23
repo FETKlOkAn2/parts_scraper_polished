@@ -81,6 +81,7 @@ def test_get_returns_record(db):
         "error": None,
         "report_html_url": None,
         "report_json_url": None,
+        "manifest_url": None,
         "created_at": dt.datetime(2026, 5, 23),
         "updated_at": dt.datetime(2026, 5, 23, 12),
         "completed_at": None,
@@ -90,13 +91,44 @@ def test_get_returns_record(db):
     assert rec.tenant_id == "acme"
     assert rec.stage == "search"
     assert rec.is_terminal is False
+    assert rec.manifest_url is None
+
+
+def test_set_manifest_url_updates_run(db):
+    RunsRepository(db).set_manifest_url("job-1", "https://signed/manifest.csv")
+    sql = db.execute_sql.call_args.args[0]
+    assert "UPDATE dbo.runs" in sql
+    assert "manifest_url = :manifest_url" in sql
+    p = db.execute_sql.call_args.kwargs["params"]
+    assert p["job_id"] == "job-1"
+    assert p["manifest_url"] == "https://signed/manifest.csv"
+
+
+def test_record_with_manifest_url_round_trips(db):
+    db.read_sql_query.return_value = pd.DataFrame([{
+        "job_id": "job-1",
+        "tenant_id": "acme",
+        "operator": None,
+        "stage": "complete",
+        "csv_rows": 100,
+        "progress_note": "done",
+        "error": None,
+        "report_html_url": "https://signed/html",
+        "report_json_url": "https://signed/json",
+        "manifest_url": "https://signed/manifest.csv",
+        "created_at": dt.datetime(2026, 5, 23),
+        "updated_at": dt.datetime(2026, 5, 23, 12),
+        "completed_at": dt.datetime(2026, 5, 23, 12, 30),
+    }])
+    rec = RunsRepository(db).get("job-1")
+    assert rec.manifest_url == "https://signed/manifest.csv"
 
 
 def test_record_is_terminal_for_complete_and_failed():
     base = dict(
         job_id="x", tenant_id="acme", operator=None, csv_rows=None,
         progress_note=None, error=None,
-        report_html_url=None, report_json_url=None,
+        report_html_url=None, report_json_url=None, manifest_url=None,
         created_at=None, updated_at=None, completed_at=None,
     )
     assert RunRecord(stage="complete", **base).is_terminal is True

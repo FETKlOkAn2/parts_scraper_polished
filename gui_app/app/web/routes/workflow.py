@@ -484,6 +484,32 @@ def _build_report(db, runs, job_id, tenant_id, bucket):
             progress_note=f"report generation failed: {e}",
         )
 
+    # Customer-shareable CSV manifest. Independent of the HTML report;
+    # we want the spreadsheet even if the HTML write blew up.
+    try:
+        from manifest_builder import write_manifest
+        manifest_refs = write_manifest(
+            db,
+            tenant_id=tenant_id,
+            job_id=job_id,
+            bucket=bucket,
+        )
+        try:
+            runs.set_manifest_url(job_id, manifest_refs["url"])
+        except Exception as e:
+            # Migration 007 might not be applied yet. Log and continue
+            # — the manifest is in S3 either way; we just can't surface
+            # the link on the run page until the column exists.
+            runs.set_stage(
+                job_id, "filter",
+                progress_note=f"manifest URL persist failed (migration 007?): {e}",
+            )
+    except Exception as e:
+        runs.set_stage(
+            job_id, "filter",
+            progress_note=f"manifest generation failed: {e}",
+        )
+
 
 # ---- tiny json blob storage on the run row (progress_note overflow) ----
 # We keep failed_batch_resubmit_map and batch_map as JSON in S3 next

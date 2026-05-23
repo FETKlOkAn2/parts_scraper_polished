@@ -32,6 +32,9 @@
         <td>
           <a class="btn primary" href="{{ r.report_html_url }}" target="_blank">HTML</a>
           <a class="btn" href="{{ r.report_json_url }}" target="_blank">JSON</a>
+          {% if r.manifest_url %}
+            <a class="btn" href="{{ r.manifest_url }}" target="_blank">Manifest CSV</a>
+          {% endif %}
           <a class="btn" href="/runs/{{ r.job_id }}">Run page</a>
         </td>
       </tr>
