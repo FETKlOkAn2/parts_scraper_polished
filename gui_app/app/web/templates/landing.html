@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Run · operator console{% endblock %}
+
+{% block content %}
+{% set flash = request.session.pop('flash', None) %}
+{% if flash %}
+  <div class="alert {{ flash.kind }}">{{ flash.msg }}</div>
+{% endif %}
+
+{% if registry_error %}
+  <div class="alert warn">
+    Tenant registry is unavailable: <code>{{ registry_error }}</code>.
+    Have you applied migration <code>004_tenant_registry.sql</code>?
+    You can still operate against a single tenant via the
+    <code>DEFAULT_TENANT_ID</code> env var, but the picker below
+    won't list anyone.
+  </div>
+{% endif %}
+
+<h1>Operator console</h1>
+
+<section class="card" style="margin-top: 16px;">
+  <h2>Active tenant</h2>
+  {% if active_tenant %}
+    <p>Currently working as <code>{{ active_tenant }}</code>.</p>
+    <form method="post" action="/tenant/clear" style="display:inline;">
+      <button type="submit">Clear</button>
+    </form>
+  {% else %}
+    <p>Pick a tenant before kicking off any work.</p>
+  {% endif %}
+
+  <form method="post" action="/tenant" style="margin-top: 16px;">
+    <div class="row">
+      <label for="tenant_id">Tenant id</label>
+      {% if tenants %}
+        <select name="tenant_id" id="tenant_id" required>
+          {% for t in tenants %}
+            <option value="{{ t.tenant_id }}"
+                    {% if t.tenant_id == active_tenant %}selected{% endif %}>
+              {{ t.tenant_id }}{% if t.display_name %} — {{ t.display_name }}{% endif %}
+              {% if t.status != 'active' %}({{ t.status }}){% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      {% else %}
+        <input type="text" name="tenant_id" id="tenant_id"
+               placeholder="acme-parts" required>
+      {% endif %}
+    </div>
+    <button type="submit" class="primary">Use this tenant</button>
+  </form>
+</section>
+
+{% if active_tenant %}
+<section class="card" style="margin-top: 24px;">
+  <h2>Start a run</h2>
+  <p>Upload a CSV with columns <code>number, description</code>. The
+     image search stage downloads candidates, the AI watermark stage
+     filters them, and the filter stage picks one per part and writes
+     the final image.</p>
+  <form method="post" action="/run/start"
+        enctype="multipart/form-data">
+    <div class="row">
+      <label for="csv">CSV file</label>
+      <input type="file" name="csv" id="csv" accept=".csv" required>
+    </div>
+    <button type="submit" class="primary">Start image search</button>
+  </form>
+</section>
+{% endif %}
+
+{% endblock %}

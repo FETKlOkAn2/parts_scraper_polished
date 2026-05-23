@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Tenants · operator console{% endblock %}
+
+{% block content %}
+{% set flash = request.session.pop('flash', None) %}
+{% if flash %}
+  <div class="alert {{ flash.kind }}">{{ flash.msg }}</div>
+{% endif %}
+
+{% if error %}
+  <div class="alert warn">
+    Tenant registry is unavailable: <code>{{ error }}</code>.
+    Apply migration <code>004_tenant_registry.sql</code> before using
+    this page.
+  </div>
+{% endif %}
+
+<h1>Tenants</h1>
+<p style="color:#5d6571;">Read/write the <code>dbo.tenants</code> registry. Quota
+   is enforced as a soft cap by the run-start gate.</p>
+
+<section class="card" style="margin-top: 16px;">
+  <h2>Registered tenants ({{ tenants|length }})</h2>
+  {% if not tenants %}
+    <div class="empty-state">No tenants registered yet.</div>
+  {% else %}
+    <table>
+      <thead>
+        <tr>
+          <th>Tenant</th>
+          <th>Display name</th>
+          <th>Status</th>
+          <th>Quota</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tenants %}
+        <tr>
+          <td><code>{{ t.tenant_id }}</code></td>
+          <td>{{ t.display_name or '' }}</td>
+          <td>
+            <form method="post" action="/tenants/{{ t.tenant_id }}/status"
+                  style="display:flex; gap:6px; align-items:center;">
+              <select name="new_status">
+                {% for s in valid_statuses %}
+                  <option value="{{ s }}" {% if s == t.status %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit">Save</button>
+            </form>
+          </td>
+          <td>
+            <form method="post" action="/tenants/{{ t.tenant_id }}/quota"
+                  style="display:flex; gap:6px; align-items:center;">
+              <input type="number" name="quota" min="0"
+                     value="{{ t.monthly_image_quota if t.monthly_image_quota is not none else '' }}"
+                     placeholder="∞"
+                     style="width: 100px;">
+              <button type="submit">Save</button>
+            </form>
+          </td>
+          <td>{{ t.created_at }}</td>
+          <td>
+            <form method="post" action="/tenant" style="display:inline;">
+              <input type="hidden" name="tenant_id" value="{{ t.tenant_id }}">
+              <button type="submit">Switch to</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</section>
+
+<section class="card" style="margin-top: 24px;">
+  <h2>Add or update a tenant</h2>
+  <form method="post" action="/tenants">
+    <div class="row">
+      <label for="t_id">Tenant id</label>
+      <input type="text" name="tenant_id" id="t_id"
+             pattern="[a-z][a-z0-9-]{1,31}"
+             title="lowercase, 2-32 chars, [a-z][a-z0-9-]*, no leading/trailing hyphen"
+             required>
+    </div>
+    <div class="row">
+      <label for="t_display">Display name (optional)</label>
+      <input type="text" name="display_name" id="t_display">
+    </div>
+    <div class="row">
+      <label for="t_status">Status</label>
+      <select name="status_val" id="t_status">
+        {% for s in valid_statuses %}
+          <option value="{{ s }}">{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="row">
+      <label for="t_quota">Monthly image quota (blank = unlimited)</label>
+      <input type="number" name="monthly_image_quota" id="t_quota" min="0">
+    </div>
+    <div class="row">
+      <label for="t_notes">Notes</label>
+      <textarea name="notes" id="t_notes" rows="2"></textarea>
+    </div>
+    <button type="submit" class="primary">Save</button>
+  </form>
+</section>
+
+{% endblock %}
