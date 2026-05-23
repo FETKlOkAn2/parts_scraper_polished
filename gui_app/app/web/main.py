@@ -18,6 +18,7 @@ Configuration is via environment variables:
 """
 from __future__ import annotations
 
+import contextlib
 import os
 from pathlib import Path
 
@@ -61,16 +62,28 @@ def create_app() -> FastAPI:
     auth_pass = _required_env("AUTH_PASSWORD")
     secret_key = os.environ.get("SECRET_KEY") or _required_env("SECRET_KEY")
 
+    @contextlib.asynccontextmanager
+    async def _lifespan(_app: FastAPI):
+        # Startup: adopt any non-terminal runs orphaned by a previous
+        # process. fail-open if the table doesn't exist.
+        try:
+            from database import Database
+            adopt_orphaned_runs(Database())
+        except Exception as e:
+            _log.warning("startup adopt skipped", error=str(e))
+        yield
+        # Shutdown: no work to do — background tasks run on the same
+        # event loop and are torn down by uvicorn.
+
     app = FastAPI(
         title="Parts pipeline · operator console",
         description=(
             "Operator UI for the multi-tenant parts image pipeline. "
             "Replaces the Tkinter desktop GUI."
         ),
-        # We have no public API; hide docs by default. They're still
-        # reachable for the operator at /api/docs if they need them.
         docs_url="/api/docs",
         redoc_url=None,
+        lifespan=_lifespan,
     )
 
     # Session cookie. The session carries the operator's currently-
@@ -104,17 +117,6 @@ def create_app() -> FastAPI:
     app.include_router(runs.router)
     app.include_router(workflow.router)
     app.include_router(reports.router)
-
-    @app.on_event("startup")
-    def _on_startup():
-        # Mark non-terminal runs as failed — we can't track their
-        # underlying AWS work across a process restart. The operator
-        # can resubmit from a clean state.
-        try:
-            from database import Database
-            adopt_orphaned_runs(Database())
-        except Exception as e:
-            _log.warning("startup adopt skipped", error=str(e))
 
     _log.info("web app initialised", auth_user=auth_user)
     return app
