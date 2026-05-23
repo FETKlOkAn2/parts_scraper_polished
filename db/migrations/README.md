@@ -12,7 +12,22 @@ forward.
 
 ## Applying
 
-Use `sqlcmd` so the `:setvar` directives in the migration work:
+Two options. Either works against the same migrations.
+
+### Option 1: the project's own runner (recommended)
+
+```bash
+DB_HOST=sql DB_USER=parts_app DB_PASSWORD="$DB_PASSWORD" \
+    python -m db.apply --database parts_db --var LEGACY_TENANT=acme-parts
+```
+
+The runner discovers every `NNN_*.sql` file in this directory, splits
+each on standalone `GO` lines, honours `:setvar` defaults (overridable
+with `--var`), and refuses to substitute an empty string for a missing
+variable. `--dry-run` prints the resolved SQL without connecting; useful
+in CI.
+
+### Option 2: sqlcmd
 
 ```bash
 sqlcmd -S <db_host> -U <db_user> -P "$DB_PASSWORD" -d parts_db \
