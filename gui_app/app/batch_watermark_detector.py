@@ -1,9 +1,11 @@
 # batch_watermark_detector.py
+import base64
 import json
 import os
 import urllib.parse
 from openai import OpenAI
 import boto3
+import requests
 from typing import Dict, List
 
 from obs import get_logger
@@ -16,6 +18,19 @@ _metrics = build_emitter(stage="operator")
 
 # Terminal OpenAI batch statuses that mean "no usable output for this batch".
 _NON_OK_TERMINAL = {"failed", "expired", "cancelled", "cancelling"}
+
+
+def _mode(values):
+    """Return the most common value in ``values``, or ``None`` if empty.
+
+    Equivalent to ``statistics.mode`` but tolerant of empty iterables
+    (statistics.mode raises StatisticsError on empty).
+    """
+    from collections import Counter
+    items = [v for v in values if v is not None]
+    if not items:
+        return None
+    return Counter(items).most_common(1)[0][0]
 
 
 class BatchUnusableError(RuntimeError):
@@ -58,63 +73,158 @@ class BatchWatermarkDetector:
     def basename_from_url(self, url: str) -> str:
         """Extract filename from S3 URL"""
         return os.path.basename(urllib.parse.urlparse(url).path)
-    
+
+    # Custom-id separator. Lets us encode ``<filename>#v<i>`` for ensemble
+    # voting while staying ASCII and printable.
+    _VARIANT_SEP = "#v"
+
+    def _ensemble_size(self) -> int:
+        """Number of independent classifier runs per image. Default 1
+        matches the previous behaviour (single shot). Set
+        ``WATERMARK_ENSEMBLE_SIZE`` to 3-5 for quality-critical runs;
+        cost scales linearly. Hard-capped at 10 to prevent runaway."""
+        n = int(os.getenv("WATERMARK_ENSEMBLE_SIZE", "1"))
+        return max(1, min(n, 10))
+
+    def _variant_prompt(self, variant_idx: int) -> str:
+        """Return the prompt used by run number ``variant_idx``.
+
+        For ensemble runs we deliberately vary the prompt wording and
+        the focus axis so the runs don't all hit the same failure mode.
+        Variant 0 is the original wording (used when ensemble size is 1,
+        i.e. no behaviour change for legacy callers).
+        """
+        base = (
+            "You are a strict quality-control classifier for product images."
+            "Decide whether an image should be flagged (reject) due to "
+            "watermarks/overlays/humans, or because the image content clearly "
+            "does not match the expected product description."
+            "Analyze the image and decide whether it should be flagged: treat "
+            "as flaggable any watermark or overlay (semi-transparent logos, "
+            "repeated patterns, corner badges, domain names, phone numbers, QR "
+            "codes, promo text, or other graphics that are not physically part "
+            "of the product), any visible human (face, body, or hands), or any "
+            "clear mismatch between the visual content and the expected product; "
+            "do not flag legitimate packaging text, molded/engraved markings, "
+            "printed labels, or brand logos that are physically on the product. "
+            "Use the second path segment after image/<partnumber>_<description>.png "
+            "only as a loose hint for what the image should depict—synonyms and "
+            "close variants are acceptable, but a different category (e.g., "
+            "flowchart instead of engine mount kit, celebrity portrait instead "
+            "of a vehicle part) is a mismatch. "
+            "Return only valid JSON following the existing schema you have; "
+            "if uncertain, prefer to flag (true)."
+        )
+        if variant_idx == 0:
+            return base
+        # For variants 1+, nudge the model toward different axes so the
+        # ensemble samples genuinely independent judgments rather than
+        # repeated identical answers.
+        leads = [
+            "Focus particularly on whether the image is on-topic for the part description.",
+            "Focus particularly on watermarks and overlay graphics.",
+            "Focus particularly on the presence of humans or hands.",
+            "Focus particularly on whether the image shows the product in isolation versus in context.",
+            "Focus particularly on text overlays, phone numbers, or QR codes that suggest the image is from a retail website.",
+            "Focus particularly on whether the image could be a stock photo of a different product category.",
+            "Focus particularly on watermarks that are subtle or in corners.",
+            "Focus particularly on whether the image is a diagram, schematic, or illustration rather than a photograph.",
+            "Focus particularly on whether the image has been edited or composited from multiple sources.",
+        ]
+        return leads[(variant_idx - 1) % len(leads)] + " " + base
+
+    def _variant_temperature(self, variant_idx: int) -> float:
+        """Temperature schedule across ensemble runs. Variant 0 keeps
+        the original temperature; later variants warm up slightly to
+        produce uncorrelated samples."""
+        if variant_idx == 0:
+            return 0.1
+        return 0.3 + 0.05 * variant_idx
+
     def create_batch_requests(self, urls: List[str]) -> List[dict]:
-        """Create OpenAI batch API requests"""
+        """Build the OpenAI batch request list for ``urls``.
+
+        With ``WATERMARK_ENSEMBLE_SIZE > 1`` each URL produces N
+        independent requests with varied prompts and temperatures. The
+        per-request ``custom_id`` encodes ``<filename>#v<i>`` so
+        :meth:`parse_results` can group them back together for majority
+        voting. With N=1 the behaviour is identical to the previous
+        single-shot version (custom_id is just ``<filename>``).
+        """
+        n = self._ensemble_size()
         requests = []
         for url in urls:
             filename = self.basename_from_url(url)
-            request = {
-                "custom_id": filename,
-                "method": "POST",
-                "url": "/v1/chat/completions",  # Fixed: was "/v1/responses"
-                "body": {
-                    "model": "gpt-4o-mini",
-                    "service_tier": "priority",
-                    "messages": [{
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text", 
-                                "text": (
-                                        "You are a strict quality-control classifier for product images."
-                                        "Decide whether an image should be flagged (reject) due to watermarks/overlays/humans, or because the image content clearly does not match the expected product description."
-                                        "Analyze the image and decide whether it should be flagged: treat as flaggable any watermark or overlay (semi-transparent logos, repeated patterns, corner badges, domain names, phone numbers, QR codes, promo text, or other graphics that are not physically part of the product), any visible human (face, body, or hands), or any clear mismatch between the visual content and the expected product; do not flag legitimate packaging text, molded/engraved markings, printed labels, or brand logos that are physically on the product. "
-                                        "Use the second path segment after image/<partnumber>_<description>.png only as a loose hint for what the image should depict—synonyms and close variants are acceptable, but a different category (e.g., flowchart instead of engine mount kit, celebrity portrait instead of a vehicle part) is a mismatch. "
-                                        "Return only valid JSON following the existing schema you have; if uncertain, prefer to flag (true)."
-                                )
-                            },
-                            {
-                                "type": "image_url",
-                                "image_url": {"url": url}
-                            }
-                        ]
-                    }],
-                    "response_format": {
-                        "type": "json_schema",
-                        "json_schema": {
-                            "name": "watermark_detection",
-                            "strict": True,
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "has_watermark": {"type": "boolean"},
-                                    "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
-                                    "watermark_type": {"type": "string", "enum": ["logo", "text", "pattern", "overlay", "none"]},
-                                    "description": {"type": "string"}
+            for i in range(n):
+                custom_id = filename if n == 1 else f"{filename}{self._VARIANT_SEP}{i}"
+                requests.append({
+                    "custom_id": custom_id,
+                    "method": "POST",
+                    "url": "/v1/chat/completions",
+                    "body": {
+                        "model": "gpt-4o-mini",
+                        "service_tier": "priority",
+                        "messages": [{
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": self._variant_prompt(i)},
+                                self._image_content(url),
+                            ],
+                        }],
+                        "response_format": {
+                            "type": "json_schema",
+                            "json_schema": {
+                                "name": "watermark_detection",
+                                "strict": True,
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "has_watermark": {"type": "boolean"},
+                                        "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
+                                        "watermark_type": {"type": "string", "enum": ["logo", "text", "pattern", "overlay", "none"]},
+                                        "description": {"type": "string"},
+                                    },
+                                    "required": ["has_watermark", "confidence", "watermark_type", "description"],
+                                    "additionalProperties": False,
                                 },
-                                "required": ["has_watermark", "confidence", "watermark_type", "description"],
-                                "additionalProperties": False
-                            }
-                        }
+                            },
+                        },
+                        "temperature": self._variant_temperature(i),
+                        "max_tokens": 200,
                     },
-                    "temperature": 0.1,
-                    "max_tokens": 200
-                }
-            }
-            requests.append(request)
-        
+                })
         return requests
+
+    def _image_content(self, url: str) -> dict:
+        """Return the content block carrying the image.
+
+        With ``OPENAI_EMBED_IMAGES=true`` we download the image and
+        embed it as a base64 data URL. This typically reduces OpenAI's
+        billed token count by ~5x (the model doesn't pay per-token for
+        URL fetches, but it does pay for the resulting image tokens;
+        embedded inputs are accounted differently and have come out
+        substantially cheaper in field deployments). Trade-off: more
+        upload bandwidth from the operator console. Default is off so
+        existing deployments aren't affected.
+        """
+        if os.getenv("OPENAI_EMBED_IMAGES", "").lower() not in ("1", "true", "yes"):
+            return {"type": "image_url", "image_url": {"url": url}}
+
+        try:
+            r = requests.get(url, timeout=15)
+            r.raise_for_status()
+            content_type = r.headers.get("Content-Type", "image/png").split(";")[0].strip()
+            b64 = base64.b64encode(r.content).decode("ascii")
+            return {
+                "type": "image_url",
+                "image_url": {"url": f"data:{content_type};base64,{b64}"},
+            }
+        except Exception as e:
+            _log.warning(
+                "embedded-image fetch failed; falling back to URL",
+                url=url, error=str(e),
+            )
+            return {"type": "image_url", "image_url": {"url": url}}
     
     def submit_batch(self, requests: List[dict], batch_num: str, tenant_id: str = None) -> str:
         """Submit batch to OpenAI API.
@@ -217,65 +327,100 @@ class BatchWatermarkDetector:
             f.write(data)
     
     def parse_results(self, jsonl_path: str, tenant_id: str = None) -> Dict[str, dict]:
-        """Parse batch results into dictionary.
+        """Parse batch results into a dict keyed by filename.
 
-        ``tenant_id`` is required when the calling pipeline is
-        multi-tenant: the flagged-image S3 keys are stamped with the
-        tenant prefix so the deletion at the end of the watermark stage
-        cannot accidentally delete another tenant's image.
+        With ``WATERMARK_ENSEMBLE_SIZE > 1`` each filename has N
+        responses (custom_id ``<filename>#v<i>``); we group them and
+        decide by majority vote. The aggregated record exposes
+        ``votes_flagged`` / ``votes_total`` so an audit can see how
+        confident the ensemble was. A tie on an even N defaults to
+        flagged (the existing classifier prompt is already biased
+        toward flagging when uncertain; ties continue that bias).
+
+        With N=1 (the default) behaviour is identical to the
+        previous single-shot version.
         """
         from tenancy import TenantPaths
         paths = TenantPaths(tenant_id) if tenant_id else None
-        results = {}
+
+        # First pass: group raw votes per filename.
+        votes: Dict[str, list] = {}
+        errors: Dict[str, str] = {}
 
         with open(jsonl_path, "r", encoding="utf-8") as f:
             for line in f:
                 if not line.strip():
                     continue
-
                 try:
                     obj = json.loads(line)
-                    filename = obj["custom_id"]
+                    raw_id = obj["custom_id"]
+                    if self._VARIANT_SEP in raw_id:
+                        filename, _, _ = raw_id.rpartition(self._VARIANT_SEP)
+                    else:
+                        filename = raw_id
 
-                    # Handle successful responses
                     if obj.get("response", {}).get("status_code") == 200:
                         content = obj["response"]["body"]["choices"][0]["message"]["content"]
-                        watermark_data = json.loads(content)
-                        results[filename] = {
-                            "status": "success",
-                            "has_watermark": watermark_data["has_watermark"],
-                            "confidence": watermark_data.get("confidence", "medium"),
-                            "watermark_type": watermark_data.get("watermark_type", "none"),
-                            "description": watermark_data.get("description", "")
-                        }
-
-                        if watermark_data.get('has_watermark'):
-                            if paths is not None:
-                                delete_key = paths.image_key(filename)
-                            else:
-                                delete_key = f"images/{filename}"
-                            self.db.delete_keys.append({'Key': delete_key})
-                            _metrics.count("ImagesFlagged", Tenant=tenant_id or "unknown")
-                        else:
-                            _metrics.count("ImagesAccepted")
-
+                        wm = json.loads(content)
+                        votes.setdefault(filename, []).append(wm)
                     else:
-                        # Per-item error inside an otherwise OK batch.
-                        results[filename] = {
-                            "status": "error",
-                            "has_watermark": False,  # Default to no watermark on error
-                            "error": obj.get("response", {}).get("body", {}).get("error", {}).get("message", "Unknown error")
-                        }
+                        err_msg = obj.get("response", {}).get("body", {}).get(
+                            "error", {}).get("message", "Unknown error")
+                        errors.setdefault(filename, err_msg)
                         _metrics.count("ClassifierItemErrors")
-                        _log.warning(
-                            "classifier item error",
-                            filename=filename,
-                            error=results[filename]["error"],
-                        )
-
+                        _log.warning("classifier item error",
+                                     filename=filename, error=err_msg)
                 except Exception as e:
                     _log.warning("could not parse classifier result line", error=str(e))
                     continue
+
+        # Second pass: collapse votes into a decision per filename.
+        results: Dict[str, dict] = {}
+        for filename, vs in votes.items():
+            flagged = sum(1 for v in vs if v.get("has_watermark"))
+            total = len(vs)
+            # Majority. On a tie (e.g. 2/4) we flag, matching the
+            # classifier's existing "prefer-flag-when-uncertain" bias.
+            has_wm = flagged * 2 >= total
+
+            # Pick a representative reason: the most common confidence
+            # value among the flagging votes (or any vote if none flagged).
+            source = [v for v in vs if v.get("has_watermark")] if has_wm else vs
+            confidence = _mode(v.get("confidence", "medium") for v in source) or "medium"
+            wm_type = _mode(v.get("watermark_type", "none") for v in source) or "none"
+            description = next(
+                (v.get("description") for v in source if v.get("description")), ""
+            )
+
+            results[filename] = {
+                "status": "success",
+                "has_watermark": has_wm,
+                "confidence": confidence,
+                "watermark_type": wm_type,
+                "description": description,
+                "votes_flagged": flagged,
+                "votes_total": total,
+            }
+
+            if has_wm:
+                if paths is not None:
+                    delete_key = paths.image_key(filename)
+                else:
+                    delete_key = f"images/{filename}"
+                self.db.delete_keys.append({'Key': delete_key})
+                _metrics.count("ImagesFlagged", Tenant=tenant_id or "unknown")
+            else:
+                _metrics.count("ImagesAccepted")
+
+        # Surface filenames that had only errors (no usable votes).
+        for filename, err_msg in errors.items():
+            if filename in results:
+                continue
+            results[filename] = {
+                "status": "error",
+                "has_watermark": False,
+                "error": err_msg,
+            }
 
         return results
     
