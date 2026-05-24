@@ -20,6 +20,9 @@ load_dotenv()
 _log = get_logger("scraper.parser")
 _metrics = build_emitter(stage="scraper")
 
+_VALID_BACKENDS = ("bing", "duckduckgo")
+
+
 class Parser:
     def __init__(self, db, text, tenant_id):
         # tenant_id is validated by the caller, but we re-validate here
@@ -33,7 +36,18 @@ class Parser:
         password = quote(password, safe='')
 
         self.query = text
-        self.url = f"https://www.bing.com/images/search?q={self.query}&form=HDRSC2"
+        # The image-search backend. ``bing`` is the historical default;
+        # ``duckduckgo`` is the fallback you reach for when Bing starts
+        # poisoning the result stream (the first US deployment had to
+        # cut over mid-run when Bing wised up to repeated scraping
+        # patterns and started returning generic nature shots).
+        backend = os.getenv("SEARCH_BACKEND", "bing").lower()
+        if backend not in _VALID_BACKENDS:
+            _log.warning("unknown SEARCH_BACKEND, falling back to bing",
+                         requested=backend)
+            backend = "bing"
+        self.backend = backend
+        self.url = self._build_search_url(self.query)
         self.proxy_url = f"http://{username}:{password}@gate.decodo.com:10001"
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -41,7 +55,6 @@ class Parser:
                           "Chrome/126.0.0.0 Safari/537.36"
         }
         self.timeout = 5
-
 
         self.db = db
         self.s3 = boto3.client("s3")
@@ -52,8 +65,22 @@ class Parser:
 
         self.links = []
         self.tor = None
-        self.max_images = 10
+        # How many candidate images to download per part. Lower is faster
+        # and cheaper downstream (the classifier stage runs once per
+        # candidate). 5 is a good default — past field deployments at
+        # ~10/part hit OpenAI token ceilings without measurably improving
+        # final quality, because dedup discards most of them anyway.
+        self.max_images = int(os.getenv("MAX_IMAGES_PER_PART", "5"))
         self.images_downloaded = 0
+
+    def _build_search_url(self, query):
+        if self.backend == "duckduckgo":
+            # DuckDuckGo's image search is a 2-step JSON flow (see
+            # :meth:`_extract_links_duckduckgo`). We return the
+            # bootstrap URL here; the JSON URL is built after the
+            # vqd token is extracted from the bootstrap response.
+            return f"https://duckduckgo.com/?q={query}&iax=images&ia=images"
+        return f"https://www.bing.com/images/search?q={query}&form=HDRSC2"
 
     def tor_start(self):
         exe_path = "/usr/bin/tor"#os.getenv("TOR_PATH")
@@ -89,14 +116,63 @@ class Parser:
         try:
             resp = self._fetch(use_proxy=True)
         except (ProxyError, ConnectTimeout, ReadTimeout, SSLError) as e:
-            print(f"[bing] proxy path failed: {e}; retrying direct...")
+            print(f"[{self.backend}] proxy path failed: {e}; retrying direct...")
             resp = self._fetch(use_proxy=False)
         except RequestException:
             # Non-proxy fatal (e.g., 4xx other than 407) — rethrow so caller can DLQ
             raise
 
-        self.links = self._extract_links(resp.text)[:30]
+        if self.backend == "duckduckgo":
+            self.links = self._extract_links_duckduckgo(resp.text)[:30]
+        else:
+            self.links = self._extract_links(resp.text)[:30]
         return self.links
+
+    def _extract_links_duckduckgo(self, bootstrap_html):
+        """Two-step DuckDuckGo image search.
+
+        DuckDuckGo's image search isn't a single HTML page: the first
+        GET returns a bootstrap page containing a ``vqd`` token, then
+        a second GET to ``https://duckduckgo.com/i.js`` with that
+        token returns the actual results as JSON. We do both here and
+        return only the image URLs.
+
+        This is the backend the first US deployment cut over to when
+        Bing started poisoning the response stream. It uses a
+        different IP-based rate-limit so it survives independently of
+        Bing's behaviour.
+        """
+        import re
+
+        m = re.search(r'vqd=["\']?([\d-]+)["\']?', bootstrap_html)
+        if not m:
+            _log.warning("duckduckgo bootstrap missing vqd token; no results")
+            return []
+        vqd = m.group(1)
+
+        results_url = (
+            "https://duckduckgo.com/i.js?l=us-en&o=json"
+            f"&q={quote(self.query)}&vqd={vqd}&f=,,,&p=1"
+        )
+        kw = {"headers": self.headers, "timeout": self.timeout}
+        if self.proxy_url:
+            kw["proxies"] = {"http": self.proxy_url, "https": self.proxy_url}
+        try:
+            r = self.session.get(results_url, **kw)
+            r.raise_for_status()
+            data = r.json()
+        except Exception as e:
+            _log.warning("duckduckgo results fetch failed", error=str(e))
+            return []
+
+        links = []
+        seen = set()
+        for item in data.get("results", []):
+            url = item.get("image")
+            if url and url not in seen:
+                seen.add(url)
+                links.append(url)
+        return links
 
     def _extract_links(self, html):
         """Parse Bing's image-search response and return ordered candidate URLs.

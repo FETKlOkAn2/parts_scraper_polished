@@ -27,7 +27,14 @@ class Helper:
         self.sqs = boto3.client("sqs", region_name=self.region)
         self.ec2 = boto3.client("ec2", region_name=self.region)
         self.detector = detector
-        self.max_batch_size = 40000
+        # OpenAI Batch enforces a per-batch size cap that depends on
+        # request payload (with image URLs the practical ceiling is
+        # ~2,500 items; embedded base64 reduces tokens but the request
+        # count cap is still ~2,500). Default to 2,000 to leave headroom
+        # and let the operator tune up via OPENAI_BATCH_MAX_ITEMS when
+        # their org's limit has been raised. The previous default of
+        # 40,000 was wrong and caused silent batch rejections at scale.
+        self.max_batch_size = int(os.getenv("OPENAI_BATCH_MAX_ITEMS", "2000"))
         self.tenant_id = validate_tenant_id(tenant_id) if tenant_id else None
         self.paths = TenantPaths(self.tenant_id) if self.tenant_id else None
 
@@ -56,8 +63,43 @@ class Helper:
         base = self.paths.prefix(logical_prefix.strip('/'))
         return f"{base}/chunk_{i}.csv"
 
+    def _shard_indices(self, n, num_chunks, strategy):
+        """Yield (chunk_index, row_indices) pairs for one of two strategies.
+
+        Block (default for backward compat): chunk k gets rows
+        ``[k * chunk_size, (k+1) * chunk_size)``. Simple but means a
+        scraping outage (e.g. Bing poisoning the response stream)
+        contaminates one contiguous range and you can't isolate which
+        worker started seeing bad data.
+
+        Interleaved (round-robin): chunk k gets rows at indices
+        ``k, k + num_chunks, k + 2*num_chunks, ...``. When poisoning
+        starts, you see it appear in *every* shard at the same pull
+        depth, which pinpoints the exact part_id where the search
+        backend went bad. The cost of identifying the corruption
+        boundary drops from "burn the entire dataset" to "delete only
+        the parts at and after position N in each shard". This is the
+        rolling-split design from the first US deployment's debrief.
+        """
+        if strategy == "interleaved":
+            for k in range(num_chunks):
+                yield k, list(range(k, n, num_chunks))
+        else:  # block
+            for k in range(num_chunks):
+                start = k * (n // num_chunks + (1 if n % num_chunks else 0))
+                # Use ceil-division chunk size so we don't lose the tail
+                chunk_size = ceil(n / num_chunks)
+                start = k * chunk_size
+                stop = min(start + chunk_size, n)
+                yield k, list(range(start, stop))
+
     def split_data_and_upload_jobs(self, df, bucket, prefix, chunk_size, testing=False):
-        """Function for Image Search"""
+        """Shard ``df`` into chunks and upload each as a CSV shard.
+
+        Shard strategy is selected by ``$SHARD_STRATEGY``:
+        ``block`` (legacy) or ``interleaved`` (default in new deployments,
+        see :meth:`_shard_indices` for the traceability rationale).
+        """
         self._require_tenant()
         n = len(df)
         num_chunks = ceil(n / chunk_size) if n else 0
@@ -65,10 +107,15 @@ class Helper:
             _log.info("dataframe empty, nothing to upload")
             return
 
-        for i in range(num_chunks):
-            start = i * chunk_size
-            stop = min(start + chunk_size, n)
-            chunk = df.iloc[start:stop]
+        strategy = os.getenv("SHARD_STRATEGY", "interleaved").lower()
+        if strategy not in ("block", "interleaved"):
+            _log.warning("unknown SHARD_STRATEGY, falling back to interleaved",
+                         requested=strategy)
+            strategy = "interleaved"
+        _log.info("sharding", n=n, num_chunks=num_chunks, strategy=strategy)
+
+        for k, row_indices in self._shard_indices(n, num_chunks, strategy):
+            chunk = df.iloc[row_indices]
             if testing:
                 chunk.to_csv('data/test_data/test_upload.csv', header=False, index=False)
                 sys.exit()
@@ -77,7 +124,7 @@ class Helper:
             chunk.to_csv(csv_buf, index=False, header=False)
             data_bytes = csv_buf.getvalue().encode("utf-8")
 
-            chunk_key = self._chunk_key(prefix, i + 1)
+            chunk_key = self._chunk_key(prefix, k + 1)
             self.db.s3.put_object(
                 Body=data_bytes,
                 Bucket=bucket,
